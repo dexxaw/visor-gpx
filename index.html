@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sincronizador de Entrenamientos GPX</title>
+    
+    <!-- Tailwind CSS para los estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS y JS para el mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Chart.js para las gráficas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        #map { height: 400px; z-index: 10; }
+        .drag-over { border-color: #3b82f6 !important; background-color: #eff6ff !important; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="bg-blue-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-3">
+            <!-- LOGO DEL CLUB -->
+            <!-- Cambia el enlace de 'src' por el nombre de tu archivo (ej: "logo-club.png") -->
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo de mi Club" class="w-10 h-10 object-contain bg-white rounded-full p-1 shadow-sm">
+            
+            <h1 class="text-2xl font-bold tracking-tight">GPX Sync & Merge</h1>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        
+        <!-- Zona de subida de archivos -->
+        <section id="dropzone" class="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center transition-colors bg-white shadow-sm cursor-pointer hover:bg-gray-50">
+            <input type="file" id="fileInput" multiple accept=".gpx" class="hidden" />
+            <div class="flex flex-col items-center justify-center gap-4 pointer-events-none">
+                <i data-lucide="upload-cloud" class="w-16 h-16 text-blue-500"></i>
+                <div>
+                    <p class="text-lg font-semibold text-gray-700">Arrastra tus archivos GPX aquí</p>
+                    <p class="text-sm text-gray-500">o haz clic para seleccionar archivos de distintos dispositivos</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contenedor Principal -->
+        <div id="dashboard" class="hidden space-y-6">
+            
+            <!-- Estadísticas -->
+            <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="bg-blue-100 p-3 rounded-lg text-blue-600"><i data-lucide="map"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Distancia Total</p>
+                        <p id="stat-dist" class="text-2xl font-bold">0.00 km</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="bg-green-100 p-3 rounded-lg text-green-600"><i data-lucide="timer"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Tiempo en Movimiento</p>
+                        <p id="stat-time-active" class="text-2xl font-bold">00:00:00</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="bg-gray-100 p-3 rounded-lg text-gray-600"><i data-lucide="clock"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Tiempo Transcurrido</p>
+                        <p id="stat-time-total" class="text-2xl font-bold">00:00:00</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="bg-purple-100 p-3 rounded-lg text-purple-600"><i data-lucide="gauge"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Velocidad Media</p>
+                        <p id="stat-speed" class="text-2xl font-bold">0.0 km/h</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="bg-yellow-100 p-3 rounded-lg text-yellow-600"><i data-lucide="zap"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Potencia Media</p>
+                        <p id="stat-power" class="text-2xl font-bold">-- W</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="bg-red-100 p-3 rounded-lg text-red-600"><i data-lucide="heart"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Frec. Cardíaca Max</p>
+                        <p id="stat-hr" class="text-2xl font-bold">-- bpm</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="bg-orange-100 p-3 rounded-lg text-orange-600"><i data-lucide="thermometer"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Temp. Media</p>
+                        <p id="stat-temp" class="text-2xl font-bold">-- °C</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="bg-teal-100 p-3 rounded-lg text-teal-600"><i data-lucide="activity-square"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Cadencia Max</p>
+                        <p id="stat-cad" class="text-2xl font-bold">-- rpm</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="bg-indigo-100 p-3 rounded-lg text-indigo-600"><i data-lucide="trending-up"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Desnivel (+)</p>
+                        <p id="stat-ascent" class="text-2xl font-bold">0 m</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mapa y Controles -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 glass-panel rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div id="map"></div>
+                </div>
+                <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4">
+                    <h3 class="text-lg font-bold flex items-center gap-2"><i data-lucide="layers" class="w-5 h-5"></i> Capas y Ejes</h3>
+                    
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-gray-700">Eje X de las Gráficas:</label>
+                        <div class="flex gap-2">
+                            <button id="btnXDist" class="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg font-medium shadow-sm transition-colors hover:bg-blue-700">Distancia</button>
+                            <button id="btnXTime" class="flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg font-medium shadow-sm transition-colors hover:bg-gray-300">Tiempo</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 mt-2 pt-4 border-t border-gray-100">
+                        <label class="text-sm font-medium text-gray-700">Física y Origen (Potencia):</label>
+                        <div class="flex gap-2 mb-2">
+                            <div class="flex-1">
+                                <span class="text-xs text-gray-500 ml-1">Ciclista (kg)</span>
+                                <input type="number" id="inputRiderWeight" value="105" class="w-full px-3 py-2 border rounded-lg text-sm bg-white" placeholder="Ej: 105">
+                            </div>
+                            <div class="flex-1">
+                                <span class="text-xs text-gray-500 ml-1">Altura (cm)</span>
+                                <input type="number" id="inputRiderHeight" value="190" class="w-full px-3 py-2 border rounded-lg text-sm bg-white" placeholder="Ej: 190">
+                            </div>
+                            <div class="flex-1">
+                                <span class="text-xs text-gray-500 ml-1">Bicicleta (kg)</span>
+                                <input type="number" id="inputBikeWeight" value="15" class="w-full px-3 py-2 border rounded-lg text-sm bg-white" placeholder="Ej: 15">
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="flex-1">
+                                <span class="text-xs text-gray-500 ml-1">Terreno / Bici</span>
+                                <select id="inputBikeType" class="w-full px-3 py-2 border rounded-lg text-sm bg-white text-gray-700">
+                                    <option value="road">Carretera (Asfalto)</option>
+                                    <option value="gravel">Gravel (Mixto)</option>
+                                    <option value="mtb" selected>Montaña (Tierra)</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <span class="text-xs text-gray-500 ml-1">Origen de Datos</span>
+                                <select id="inputDeviceType" class="w-full px-3 py-2 border rounded-lg text-sm bg-white text-gray-700">
+                                    <option value="computer" selected>Ciclocomputador</option>
+                                    <option value="watch">Reloj GPS</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button id="btnRecalculate" class="w-full mt-3 py-2 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg font-medium text-sm hover:bg-yellow-100 transition-colors">Aplicar y Recalcular</button>
+                    </div>
+
+                    <div class="mt-4 flex-1">
+                        <p class="text-sm font-medium text-gray-700 mb-2">Pistas cargadas:</p>
+                        <ul id="trackList" class="space-y-2 text-sm">
+                            <!-- Lista generada dinámicamente -->
+                        </ul>
+                    </div>
+
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 mt-auto">
+                        <p class="text-xs text-blue-800 flex items-start gap-2">
+                            <i data-lucide="info" class="w-4 h-4 shrink-0 mt-0.5"></i>
+                            Los datos de los distintos archivos se han fusionado cronológicamente para complementar GPS, elevación y pulso.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gráficas -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100">
+                    <canvas id="chartElevation"></canvas>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100">
+                    <canvas id="chartSpeed"></canvas>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100">
+                    <canvas id="chartHR"></canvas>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100">
+                    <canvas id="chartCad"></canvas>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 md:col-span-2">
+                    <canvas id="chartPower"></canvas>
+                </div>
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 md:col-span-2">
+                    <canvas id="chartTemp"></canvas>
+                </div>
+            </section>
+
+            <!-- Estadísticas Detalladas -->
+            <section class="glass-panel p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 class="text-lg font-bold flex items-center gap-2 mb-4 text-gray-800"><i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-500"></i> Estadísticas Detalladas</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b-2 border-gray-200 text-sm text-gray-500 uppercase tracking-wider">
+                                <th class="py-3 px-4">Métrica</th>
+                                <th class="py-3 px-4">Mínimo</th>
+                                <th class="py-3 px-4">Media</th>
+                                <th class="py-3 px-4">Máximo</th>
+                                <th class="py-3 px-4">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailed-stats-body" class="text-sm divide-y divide-gray-100">
+                            <!-- Generado dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        let map;
+        let mapPolyline;
+        let hoverMarker = null;
+        let chartElevation, chartSpeed, chartHR, chartTemp, chartCad, chartPower;
+        let xAxisMode = 'distance'; 
+        let mergedTrack = []; 
+        let rawTracks = [];
+
+        const chartColors = {
+            ele: 'rgb(16, 185, 129)', 
+            eleBg: 'rgba(16, 185, 129, 0.2)',
+            speed: 'rgb(59, 130, 246)', 
+            speedBg: 'rgba(59, 130, 246, 0.2)',
+            hr: 'rgb(239, 68, 68)', 
+            hrBg: 'rgba(239, 68, 68, 0.2)',
+            temp: 'rgb(249, 115, 22)', 
+            tempBg: 'rgba(249, 115, 22, 0.2)',
+            cad: 'rgb(20, 184, 166)', 
+            cadBg: 'rgba(20, 184, 166, 0.2)',
+            power: 'rgb(234, 179, 8)', 
+            powerBg: 'rgba(234, 179, 8, 0.2)'
+        };
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const dashboard = document.getElementById('dashboard');
+        const btnXDist = document.getElementById('btnXDist');
+        const btnXTime = document.getElementById('btnXTime');
+        const btnRecalculate = document.getElementById('btnRecalculate');
+        const inputRiderWeight = document.getElementById('inputRiderWeight');
+        const inputRiderHeight = document.getElementById('inputRiderHeight');
+        const inputBikeWeight = document.getElementById('inputBikeWeight');
+        const inputBikeType = document.getElementById('inputBikeType');
+        const inputDeviceType = document.getElementById('inputDeviceType');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFiles(e.target.files);
+        });
+
+        btnXDist.addEventListener('click', () => {
+            xAxisMode = 'distance';
+            btnXDist.classList.replace('bg-gray-200', 'bg-blue-600');
+            btnXDist.classList.replace('text-gray-700', 'text-white');
+            btnXTime.classList.replace('bg-blue-600', 'bg-gray-200');
+            btnXTime.classList.replace('text-white', 'text-gray-700');
+            renderCharts();
+        });
+        btnXTime.addEventListener('click', () => {
+            xAxisMode = 'time';
+            btnXTime.classList.replace('bg-gray-200', 'bg-blue-600');
+            btnXTime.classList.replace('text-gray-700', 'text-white');
+            btnXDist.classList.replace('bg-blue-600', 'bg-gray-200');
+            btnXDist.classList.replace('text-white', 'text-gray-700');
+            renderCharts();
+        });
+
+        btnRecalculate.addEventListener('click', () => {
+            if (rawTracks.length > 0) {
+                fuseTracks();
+                updateStats();
+                renderCharts();
+            }
+        });
+
+        async function handleFiles(files) {
+            rawTracks = [];
+            
+            for (let file of files) {
+                const text = await file.text();
+                const track = parseGPX(text, file.name);
+                if (track.points.length > 0) {
+                    rawTracks.push(track);
+                }
+            }
+
+            if (rawTracks.length > 0) {
+                dashboard.classList.remove('hidden');
+                dropzone.classList.add('hidden');
+                
+                // 1. Fusionamos las pistas primero para que el algoritmo decida quién es el Master
+                fuseTracks();
+                
+                // 2. Ahora dibujamos la lista con las etiquetas inteligentes
+                const trackList = document.getElementById('trackList');
+                trackList.innerHTML = '';
+                rawTracks.forEach(track => {
+                    const isMaster = track.isMaster 
+                        ? '<span class="ml-auto text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-md">Pista Principal (GPS)</span>' 
+                        : '<span class="ml-auto text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded-md">Datos Extra (Pulso)</span>';
+                    
+                    trackList.innerHTML += `
+                        <li class="flex items-center gap-2 border-b border-gray-50 pb-2 mb-2 last:border-0 last:pb-0 last:mb-0">
+                            <i data-lucide="file-check" class="w-4 h-4 text-green-500 shrink-0"></i> 
+                            <span class="truncate max-w-[180px] font-medium text-gray-700" title="${track.name}">${track.name}</span> 
+                            <span class="text-xs text-gray-400">(${track.points.length} pts)</span>
+                            ${isMaster}
+                        </li>`;
+                });
+                lucide.createIcons();
+
+                updateStats();
+                initOrUpdateMap();
+                renderCharts();
+            } else {
+                alert("No se pudieron leer datos válidos de los archivos GPX.");
+            }
+        }
+
+        function parseGPX(gpxText, filename) {
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(gpxText, "text/xml");
+            const trkpts = xml.getElementsByTagName("trkpt");
+            const points = [];
+
+            let nativeAscent = null;
+            let nativeDescent = null;
+            const climbNode = xml.getElementsByTagNameNS("*", "cumulativeClimb")[0] || xml.getElementsByTagName("cumulativeClimb")[0];
+            if (climbNode) nativeAscent = parseFloat(climbNode.textContent);
+            const descNode = xml.getElementsByTagNameNS("*", "cumulativeDecrease")[0] || xml.getElementsByTagName("cumulativeDecrease")[0];
+            if (descNode) nativeDescent = parseFloat(descNode.textContent);
+
+            for (let pt of trkpts) {
+                const lat = parseFloat(pt.getAttribute("lat"));
+                const lon = parseFloat(pt.getAttribute("lon"));
+                
+                const eleNode = pt.getElementsByTagName("ele")[0];
+                const ele = eleNode ? parseFloat(eleNode.textContent) : null;
+                
+                const timeNode = pt.getElementsByTagName("time")[0];
+                const time = timeNode ? new Date(timeNode.textContent).getTime() : null;
+
+                let hr = null;
+                const hrNode = pt.getElementsByTagNameNS("*", "hr")[0];
+                if (hrNode) hr = parseInt(hrNode.textContent);
+
+                let temp = null;
+                const tempNode = pt.getElementsByTagNameNS("*", "atemp")[0];
+                if (tempNode) temp = parseFloat(tempNode.textContent);
+
+                let cad = null;
+                const cadNode = pt.getElementsByTagNameNS("*", "cad")[0];
+                if (cadNode) cad = parseInt(cadNode.textContent);
+
+                if (lat && lon && time) {
+                    points.push({ lat, lon, ele, time, hr, temp, cad });
+                }
+            }
+            return { name: filename, points: points.sort((a,b) => a.time - b.time), nativeAscent, nativeDescent };
+        }
+
+        function fuseTracks() {
+            let tempTrack = [];
+            let startTime = 0;
+
+            if (rawTracks.length > 0) {
+                let masterTrack = rawTracks[0];
+                for (let i = 1; i < rawTracks.length; i++) {
+                    if (rawTracks[i].points.filter(p => p.lat).length > masterTrack.points.filter(p => p.lat).length) {
+                        masterTrack = rawTracks[i];
+                    }
+                }
+                
+                // Guardamos el ganador para mostrarlo en la interfaz de usuario
+                rawTracks.forEach(t => t.isMaster = (t === masterTrack));
+                
+                startTime = masterTrack.points.length > 0 ? masterTrack.points[0].time : 0;
+                rawTracks.forEach(t => t._lastIndex = 0);
+
+                masterTrack.points.forEach(pt => {
+                    let newPt = {
+                        time: pt.time,
+                        relativeTimeMin: (pt.time - startTime) / 60000,
+                        lat: pt.lat,
+                        lon: pt.lon,
+                        ele: pt.ele,
+                        hr: pt.hr,
+                        temp: pt.temp,
+                        cad: pt.cad
+                    };
+
+                    if (rawTracks.length > 1) {
+                        rawTracks.forEach(track => {
+                            if (track !== masterTrack) {
+                                while (track._lastIndex < track.points.length && 
+                                       track.points[track._lastIndex].time < pt.time - 2000) {
+                                    track._lastIndex++;
+                                }
+                                
+                                let searchIdx = track._lastIndex;
+                                let match = null;
+                                while (searchIdx < track.points.length && track.points[searchIdx].time <= pt.time + 2000) {
+                                    if (Math.abs(track.points[searchIdx].time - pt.time) <= 2000) {
+                                        match = track.points[searchIdx];
+                                        break; 
+                                    }
+                                    searchIdx++;
+                                }
+
+                                if (match) {
+                                    if (newPt.hr === null && match.hr !== null) newPt.hr = match.hr;
+                                    if (newPt.cad === null && match.cad !== null) newPt.cad = match.cad;
+                                    if (newPt.temp === null && match.temp !== null) newPt.temp = match.temp;
+                                    if (newPt.lat === null && match.lat !== null) {
+                                        newPt.lat = match.lat;
+                                        newPt.lon = match.lon;
+                                        newPt.ele = match.ele;
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    const lastSaved = tempTrack[tempTrack.length - 1];
+                    if (!lastSaved || (newPt.time - lastSaved.time) >= 1000) {
+                        tempTrack.push(newPt);
+                    }
+                });
+            }
+
+            for (let i = 0; i < tempTrack.length; i++) {
+                let pt = tempTrack[i];
+                let latSum = 0, lonSum = 0, eleSumExtremo = 0, eleSumBase = 0;
+                let count = 0, eleCountExtremo = 0, eleCountBase = 0;
+                
+                for (let j = Math.max(0, i - 3); j <= Math.min(tempTrack.length - 1, i + 3); j++) {
+                    if (tempTrack[j].lat && tempTrack[j].lon) {
+                        latSum += tempTrack[j].lat;
+                        lonSum += tempTrack[j].lon;
+                        count++;
+                    }
+                }
+                
+                for (let j = Math.max(0, i - 8); j <= Math.min(tempTrack.length - 1, i + 8); j++) {
+                    if (tempTrack[j].ele !== null) {
+                        eleSumExtremo += tempTrack[j].ele;
+                        eleCountExtremo++;
+                    }
+                }
+
+                for (let j = Math.max(0, i - 2); j <= Math.min(tempTrack.length - 1, i + 2); j++) {
+                    if (tempTrack[j].ele !== null) {
+                        eleSumBase += tempTrack[j].ele;
+                        eleCountBase++;
+                    }
+                }
+                
+                pt.smoothLat = count > 0 ? latSum / count : pt.lat;
+                pt.smoothLon = count > 0 ? lonSum / count : pt.lon;
+                pt.smoothEle = eleCountExtremo > 0 ? eleSumExtremo / eleCountExtremo : pt.ele;
+                pt.baseEle = eleCountBase > 0 ? eleSumBase / eleCountBase : pt.ele; 
+            }
+
+            let mRider = parseFloat(inputRiderWeight.value) || 105;
+            let hRider = parseFloat(inputRiderHeight.value) || 190;
+            let mBike = parseFloat(inputBikeWeight.value) || 15;
+            let totalMass = mRider + mBike;
+            let rho = 1.225; 
+            let gravity = 9.81;
+
+            let bikeType = inputBikeType ? inputBikeType.value : 'mtb';
+            let deviceType = inputDeviceType ? inputDeviceType.value : 'computer';
+
+            let cda = 0.32; 
+            let crr = 0.004; 
+
+            if (bikeType === 'mtb') {
+                cda = 0.36;   
+                crr = 0.009;  
+            } else if (bikeType === 'gravel') {
+                cda = 0.34;  
+                crr = 0.0065; 
+            } else { 
+                cda = 0.32;  
+                crr = 0.004; 
+            }
+
+            // Límite de aceleración dinámico según el hardware (Reloj vs Ciclocomputador)
+            // El reloj genera falsas aceleraciones al mover el brazo. Le aplicamos un cap mucho más estricto.
+            let maxAcceleration = deviceType === 'watch' ? 0.35 : 0.70;
+
+            mergedTrack = [];
+            let totalDist = 0;
+            
+            if (tempTrack.length > 0) {
+                let firstPt = tempTrack[0];
+                firstPt.dist = 0;
+                firstPt.speed = 0;
+                firstPt.power = 0;
+                firstPt.isMoving = false;
+                firstPt.deltaT = 0;
+                mergedTrack.push(firstPt);
+            }
+
+            let rawPowers = []; 
+
+            for (let i = 1; i < tempTrack.length; i++) {
+                let pt = tempTrack[i];
+                let prevPt = tempTrack[i-1];
+                let deltaT = (pt.time - prevPt.time) / 1000;
+                
+                if (deltaT <= 0) continue;
+
+                let distDelta = 0;
+                if (pt.smoothLat && pt.smoothLon && prevPt.smoothLat && prevPt.smoothLon) {
+                    distDelta = haversine(prevPt.smoothLat, prevPt.smoothLon, pt.smoothLat, pt.smoothLon);
+                }
+                
+                let instSpeedKmh = distDelta / (deltaT / 3600);
+                let isMoving = true;
+
+                if (deltaT > 5) {
+                    if (instSpeedKmh < 4.0) isMoving = false; 
+                } else {
+                    let lookBackIndex = i;
+                    while (lookBackIndex > 0 && ((pt.time - tempTrack[lookBackIndex].time) / 1000) < 15) {
+                        lookBackIndex--;
+                    }
+                    let realTimeWindow = (pt.time - tempTrack[lookBackIndex].time) / 1000;
+                    if (realTimeWindow > 3) {
+                        let pt1 = tempTrack[lookBackIndex];
+                        let netDist = haversine(pt1.smoothLat, pt1.smoothLon, pt.smoothLat, pt.smoothLon);
+                        let netSpeedKmh = netDist / (realTimeWindow / 3600);
+                        if (netSpeedKmh < 2.5) isMoving = false; 
+                    } else {
+                        if (instSpeedKmh < 2.5) isMoving = false;
+                    }
+                }
+
+                let finalSpeed = 0;
+                let instPower = 0;
+
+                if (isMoving) {
+                    totalDist += distDelta; 
+                    
+                    let currentRawSpeed = Math.min(instSpeedKmh, 80); 
+                    let prevSpeed = mergedTrack[i-1].speed || 0;
+                    finalSpeed = (currentRawSpeed * 0.3) + (prevSpeed * 0.7); 
+
+                    let ptA = tempTrack[Math.max(0, i - 5)];
+                    let ptB = tempTrack[Math.min(tempTrack.length - 1, i + 5)];
+                    let distForGrade = haversine(ptA.smoothLat, ptA.smoothLon, ptB.smoothLat, ptB.smoothLon);
+                    let grade = 0;
+                    if (distForGrade > 0.005 && ptB.smoothEle !== null && ptA.smoothEle !== null) {
+                        grade = (ptB.smoothEle - ptA.smoothEle) / (distForGrade * 1000); 
+                    }
+                    
+                    // Si es reloj, aplanamos un poco más los repechos falsos de la muñeca
+                    let maxGrade = deviceType === 'watch' ? 0.12 : 0.15;
+                    grade = Math.max(-maxGrade, Math.min(maxGrade, grade)); 
+
+                    let v_ms = (finalSpeed / 3.6); 
+                    
+                    let a_ms2 = 0;
+                    if (i > 4) {
+                        let pastPt = mergedTrack[i - 4];
+                        let dtAcc = (pt.time - pastPt.time) / 1000;
+                        if (dtAcc > 0) {
+                            a_ms2 = (v_ms - (pastPt.speed / 3.6)) / dtAcc;
+                        }
+                    } else {
+                        a_ms2 = (v_ms - (prevSpeed / 3.6)) / deltaT;
+                    }
+                    
+                    // Aplicamos el límite de aceleración (0.7 para Ciclocomputador, 0.35 para Reloj)
+                    a_ms2 = Math.max(-maxAcceleration, Math.min(maxAcceleration, a_ms2)); 
+                    
+                    let P_rodadura = v_ms > 0 ? crr * totalMass * gravity * v_ms : 0;
+                    let P_aero = 0.5 * rho * cda * Math.pow(v_ms, 3);
+                    let P_gravedad = totalMass * gravity * v_ms * grade;
+                    let P_aceleracion = totalMass * v_ms * a_ms2; 
+
+                    let rawTotalPower = (P_rodadura + P_aero + P_gravedad + P_aceleracion) / 0.96; 
+
+                    instPower = rawTotalPower > 0 ? Math.min(rawTotalPower, 1100) : 0; 
+                }
+
+                pt.dist = totalDist;
+                pt.speed = finalSpeed;
+                pt.isMoving = isMoving; 
+                pt.deltaT = deltaT;
+                rawPowers.push(instPower);
+                
+                mergedTrack.push(pt);
+            }
+
+            for (let i = 1; i < mergedTrack.length; i++) {
+                let powSum = 0, count = 0;
+                // Si es un reloj, aplicamos una media móvil más ancha para aplanar la gráfica final
+                let smoothWindow = deviceType === 'watch' ? 6 : 3;
+                for (let j = Math.max(0, i - smoothWindow); j <= Math.min(mergedTrack.length - 2, i + smoothWindow); j++) {
+                    powSum += rawPowers[j];
+                    count++;
+                }
+                mergedTrack[i].power = count > 0 ? powSum / count : rawPowers[i-1];
+            }
+        }
+
+        function haversine(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function updateStats() {
+            if(!mergedTrack.length) return;
+            const lastPoint = mergedTrack[mergedTrack.length - 1];
+            
+            document.getElementById('stat-dist').innerText = lastPoint.dist.toFixed(2) + ' km';
+            
+            const totalSeconds = (lastPoint.time - mergedTrack[0].time) / 1000;
+            let activeSeconds = 0;
+            for (let i = 1; i < mergedTrack.length; i++) {
+                if (mergedTrack[i].isMoving) {
+                    activeSeconds += mergedTrack[i].deltaT;
+                }
+            }
+            if (activeSeconds <= 0) activeSeconds = totalSeconds; 
+
+            const formatTime = (secs) => {
+                const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+                const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+                const s = Math.floor(secs % 60).toString().padStart(2, '0');
+                return `${h}:${m}:${s}`;
+            };
+
+            document.getElementById('stat-time-total').innerText = formatTime(totalSeconds);
+            document.getElementById('stat-time-active').innerText = formatTime(activeSeconds);
+
+            const avgSpeed = lastPoint.dist / (activeSeconds / 3600);
+            document.getElementById('stat-speed').innerText = avgSpeed.toFixed(1) + ' km/h';
+
+            const hrs = mergedTrack.map(p => p.hr).filter(hr => hr !== null);
+            const maxHr = hrs.length > 0 ? Math.max(...hrs) : '--';
+            document.getElementById('stat-hr').innerText = maxHr + ' bpm';
+
+            const temps = mergedTrack.map(p => p.temp).filter(t => t !== null && !isNaN(t));
+            const avgTemp = temps.length > 0 ? (temps.reduce((a,b)=>a+b,0) / temps.length).toFixed(1) : '--';
+            document.getElementById('stat-temp').innerText = avgTemp + ' °C';
+
+            const cads = mergedTrack.map(p => p.cad).filter(c => c !== null && !isNaN(c));
+            const maxCad = cads.length > 0 ? Math.max(...cads) : '--';
+            document.getElementById('stat-cad').innerText = maxCad + ' rpm';
+
+            const powers = mergedTrack.filter(p => p.isMoving).map(p => p.power);
+            const avgPower = powers.length > 0 ? (powers.reduce((a,b)=>a+b,0) / powers.length).toFixed(0) : '--';
+            document.getElementById('stat-power').innerText = avgPower !== '--' ? avgPower + ' W' : '-- W';
+
+            let totalAscent = 0;
+            let totalDescent = 0;
+            
+            const validEles = mergedTrack.filter(p => p.baseEle !== null && !isNaN(p.baseEle)).map(p => p.baseEle);
+
+            if (validEles.length > 0) {
+                let localMin = validEles[0];
+                let localMax = validEles[0];
+                let trend = 0; 
+                const ELE_THRESHOLD = 0.3; 
+
+                for (let i = 1; i < validEles.length; i++) {
+                    let ele = validEles[i];
+                    if (trend >= 0 && ele < localMax - ELE_THRESHOLD) {
+                        if (localMax > localMin) totalAscent += (localMax - localMin);
+                        trend = -1;
+                        localMin = ele;
+                        localMax = ele;
+                    } else if (trend <= 0 && ele > localMin + ELE_THRESHOLD) {
+                        if (localMax > localMin) totalDescent += (localMax - localMin);
+                        trend = 1;
+                        localMax = ele;
+                        localMin = ele;
+                    } else {
+                        if (ele > localMax) localMax = ele;
+                        if (ele < localMin) localMin = ele;
+                    }
+                }
+                if (trend === 1 && localMax > localMin) {
+                    totalAscent += (localMax - localMin);
+                } else if (trend === -1 && localMax > localMin) {
+                    totalDescent += (localMax - localMin);
+                }
+            }
+
+            let nativeA = null, nativeD = null;
+            rawTracks.forEach(t => {
+                if (t.nativeAscent !== null) {
+                    nativeA = t.nativeAscent;
+                    nativeD = t.nativeDescent;
+                }
+            });
+            if (nativeA !== null) {
+                totalAscent = nativeA;
+                if (nativeD !== null) totalDescent = nativeD;
+            }
+            
+            document.getElementById('stat-ascent').innerText = '+' + Math.round(totalAscent) + ' m';
+
+            const tbody = document.getElementById('detailed-stats-body');
+            tbody.innerHTML = '';
+
+            const getMetrics = (arr) => {
+                const valid = arr.filter(v => v !== null && !isNaN(v));
+                if (!valid.length) return { min: '--', avg: '--', max: '--' };
+                const min = Math.min(...valid);
+                const max = Math.max(...valid);
+                const avg = valid.reduce((a,b)=>a+b,0) / valid.length;
+                return { min, avg, max };
+            };
+
+            const formatVal = (val, dec) => val === '--' ? val : val.toFixed(dec);
+
+            const eleMetrics = getMetrics(mergedTrack.map(p => p.baseEle));
+            const speedMetrics = getMetrics(mergedTrack.map(p => p.speed));
+            const hrMetrics = getMetrics(mergedTrack.map(p => p.hr));
+            const cadMetrics = getMetrics(mergedTrack.map(p => p.cad));
+            const tempMetrics = getMetrics(mergedTrack.map(p => p.temp));
+            const powerMetrics = getMetrics(mergedTrack.filter(p => p.isMoving).map(p => p.power)); 
+
+            speedMetrics.avg = avgSpeed;
+
+            const rows = [
+                { name: 'Distancia (km)', m: {min:'--', avg:'--', max:'--'}, dec: 2, total: lastPoint.dist.toFixed(2) },
+                { name: 'Tiempo en Movimiento', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: formatTime(activeSeconds) },
+                { name: 'Tiempo Transcurrido', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: formatTime(totalSeconds) },
+                { name: 'Elevación (m)', m: eleMetrics, dec: 0, total: '--' },
+                { name: 'Desnivel Acum. (m)', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: `+${Math.round(totalAscent)} / -${Math.round(totalDescent)}` },
+                { name: 'Velocidad (km/h)', m: speedMetrics, dec: 1, total: '--' },
+                { name: 'Potencia Estimada (W)', m: powerMetrics, dec: 0, total: '--' },
+                { name: 'Frec. Cardíaca (bpm)', m: hrMetrics, dec: 0, total: '--' },
+                { name: 'Cadencia (rpm)', m: cadMetrics, dec: 0, total: '--' },
+                { name: 'Temperatura (°C)', m: tempMetrics, dec: 1, total: '--' }
+            ];
+
+            rows.forEach(r => {
+                tbody.innerHTML += `
+                    <tr class="transition-colors hover:bg-gray-50">
+                        <td class="py-3 px-4 font-medium text-gray-700">${r.name}</td>
+                        <td class="py-3 px-4 text-gray-600">${formatVal(r.m.min, r.dec)}</td>
+                        <td class="py-3 px-4 text-gray-600 font-semibold">${formatVal(r.m.avg, r.dec)}</td>
+                        <td class="py-3 px-4 text-gray-600">${formatVal(r.m.max, r.dec)}</td>
+                        <td class="py-3 px-4 text-gray-600 font-bold text-blue-600">${r.total}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function syncHighlight(index, source) {
+            if (!mergedTrack || !mergedTrack[index]) return;
+            const pt = mergedTrack[index];
+
+            if (pt.lat && pt.lon && map) {
+                if (!hoverMarker) {
+                    hoverMarker = L.circleMarker([pt.lat, pt.lon], {
+                        radius: 6,
+                        color: '#ef4444',
+                        fillColor: '#ef4444',
+                        fillOpacity: 1,
+                        weight: 2,
+                        zIndexOffset: 1000
+                    }).addTo(map);
+                } else {
+                    hoverMarker.setLatLng([pt.lat, pt.lon]);
+                    if(!map.hasLayer(hoverMarker)) hoverMarker.addTo(map);
+                }
+            }
+
+            const charts = [
+                {id: 'chartElevation', chart: chartElevation},
+                {id: 'chartSpeed', chart: chartSpeed},
+                {id: 'chartHR', chart: chartHR},
+                {id: 'chartCad', chart: chartCad},
+                {id: 'chartPower', chart: chartPower},
+                {id: 'chartTemp', chart: chartTemp}
+            ];
+
+            charts.forEach(c => {
+                if (c.chart && c.id !== source) {
+                    const meta = c.chart.getDatasetMeta(0);
+                    if (meta.data[index]) {
+                        c.chart.setActiveElements([{ datasetIndex: 0, index: index }]);
+                        c.chart.tooltip.setActiveElements([{ datasetIndex: 0, index: index }], {
+                            x: meta.data[index].x,
+                            y: meta.data[index].y
+                        });
+                        c.chart.update();
+                    }
+                }
+            });
+        }
+
+        function clearHighlight() {
+            if (hoverMarker && map && map.hasLayer(hoverMarker)) {
+                map.removeLayer(hoverMarker);
+            }
+            const charts = [chartElevation, chartSpeed, chartHR, chartCad, chartPower, chartTemp];
+            charts.forEach(c => {
+                if (c) {
+                    c.setActiveElements([]);
+                    c.tooltip.setActiveElements([], {x:0, y:0});
+                    c.update();
+                }
+            });
+        }
+
+        function initOrUpdateMap() {
+            if (!map) {
+                map = L.map('map');
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                map.on('mousemove', function(e) {
+                    if (!mergedTrack.length) return;
+                    let minSqDist = Infinity;
+                    let closestIndex = -1;
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
+                    
+                    for(let i=0; i<mergedTrack.length; i++) {
+                        const pt = mergedTrack[i];
+                        if(pt.lat && pt.lon) {
+                            const sqDist = (pt.lat - lat)**2 + (pt.lon - lng)**2;
+                            if(sqDist < minSqDist) {
+                                minSqDist = sqDist;
+                                closestIndex = i;
+                            }
+                        }
+                    }
+
+                    if(closestIndex !== -1 && minSqDist < 0.0005) { 
+                        syncHighlight(closestIndex, 'map');
+                    } else {
+                        clearHighlight();
+                    }
+                });
+
+                map.on('mouseout', clearHighlight);
+            }
+
+            if (mapPolyline) map.removeLayer(mapPolyline);
+
+            const latlngs = mergedTrack.filter(p => p.lat && p.lon).map(p => [p.lat, p.lon]);
+            if(latlngs.length > 0) {
+                mapPolyline = L.polyline(latlngs, {color: 'rgb(59, 130, 246)', weight: 4}).addTo(map);
+                map.fitBounds(mapPolyline.getBounds());
+            }
+        }
+
+        function renderCharts() {
+            const labels = mergedTrack.map(p => xAxisMode === 'distance' ? p.dist.toFixed(2) : p.relativeTimeMin.toFixed(1));
+            const eleData = mergedTrack.map(p => p.baseEle);
+            const speedData = mergedTrack.map(p => p.speed);
+            const hrData = mergedTrack.map(p => p.hr);
+            const tempData = mergedTrack.map(p => p.temp);
+            const cadData = mergedTrack.map(p => p.cad);
+            const powerData = mergedTrack.map(p => p.power);
+
+            const xTitle = xAxisMode === 'distance' ? 'Distancia (km)' : 'Tiempo (minutos)';
+
+            createChart('chartElevation', chartElevation, 'Elevación (m)', labels, eleData, chartColors.ele, chartColors.eleBg, xTitle, (c) => chartElevation = c);
+            createChart('chartSpeed', chartSpeed, 'Velocidad (km/h)', labels, speedData, chartColors.speed, chartColors.speedBg, xTitle, (c) => chartSpeed = c);
+            createChart('chartPower', chartPower, 'Potencia (W)', labels, powerData, chartColors.power, chartColors.powerBg, xTitle, (c) => chartPower = c);
+            createChart('chartHR', chartHR, 'Frecuencia Cardíaca (bpm)', labels, hrData, chartColors.hr, chartColors.hrBg, xTitle, (c) => chartHR = c);
+            createChart('chartCad', chartCad, 'Cadencia (rpm)', labels, cadData, chartColors.cad, chartColors.cadBg, xTitle, (c) => chartCad = c);
+            createChart('chartTemp', chartTemp, 'Temperatura (°C)', labels, tempData, chartColors.temp, chartColors.tempBg, xTitle, (c) => chartTemp = c);
+        }
+
+        function createChart(canvasId, chartInstance, title, labels, data, color, bgColor, xTitle, saveInstance) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            const hasData = data.some(d => d !== null && !isNaN(d));
+
+            const newChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: title,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: bgColor,
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 0,
+                        tension: 0.3,
+                        spanGaps: true 
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    onHover: (event, elements) => {
+                        if (elements && elements.length) {
+                            syncHighlight(elements[0].index, canvasId);
+                        } else {
+                            clearHighlight();
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: hasData ? title : `${title} (Sin Datos)`, font: { size: 16 } }
+                    },
+                    scales: {
+                        x: { 
+                            title: { display: true, text: xTitle },
+                            ticks: { maxTicksLimit: 10 }
+                        },
+                        y: { 
+                            title: { display: false } 
+                        }
+                    }
+                }
+            });
+            saveInstance(newChart);
+        }
+    </script>
+</body>
+</html>
