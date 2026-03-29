@@ -30,7 +30,6 @@
     <nav class="bg-blue-600 text-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-3">
             <!-- LOGO DEL CLUB -->
-            <!-- Cambia el enlace de 'src' por el nombre de tu archivo (ej: "logo-club.png") -->
             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo de mi Club" class="w-10 h-10 object-contain bg-white rounded-full p-1 shadow-sm">
             
             <h1 class="text-2xl font-bold tracking-tight">GPX Sync & Merge</h1>
@@ -178,6 +177,11 @@
                         <ul id="trackList" class="space-y-2 text-sm">
                             <!-- Lista generada dinámicamente -->
                         </ul>
+                        
+                        <!-- NUEVO BOTÓN DE EXPORTACIÓN -->
+                        <button id="btnDownloadGPX" class="w-full mt-6 py-2.5 bg-green-600 text-white rounded-lg font-medium shadow-sm transition-colors hover:bg-green-700 flex items-center justify-center gap-2">
+                            <i data-lucide="download" class="w-4 h-4"></i> Descargar GP
+                        </button>
                     </div>
 
                     <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 mt-auto">
@@ -191,22 +195,40 @@
 
             <!-- Gráficas -->
             <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100">
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 relative group">
+                    <button onclick="openModalChart('ele')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
                     <canvas id="chartElevation"></canvas>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100">
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 relative group">
+                    <button onclick="openModalChart('speed')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
                     <canvas id="chartSpeed"></canvas>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100">
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 relative group">
+                    <button onclick="openModalChart('hr')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
                     <canvas id="chartHR"></canvas>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100">
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 relative group">
+                    <button onclick="openModalChart('cad')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
                     <canvas id="chartCad"></canvas>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 md:col-span-2">
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 md:col-span-2 relative group">
+                    <button onclick="openModalChart('power')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
                     <canvas id="chartPower"></canvas>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 md:col-span-2">
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 md:col-span-2 relative group">
+                    <button onclick="openModalChart('temp')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
                     <canvas id="chartTemp"></canvas>
                 </div>
             </section>
@@ -232,6 +254,53 @@
                 </div>
             </section>
         </div>
+        
+        <!-- Modal para Gráficas Superpuestas -->
+        <div id="chartModal" class="hidden fixed inset-0 z-50 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 lg:p-8 opacity-0 transition-opacity duration-300">
+            <div class="bg-white w-full max-w-7xl h-[85vh] rounded-2xl flex flex-col overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300" id="chartModalContent">
+                <div class="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
+                    <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
+                        <i data-lucide="activity" class="w-6 h-6 text-blue-600"></i> Análisis Comparativo
+                    </h2>
+                    <button onclick="closeModalChart()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+                    <div class="w-full md:w-64 border-r border-gray-200 p-5 bg-white flex flex-col gap-4 overflow-y-auto shrink-0">
+                        <h3 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-2">Superponer Métricas</h3>
+                        
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
+                            <input type="checkbox" value="ele" class="modal-toggle w-4 h-4 text-emerald-500 rounded focus:ring-emerald-500">
+                            <span class="text-sm font-medium flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-emerald-500"></div> Elevación</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
+                            <input type="checkbox" value="speed" class="modal-toggle w-4 h-4 text-blue-500 rounded focus:ring-blue-500">
+                            <span class="text-sm font-medium flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-500"></div> Velocidad</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
+                            <input type="checkbox" value="power" class="modal-toggle w-4 h-4 text-yellow-500 rounded focus:ring-yellow-500">
+                            <span class="text-sm font-medium flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-yellow-500"></div> Potencia</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
+                            <input type="checkbox" value="hr" class="modal-toggle w-4 h-4 text-red-500 rounded focus:ring-red-500">
+                            <span class="text-sm font-medium flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div> FC</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
+                            <input type="checkbox" value="cad" class="modal-toggle w-4 h-4 text-teal-500 rounded focus:ring-teal-500">
+                            <span class="text-sm font-medium flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-teal-500"></div> Cadencia</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
+                            <input type="checkbox" value="temp" class="modal-toggle w-4 h-4 text-orange-500 rounded focus:ring-orange-500">
+                            <span class="text-sm font-medium flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-orange-500"></div> Temperatura</span>
+                        </label>
+                    </div>
+                    <div class="flex-1 p-4 lg:p-6 bg-gray-50/50 relative h-full">
+                        <canvas id="modalCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -241,9 +310,11 @@
         let mapPolyline;
         let hoverMarker = null;
         let chartElevation, chartSpeed, chartHR, chartTemp, chartCad, chartPower;
+        let modalChartInstance = null; // Instancia de la gráfica del modal
         let xAxisMode = 'distance'; 
         let mergedTrack = []; 
         let rawTracks = [];
+        let currentChartData = {}; // Para almacenar datos extraídos globalmente
 
         const chartColors = {
             ele: 'rgb(16, 185, 129)', 
@@ -266,6 +337,7 @@
         const btnXDist = document.getElementById('btnXDist');
         const btnXTime = document.getElementById('btnXTime');
         const btnRecalculate = document.getElementById('btnRecalculate');
+        const btnDownloadGPX = document.getElementById('btnDownloadGPX');
         const inputRiderWeight = document.getElementById('inputRiderWeight');
         const inputRiderHeight = document.getElementById('inputRiderHeight');
         const inputBikeWeight = document.getElementById('inputBikeWeight');
@@ -308,6 +380,9 @@
                 renderCharts();
             }
         });
+
+        // Evento para el nuevo botón de descarga
+        btnDownloadGPX.addEventListener('click', downloadGPXFile);
 
         async function handleFiles(files) {
             rawTracks = [];
@@ -642,6 +717,92 @@
             }
         }
 
+        // NUEVA FUNCIÓN PARA GENERAR Y DESCARGAR EL GPX
+        function downloadGPXFile() {
+            if (!mergedTrack || mergedTrack.length === 0) return;
+
+            // Construcción inicial del XML con namespaces estándar para Power y TrackPointExtensions
+            let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx creator="GPX Sync &amp; Merge" version="1.1"
+  xmlns="http://www.topografix.com/GPX/1/1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd"
+  xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1">
+  <metadata>
+    <name>Entrenamiento Fusionado (Potencia Virtual)</name>
+    <desc>Generado por GPX Sync &amp; Merge. Los datos de potencia son virtuales/estimados basándose en la física del ciclista y el perfil del terreno.</desc>
+  </metadata>
+  <trk>
+    <name>Track Sincronizado</name>
+    <desc>Contiene datos sincronizados y potencia virtual estimada.</desc>
+    <type>cycling</type>
+    <trkseg>\n`;
+
+            mergedTrack.forEach(pt => {
+                if (pt.lat === null || pt.lon === null) return; // Saltamos puntos sin coordenadas
+
+                gpx += `      <trkpt lat="${pt.lat}" lon="${pt.lon}">\n`;
+                
+                if (pt.baseEle !== null && !isNaN(pt.baseEle)) {
+                    gpx += `        <ele>${pt.baseEle.toFixed(1)}</ele>\n`;
+                }
+                
+                if (pt.time) {
+                    gpx += `        <time>${new Date(pt.time).toISOString()}</time>\n`;
+                }
+
+                // Extensiones: Potencia (estándar de facto Strava) y Sensores (estándar Garmin)
+                let hasExtensions = false;
+                let extStr = `        <extensions>\n`;
+                
+                if (pt.power !== null && !isNaN(pt.power) && pt.power >= 0) {
+                    extStr += `          <power>${Math.round(pt.power)}</power>\n`;
+                    hasExtensions = true;
+                }
+
+                if ((pt.hr !== null && !isNaN(pt.hr)) || 
+                    (pt.cad !== null && !isNaN(pt.cad)) || 
+                    (pt.temp !== null && !isNaN(pt.temp))) {
+                    
+                    hasExtensions = true;
+                    extStr += `          <gpxtpx:TrackPointExtension>\n`;
+                    if (pt.hr !== null && !isNaN(pt.hr)) {
+                        extStr += `            <gpxtpx:hr>${Math.round(pt.hr)}</gpxtpx:hr>\n`;
+                    }
+                    if (pt.cad !== null && !isNaN(pt.cad)) {
+                        extStr += `            <gpxtpx:cad>${Math.round(pt.cad)}</gpxtpx:cad>\n`;
+                    }
+                    if (pt.temp !== null && !isNaN(pt.temp)) {
+                        extStr += `            <gpxtpx:atemp>${pt.temp.toFixed(1)}</gpxtpx:atemp>\n`;
+                    }
+                    extStr += `          </gpxtpx:TrackPointExtension>\n`;
+                }
+
+                extStr += `        </extensions>\n`;
+
+                if (hasExtensions) {
+                    gpx += extStr;
+                }
+
+                gpx += `      </trkpt>\n`;
+            });
+
+            gpx += `    </trkseg>
+  </trk>
+</gpx>`;
+
+            // Crear Blob y forzar la descarga
+            const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'track_fusionado_potencia_virtual.gpx';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
         function haversine(lat1, lon1, lat2, lon2) {
             const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -821,7 +982,8 @@
                 {id: 'chartHR', chart: chartHR},
                 {id: 'chartCad', chart: chartCad},
                 {id: 'chartPower', chart: chartPower},
-                {id: 'chartTemp', chart: chartTemp}
+                {id: 'chartTemp', chart: chartTemp},
+                {id: 'modalCanvas', chart: modalChartInstance} // Sincroniza también el modal
             ];
 
             charts.forEach(c => {
@@ -843,7 +1005,7 @@
             if (hoverMarker && map && map.hasLayer(hoverMarker)) {
                 map.removeLayer(hoverMarker);
             }
-            const charts = [chartElevation, chartSpeed, chartHR, chartCad, chartPower, chartTemp];
+            const charts = [chartElevation, chartSpeed, chartHR, chartCad, chartPower, chartTemp, modalChartInstance];
             charts.forEach(c => {
                 if (c) {
                     c.setActiveElements([]);
@@ -906,14 +1068,149 @@
             const cadData = mergedTrack.map(p => p.cad);
             const powerData = mergedTrack.map(p => p.power);
 
+            // Guardamos globalmente los datos extraídos para inyectarlos en el modal rápidamente
+            currentChartData = {
+                labels,
+                ele: eleData,
+                speed: speedData,
+                hr: hrData,
+                cad: cadData,
+                power: powerData,
+                temp: tempData
+            };
+
             const xTitle = xAxisMode === 'distance' ? 'Distancia (km)' : 'Tiempo (minutos)';
 
             createChart('chartElevation', chartElevation, 'Elevación (m)', labels, eleData, chartColors.ele, chartColors.eleBg, xTitle, (c) => chartElevation = c);
             createChart('chartSpeed', chartSpeed, 'Velocidad (km/h)', labels, speedData, chartColors.speed, chartColors.speedBg, xTitle, (c) => chartSpeed = c);
-            createChart('chartPower', chartPower, 'Potencia (W)', labels, powerData, chartColors.power, chartColors.powerBg, xTitle, (c) => chartPower = c);
+            createChart('chartPower', chartPower, 'Potencia virtual (W)', labels, powerData, chartColors.power, chartColors.powerBg, xTitle, (c) => chartPower = c);
             createChart('chartHR', chartHR, 'Frecuencia Cardíaca (bpm)', labels, hrData, chartColors.hr, chartColors.hrBg, xTitle, (c) => chartHR = c);
             createChart('chartCad', chartCad, 'Cadencia (rpm)', labels, cadData, chartColors.cad, chartColors.cadBg, xTitle, (c) => chartCad = c);
             createChart('chartTemp', chartTemp, 'Temperatura (°C)', labels, tempData, chartColors.temp, chartColors.tempBg, xTitle, (c) => chartTemp = c);
+            
+            // Si el modal está abierto, lo actualiza
+            if(document.getElementById('chartModal').classList.contains('hidden') === false) {
+                updateModalChart();
+            }
+        }
+
+        // NUEVAS FUNCIONES PARA EL MODAL DE GRÁFICAS
+        const metricDetails = {
+            ele: { label: 'Elevación (m)', color: chartColors.ele, bgColor: chartColors.eleBg },
+            speed: { label: 'Velocidad (km/h)', color: chartColors.speed, bgColor: chartColors.speedBg },
+            hr: { label: 'Frecuencia Cardíaca (bpm)', color: chartColors.hr, bgColor: chartColors.hrBg },
+            cad: { label: 'Cadencia (rpm)', color: chartColors.cad, bgColor: chartColors.cadBg },
+            power: { label: 'Potencia (W)', color: chartColors.power, bgColor: chartColors.powerBg },
+            temp: { label: 'Temperatura (°C)', color: chartColors.temp, bgColor: chartColors.tempBg }
+        };
+
+        function openModalChart(baseMetric) {
+            const modal = document.getElementById('chartModal');
+            const modalContent = document.getElementById('chartModalContent');
+            
+            // Resetear y marcar checkboxes
+            document.querySelectorAll('.modal-toggle').forEach(cb => {
+                cb.checked = (cb.value === baseMetric);
+            });
+            
+            modal.classList.remove('hidden');
+            // Timeout para animación
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }, 10);
+            
+            updateModalChart();
+        }
+
+        function closeModalChart() {
+            const modal = document.getElementById('chartModal');
+            const modalContent = document.getElementById('chartModalContent');
+            
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (modalChartInstance) {
+                    modalChartInstance.destroy();
+                    modalChartInstance = null;
+                }
+            }, 300); // Wait for transition
+        }
+
+        document.querySelectorAll('.modal-toggle').forEach(cb => {
+            cb.addEventListener('change', updateModalChart);
+        });
+
+        function updateModalChart() {
+            const activeMetrics = Array.from(document.querySelectorAll('.modal-toggle'))
+                                       .filter(cb => cb.checked)
+                                       .map(cb => cb.value);
+            
+            if (activeMetrics.length === 0) return; // Prevenir gráfica vacía
+
+            const ctx = document.getElementById('modalCanvas').getContext('2d');
+            if (modalChartInstance) modalChartInstance.destroy();
+
+            const datasets = activeMetrics.map((metric, index) => {
+                const conf = metricDetails[metric];
+                return {
+                    label: conf.label,
+                    data: currentChartData[metric],
+                    borderColor: conf.color,
+                    backgroundColor: conf.bgColor,
+                    borderWidth: 2,
+                    fill: activeMetrics.length === 1, // Solo rellenar fondo si hay 1 métrica para que no se pise el color
+                    pointRadius: 0,
+                    tension: 0.3,
+                    spanGaps: true,
+                    yAxisID: `y-${metric}`
+                };
+            });
+
+            const scales = {
+                x: { 
+                    title: { display: true, text: xAxisMode === 'distance' ? 'Distancia (km)' : 'Tiempo (minutos)' },
+                    ticks: { maxTicksLimit: 15 }
+                }
+            };
+
+            // Crear un Eje Y independiente para cada métrica seleccionada
+            activeMetrics.forEach((metric, index) => {
+                scales[`y-${metric}`] = {
+                    type: 'linear',
+                    display: true,
+                    position: index % 2 === 0 ? 'left' : 'right', // Alternar ejes izquierda/derecha
+                    title: { display: true, text: metricDetails[metric].label },
+                    grid: { drawOnChartArea: index === 0 } // Solo dibujar la cuadrícula del fondo para el primer eje
+                };
+            });
+
+            modalChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: currentChartData.labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    onHover: (event, elements) => {
+                        if (elements && elements.length) {
+                            syncHighlight(elements[0].index, 'modalCanvas');
+                        } else {
+                            clearHighlight();
+                        }
+                    },
+                    plugins: {
+                        legend: { display: true, position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: scales
+                }
+            });
         }
 
         function createChart(canvasId, chartInstance, title, labels, data, color, bgColor, xTitle, saveInstance) {
