@@ -180,7 +180,7 @@
                         
                         <!-- NUEVO BOTÓN DE EXPORTACIÓN -->
                         <button id="btnDownloadGPX" class="w-full mt-6 py-2.5 bg-green-600 text-white rounded-lg font-medium shadow-sm transition-colors hover:bg-green-700 flex items-center justify-center gap-2">
-                            <i data-lucide="download" class="w-4 h-4"></i> Descargar GPX
+                            <i data-lucide="download" class="w-4 h-4"></i> Descargar GP
                         </button>
                     </div>
 
@@ -256,8 +256,8 @@
         </div>
         
         <!-- Modal para Gráficas Superpuestas -->
-        <div id="chartModal" class="hidden fixed inset-0 z-50 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 lg:p-8 opacity-0 transition-opacity duration-300">
-            <div class="bg-white w-full max-w-7xl h-[85vh] rounded-2xl flex flex-col overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300" id="chartModalContent">
+        <div id="chartModal" class="hidden fixed inset-0 z-50 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 opacity-0 transition-opacity duration-300">
+            <div class="bg-white w-full h-full sm:w-[98vw] sm:h-[98vh] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300 max-w-none" id="chartModalContent">
                 <div class="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
                     <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
                         <i data-lucide="activity" class="w-6 h-6 text-blue-600"></i> Análisis Comparativo
@@ -1114,10 +1114,20 @@
             });
             
             modal.classList.remove('hidden');
-            // Timeout para animación
+            // Timeout para animación y petición de pantalla completa
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modalContent.classList.remove('scale-95');
+                
+                // Forzar pantalla completa (Fullscreen API) para escapar del iframe
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => console.log("Fullscreen error:", err));
+                } else if (elem.webkitRequestFullscreen) { /* Safari */
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) { /* IE11 */
+                    elem.msRequestFullscreen();
+                }
             }, 10);
             
             updateModalChart();
@@ -1129,6 +1139,17 @@
             
             modal.classList.add('opacity-0');
             modalContent.classList.add('scale-95');
+            
+            // Salir de pantalla completa si estamos en ella
+            if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { /* Safari */
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { /* IE11 */
+                    document.msExitFullscreen();
+                }
+            }
             
             setTimeout(() => {
                 modal.classList.add('hidden');
