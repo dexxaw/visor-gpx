@@ -60,10 +60,10 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         
-        <!-- Pantalla de Inicio (Dropzone + Logo) -->
-        <div id="welcome-screen" class="flex flex-col gap-16 mt-4 mb-10">
+        <!-- Pantalla de Inicio (Dropzone + Logo + Preview) -->
+        <div id="welcome-screen" class="flex flex-col gap-10 mt-4 mb-10">
             <!-- Zona de subida de archivos -->
-            <section id="dropzone" class="border-2 border-dashed border-gray-700 rounded-xl p-10 text-center transition-colors bg-gray-800/40 shadow-sm cursor-pointer hover:bg-gray-800">
+            <section id="dropzone" class="border-2 border-dashed border-gray-700 rounded-xl p-10 text-center transition-colors bg-gray-800/40 shadow-sm cursor-pointer hover:bg-gray-800 relative z-20">
                 <input type="file" id="fileInput" multiple accept=".gpx" class="hidden" />
                 <div class="flex flex-col items-center justify-center gap-4 pointer-events-none">
                     <i data-lucide="upload-cloud" class="w-16 h-16 text-teal-500"></i>
@@ -74,9 +74,15 @@
                 </div>
             </section>
 
-            <!-- Espacio del Logo Inferior -->
-            <div class="flex justify-center items-center opacity-70 pointer-events-none px-4">
-                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo Principal" class="max-w-full max-h-[35vh] object-contain drop-shadow-2xl">
+            <!-- Espacio del Logo y Preview -->
+            <div class="flex flex-col items-center gap-8 pointer-events-none px-4">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo Principal" class="max-w-full max-h-[22vh] object-contain drop-shadow-2xl opacity-90 relative z-10">
+                
+                <div class="w-full max-w-4xl relative mt-2">
+                    <!-- Degradado para fundir la imagen inferior con el fondo oscuro -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/10 to-transparent z-10 rounded-xl"></div>
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiGTPgjrBgru3pn-btijmzptdmWVfG2SlfIl77HOpC0X1uSOvE5P-TNes_IxLSF7V_wUIYedm27KpvtMimQkMIQatG1kpm_IZwN-OrXO4gkkgc7dqwiFnnwkmMqofzX5xZP110oB_vVPCwEOyqUgOaSECRM74D1rZFYs87MQotl9U8qDUWaJDX9bp7ona_P/w562-h839/Captura%20de%20pantalla%202026-03-30%20230032.png" alt="Vista previa de la herramienta" class="w-full h-auto rounded-xl shadow-[0_0_40px_rgba(20,184,166,0.1)] border border-gray-700/50 opacity-70 object-cover object-top max-h-[50vh]">
+                </div>
             </div>
         </div>
 
