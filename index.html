@@ -22,6 +22,7 @@
         #map { height: 400px; z-index: 10; }
         .drag-over { border-color: #3b82f6 !important; background-color: #eff6ff !important; }
         .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .zone-bar { transition: width 1s ease-out; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
@@ -29,32 +30,38 @@
     <!-- Navbar -->
     <nav class="bg-blue-600 text-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-3">
-            <!-- LOGO DEL CLUB -->
             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo de mi Club" class="w-10 h-10 object-contain bg-white rounded-full p-1 shadow-sm">
-            
             <h1 class="text-2xl font-bold tracking-tight">GPX Sync & Merge</h1>
         </div>
     </nav>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         
-        <!-- Zona de subida de archivos -->
-        <section id="dropzone" class="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center transition-colors bg-white shadow-sm cursor-pointer hover:bg-gray-50">
-            <input type="file" id="fileInput" multiple accept=".gpx" class="hidden" />
-            <div class="flex flex-col items-center justify-center gap-4 pointer-events-none">
-                <i data-lucide="upload-cloud" class="w-16 h-16 text-blue-500"></i>
-                <div>
-                    <p class="text-lg font-semibold text-gray-700">Arrastra tus archivos GPX aquí</p>
-                    <p class="text-sm text-gray-500">o haz clic para seleccionar archivos de distintos dispositivos</p>
+        <!-- Pantalla de Inicio (Dropzone + Logo) -->
+        <div id="welcome-screen" class="flex flex-col gap-16 mt-4 mb-10">
+            <!-- Zona de subida de archivos -->
+            <section id="dropzone" class="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center transition-colors bg-white shadow-sm cursor-pointer hover:bg-gray-50">
+                <input type="file" id="fileInput" multiple accept=".gpx" class="hidden" />
+                <div class="flex flex-col items-center justify-center gap-4 pointer-events-none">
+                    <i data-lucide="upload-cloud" class="w-16 h-16 text-blue-500"></i>
+                    <div>
+                        <p class="text-lg font-semibold text-gray-700">Arrastra tus archivos GPX aquí</p>
+                        <p class="text-sm text-gray-500">o haz clic para seleccionar archivos de distintos dispositivos</p>
+                    </div>
                 </div>
+            </section>
+
+            <!-- Espacio del Logo Inferior -->
+            <div class="flex justify-center items-center opacity-80 pointer-events-none px-4">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo Principal" class="max-w-full max-h-[35vh] object-contain">
             </div>
-        </section>
+        </div>
 
         <!-- Contenedor Principal -->
         <div id="dashboard" class="hidden space-y-6">
             
             <!-- Estadísticas -->
-            <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <section class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                     <div class="bg-blue-100 p-3 rounded-lg text-blue-600"><i data-lucide="map"></i></div>
                     <div>
@@ -65,50 +72,70 @@
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                     <div class="bg-green-100 p-3 rounded-lg text-green-600"><i data-lucide="timer"></i></div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Tiempo en Movimiento</p>
+                        <p class="text-sm text-gray-500 font-medium">Tiempo Mov.</p>
                         <p id="stat-time-active" class="text-2xl font-bold">00:00:00</p>
-                    </div>
-                </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div class="bg-gray-100 p-3 rounded-lg text-gray-600"><i data-lucide="clock"></i></div>
-                    <div>
-                        <p class="text-sm text-gray-500 font-medium">Tiempo Transcurrido</p>
-                        <p id="stat-time-total" class="text-2xl font-bold">00:00:00</p>
                     </div>
                 </div>
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                     <div class="bg-purple-100 p-3 rounded-lg text-purple-600"><i data-lucide="gauge"></i></div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Velocidad Media</p>
+                        <p class="text-sm text-gray-500 font-medium">Velocidad Med.</p>
                         <p id="stat-speed" class="text-2xl font-bold">0.0 km/h</p>
                     </div>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <!-- Nivel de Dureza (Panel 1) -->
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform"><i data-lucide="flame" class="w-24 h-24"></i></div>
+                    <div class="bg-rose-100 p-3 rounded-lg text-rose-600 z-10"><i data-lucide="flame"></i></div>
+                    <div class="z-10 flex flex-col justify-center">
+                        <p class="text-sm text-gray-500 font-medium">Nivel Dureza</p>
+                        <p id="stat-hardness" class="text-2xl font-bold text-rose-600">0 pts</p>
+                    </div>
+                </div>
+                <!-- Esfuerzo Estimado (Panel 2) -->
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform"><i data-lucide="activity" class="w-24 h-24"></i></div>
+                    <div class="bg-violet-100 p-3 rounded-lg text-violet-600 z-10"><i data-lucide="activity"></i></div>
+                    <div class="z-10 flex flex-col justify-center w-full">
+                        <div class="flex items-center gap-1 cursor-help transition-opacity hover:opacity-80" id="effort-container" title="Estimación calculada a partir de los datos de la actividad">
+                            <p class="text-sm text-gray-500 font-medium">Esfuerzo</p>
+                            <i data-lucide="info" class="w-3.5 h-3.5 text-gray-400"></i>
+                        </div>
+                        <div class="mt-0.5">
+                            <span id="stat-effort" class="text-lg font-bold px-2 py-1 rounded-md inline-block leading-none bg-gray-100 text-gray-600">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 relative">
                     <div class="bg-yellow-100 p-3 rounded-lg text-yellow-600"><i data-lucide="zap"></i></div>
-                    <div>
-                        <p class="text-sm text-gray-500 font-medium">Potencia Media</p>
+                    <div id="powerStatContent" class="blur-sm select-none transition-all duration-500">
+                        <p class="text-sm text-gray-500 font-medium">Potencia Med.</p>
                         <p id="stat-power" class="text-2xl font-bold">-- W</p>
+                    </div>
+                    <div id="powerStatOverlay" class="absolute inset-0 flex items-center justify-center z-10 cursor-help transition-opacity duration-500" title="Ajusta los datos físicos y pulsa 'Aplicar y Recalcular' para desbloquear la estimación">
+                        <i data-lucide="info" class="w-6 h-6 text-gray-600 bg-white/90 rounded-full p-1 shadow-sm"></i>
                     </div>
                 </div>
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                     <div class="bg-red-100 p-3 rounded-lg text-red-600"><i data-lucide="heart"></i></div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Frec. Cardíaca Max</p>
-                        <p id="stat-hr" class="text-2xl font-bold">-- bpm</p>
+                        <p class="text-sm text-gray-500 font-medium">FC (Med / Max)</p>
+                        <p class="text-2xl font-bold"><span id="stat-hr-avg">--</span> <span class="text-lg text-gray-400 font-normal">/ <span id="stat-hr-max">--</span> bpm</span></p>
                     </div>
                 </div>
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                     <div class="bg-orange-100 p-3 rounded-lg text-orange-600"><i data-lucide="thermometer"></i></div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Temp. Media</p>
-                        <p id="stat-temp" class="text-2xl font-bold">-- °C</p>
+                        <p class="text-sm text-gray-500 font-medium">Temp. (Min / Max)</p>
+                        <p class="text-2xl font-bold"><span id="stat-temp-min">--</span> <span class="text-lg text-gray-400 font-normal">/ <span id="stat-temp-max">--</span> °C</span></p>
                     </div>
                 </div>
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                     <div class="bg-teal-100 p-3 rounded-lg text-teal-600"><i data-lucide="activity-square"></i></div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Cadencia Max</p>
-                        <p id="stat-cad" class="text-2xl font-bold">-- rpm</p>
+                        <p class="text-sm text-gray-500 font-medium">Cadencia Media</p>
+                        <p id="stat-cad-avg" class="text-2xl font-bold">-- rpm</p>
                     </div>
                 </div>
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
@@ -122,9 +149,50 @@
 
             <!-- Mapa y Controles -->
             <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 glass-panel rounded-xl shadow-sm border border-gray-100 overflow-hidden order-2">
-                    <div id="map"></div>
+                <!-- Columna Izquierda: Zonas + Mapa -->
+                <div class="lg:col-span-2 flex flex-col gap-6 order-2">
+                    <!-- PANEL: Zonas y Efecto de Entrenamiento -->
+                    <div id="zones-panel" class="glass-panel p-6 rounded-xl shadow-sm border border-gray-100 hidden grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="heart-pulse" class="w-5 h-5 text-red-500"></i> Zonas Cardíacas</h3>
+                            <div class="space-y-3" id="hr-zones-container">
+                                <!-- Las barras se generan en JS -->
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="bar-chart" class="w-5 h-5 text-blue-500"></i> Beneficio del Entrenamiento</h3>
+                            <div class="flex flex-col gap-6 justify-center h-full pb-4">
+                                <div>
+                                    <div class="flex justify-between items-end mb-1">
+                                        <span class="text-sm font-medium text-gray-700">Aeróbico (TE)</span>
+                                        <span id="te-aerobic-val" class="text-lg font-bold text-blue-600">0.0</span>
+                                    </div>
+                                    <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                        <div id="te-aerobic-bar" class="bg-blue-500 h-full rounded-full zone-bar" style="width: 0%"></div>
+                                    </div>
+                                    <p id="te-aerobic-desc" class="text-xs text-gray-500 mt-1.5 font-medium">--</p>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-end mb-1">
+                                        <span class="text-sm font-medium text-gray-700">Anaeróbico (TE)</span>
+                                        <span id="te-anaerobic-val" class="text-lg font-bold text-purple-600">0.0</span>
+                                    </div>
+                                    <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                        <div id="te-anaerobic-bar" class="bg-purple-500 h-full rounded-full zone-bar" style="width: 0%"></div>
+                                    </div>
+                                    <p id="te-anaerobic-desc" class="text-xs text-gray-500 mt-1.5 font-medium">--</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mapa -->
+                    <div class="glass-panel rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div id="map"></div>
+                    </div>
                 </div>
+
+                <!-- Columna Derecha: Controles -->
                 <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4 order-1">
                     <h3 class="text-lg font-bold flex items-center gap-2"><i data-lucide="layers" class="w-5 h-5"></i> Capas y Ejes</h3>
                     
@@ -178,9 +246,9 @@
                             <!-- Lista generada dinámicamente -->
                         </ul>
                         
-                        <!-- NUEVO BOTÓN DE EXPORTACIÓN -->
-                        <button id="btnDownloadGPX" class="w-full mt-6 py-2.5 bg-green-600 text-white rounded-lg font-medium shadow-sm transition-colors hover:bg-green-700 flex items-center justify-center gap-2">
-                            <i data-lucide="download" class="w-4 h-4"></i> Descargar GPX
+                        <!-- BOTÓN DE EXPORTACIÓN -->
+                        <button id="btnDownloadGPX" disabled title="Ajusta los datos físicos y pulsa 'Aplicar y Recalcular' para habilitar la descarga" class="w-full mt-6 py-2.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-lg font-medium shadow-sm cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-300">
+                            <i data-lucide="calculator" class="w-4 h-4"></i> Descargar GPX (Requiere cálculo)
                         </button>
                     </div>
 
@@ -219,12 +287,17 @@
                     </button>
                     <canvas id="chartCad"></canvas>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 md:col-span-2 relative group">
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 md:col-span-2 relative group overflow-hidden" id="powerChartContainer">
+                    <div id="powerOverlay" class="absolute inset-0 z-30 bg-white/70 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 transition-opacity duration-500">
+                        <i data-lucide="lock" class="w-10 h-10 text-gray-500 mb-3 bg-white rounded-full p-2 shadow-sm"></i>
+                        <p class="text-sm font-medium text-gray-800">Ajusta tu peso y bici, luego haz clic en <br><span class="font-bold text-yellow-700">"Aplicar y Recalcular"</span><br> para ver la gráfica de potencia.</p>
+                    </div>
                     <button onclick="openModalChart('power')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
                         <i data-lucide="maximize-2" class="w-4 h-4"></i>
                     </button>
                     <canvas id="chartPower"></canvas>
                 </div>
+                
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 md:col-span-2 relative group">
                     <button onclick="openModalChart('temp')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
                         <i data-lucide="maximize-2" class="w-4 h-4"></i>
@@ -241,10 +314,10 @@
                         <thead>
                             <tr class="border-b-2 border-gray-200 text-sm text-gray-500 uppercase tracking-wider">
                                 <th class="py-3 px-4">Métrica</th>
+                                <th class="py-3 px-4">Total</th>
                                 <th class="py-3 px-4">Mínimo</th>
                                 <th class="py-3 px-4">Media</th>
                                 <th class="py-3 px-4">Máximo</th>
-                                <th class="py-3 px-4">Total</th>
                             </tr>
                         </thead>
                         <tbody id="detailed-stats-body" class="text-sm divide-y divide-gray-100">
@@ -310,11 +383,12 @@
         let mapPolyline;
         let hoverMarker = null;
         let chartElevation, chartSpeed, chartHR, chartTemp, chartCad, chartPower;
-        let modalChartInstance = null; // Instancia de la gráfica del modal
+        let modalChartInstance = null; 
         let xAxisMode = 'distance'; 
         let mergedTrack = []; 
         let rawTracks = [];
-        let currentChartData = {}; // Para almacenar datos extraídos globalmente
+        let currentChartData = {}; 
+        let hasRecalculated = false; 
 
         const chartColors = {
             ele: 'rgb(16, 185, 129)', 
@@ -374,6 +448,18 @@
         });
 
         btnRecalculate.addEventListener('click', () => {
+            hasRecalculated = true;
+            document.getElementById('powerOverlay').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('powerStatOverlay').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('powerStatContent').classList.remove('blur-sm', 'select-none');
+            
+            const btnDownload = document.getElementById('btnDownloadGPX');
+            btnDownload.disabled = false;
+            btnDownload.title = "Descarga tu entrenamiento con la potencia virtual calculada";
+            btnDownload.className = "w-full mt-6 py-2.5 bg-green-600 text-white rounded-lg font-medium shadow-sm transition-colors hover:bg-green-700 flex items-center justify-center gap-2";
+            btnDownload.innerHTML = '<i data-lucide="download" class="w-4 h-4"></i> Descargar GPX (Potencia Virtual)';
+            lucide.createIcons();
+            
             if (rawTracks.length > 0) {
                 fuseTracks();
                 updateStats();
@@ -381,7 +467,6 @@
             }
         });
 
-        // Evento para el nuevo botón de descarga
         btnDownloadGPX.addEventListener('click', downloadGPXFile);
 
         async function handleFiles(files) {
@@ -397,12 +482,10 @@
 
             if (rawTracks.length > 0) {
                 dashboard.classList.remove('hidden');
-                dropzone.classList.add('hidden');
+                document.getElementById('welcome-screen').classList.add('hidden');
                 
-                // 1. Fusionamos las pistas primero para que el algoritmo decida quién es el Master
                 fuseTracks();
                 
-                // 2. Ahora dibujamos la lista con las etiquetas inteligentes
                 const trackList = document.getElementById('trackList');
                 trackList.innerHTML = '';
                 rawTracks.forEach(track => {
@@ -482,7 +565,6 @@
                     }
                 }
                 
-                // Guardamos el ganador para mostrarlo en la interfaz de usuario
                 rawTracks.forEach(t => t.isMaster = (t === masterTrack));
                 
                 startTime = masterTrack.points.length > 0 ? masterTrack.points[0].time : 0;
@@ -596,8 +678,6 @@
                 crr = 0.004; 
             }
 
-            // Límite de aceleración dinámico según el hardware (Reloj vs Ciclocomputador)
-            // El reloj genera falsas aceleraciones al mover el brazo. Le aplicamos un cap mucho más estricto.
             let maxAcceleration = deviceType === 'watch' ? 0.35 : 0.70;
 
             mergedTrack = [];
@@ -666,7 +746,6 @@
                         grade = (ptB.smoothEle - ptA.smoothEle) / (distForGrade * 1000); 
                     }
                     
-                    // Si es reloj, aplanamos un poco más los repechos falsos de la muñeca
                     let maxGrade = deviceType === 'watch' ? 0.12 : 0.15;
                     grade = Math.max(-maxGrade, Math.min(maxGrade, grade)); 
 
@@ -683,7 +762,6 @@
                         a_ms2 = (v_ms - (prevSpeed / 3.6)) / deltaT;
                     }
                     
-                    // Aplicamos el límite de aceleración (0.7 para Ciclocomputador, 0.35 para Reloj)
                     a_ms2 = Math.max(-maxAcceleration, Math.min(maxAcceleration, a_ms2)); 
                     
                     let P_rodadura = v_ms > 0 ? crr * totalMass * gravity * v_ms : 0;
@@ -707,7 +785,6 @@
 
             for (let i = 1; i < mergedTrack.length; i++) {
                 let powSum = 0, count = 0;
-                // Si es un reloj, aplicamos una media móvil más ancha para aplanar la gráfica final
                 let smoothWindow = deviceType === 'watch' ? 6 : 3;
                 for (let j = Math.max(0, i - smoothWindow); j <= Math.min(mergedTrack.length - 2, i + smoothWindow); j++) {
                     powSum += rawPowers[j];
@@ -717,11 +794,9 @@
             }
         }
 
-        // NUEVA FUNCIÓN PARA GENERAR Y DESCARGAR EL GPX
         function downloadGPXFile() {
             if (!mergedTrack || mergedTrack.length === 0) return;
 
-            // Construcción inicial del XML con namespaces estándar para Power y TrackPointExtensions
             let gpx = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx creator="GPX Sync &amp; Merge" version="1.1"
   xmlns="http://www.topografix.com/GPX/1/1"
@@ -739,7 +814,7 @@
     <trkseg>\n`;
 
             mergedTrack.forEach(pt => {
-                if (pt.lat === null || pt.lon === null) return; // Saltamos puntos sin coordenadas
+                if (pt.lat === null || pt.lon === null) return; 
 
                 gpx += `      <trkpt lat="${pt.lat}" lon="${pt.lon}">\n`;
                 
@@ -751,7 +826,6 @@
                     gpx += `        <time>${new Date(pt.time).toISOString()}</time>\n`;
                 }
 
-                // Extensiones: Potencia (estándar de facto Strava) y Sensores (estándar Garmin)
                 let hasExtensions = false;
                 let extStr = `        <extensions>\n`;
                 
@@ -791,7 +865,6 @@
   </trk>
 </gpx>`;
 
-            // Crear Blob y forzar la descarga
             const blob = new Blob([gpx], { type: 'application/gpx+xml' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -836,23 +909,26 @@
                 return `${h}:${m}:${s}`;
             };
 
-            document.getElementById('stat-time-total').innerText = formatTime(totalSeconds);
             document.getElementById('stat-time-active').innerText = formatTime(activeSeconds);
 
             const avgSpeed = lastPoint.dist / (activeSeconds / 3600);
             document.getElementById('stat-speed').innerText = avgSpeed.toFixed(1) + ' km/h';
 
-            const hrs = mergedTrack.map(p => p.hr).filter(hr => hr !== null);
+            const hrs = mergedTrack.map(p => p.hr).filter(hr => hr !== null && !isNaN(hr));
             const maxHr = hrs.length > 0 ? Math.max(...hrs) : '--';
-            document.getElementById('stat-hr').innerText = maxHr + ' bpm';
+            const avgHr = hrs.length > 0 ? Math.round(hrs.reduce((a,b)=>a+b,0) / hrs.length) : null;
+            document.getElementById('stat-hr-max').innerText = maxHr;
+            document.getElementById('stat-hr-avg').innerText = avgHr !== null ? avgHr : '--';
 
             const temps = mergedTrack.map(p => p.temp).filter(t => t !== null && !isNaN(t));
-            const avgTemp = temps.length > 0 ? (temps.reduce((a,b)=>a+b,0) / temps.length).toFixed(1) : '--';
-            document.getElementById('stat-temp').innerText = avgTemp + ' °C';
+            const minTemp = temps.length > 0 ? Math.min(...temps).toFixed(1) : '--';
+            const maxTemp = temps.length > 0 ? Math.max(...temps).toFixed(1) : '--';
+            document.getElementById('stat-temp-min').innerText = minTemp;
+            document.getElementById('stat-temp-max').innerText = maxTemp;
 
             const cads = mergedTrack.map(p => p.cad).filter(c => c !== null && !isNaN(c));
-            const maxCad = cads.length > 0 ? Math.max(...cads) : '--';
-            document.getElementById('stat-cad').innerText = maxCad + ' rpm';
+            const avgCad = cads.length > 0 ? Math.round(cads.reduce((a,b)=>a+b,0) / cads.length) : '--';
+            document.getElementById('stat-cad-avg').innerText = avgCad !== '--' ? avgCad + ' rpm' : '-- rpm';
 
             const powers = mergedTrack.filter(p => p.isMoving).map(p => p.power);
             const avgPower = powers.length > 0 ? (powers.reduce((a,b)=>a+b,0) / powers.length).toFixed(0) : '--';
@@ -907,6 +983,123 @@
             
             document.getElementById('stat-ascent').innerText = '+' + Math.round(totalAscent) + ' m';
 
+            // ALGORITMO PARA EL NIVEL DE DUREZA Y ZONAS
+            let hardnessScore = 0;
+            let segmentDist = 0;
+            let segmentEleStart = mergedTrack.length > 0 ? mergedTrack[0].baseEle : null;
+            
+            let timeZ1 = 0, timeZ2 = 0, timeZ3 = 0, timeZ4 = 0, timeZ5 = 0;
+            let assumedMaxHr = maxHr !== '--' && maxHr > 140 ? maxHr : 185;
+            
+            for (let i = 1; i < mergedTrack.length; i++) {
+                let pt = mergedTrack[i];
+                let prevPt = mergedTrack[i-1];
+                let distKm = pt.dist - prevPt.dist;
+                segmentDist += distKm;
+
+                // Zonas Cardíacas
+                if (pt.isMoving && pt.hr) {
+                    let pct = pt.hr / assumedMaxHr;
+                    if (pct >= 0.9) timeZ5 += pt.deltaT;
+                    else if (pct >= 0.8) timeZ4 += pt.deltaT;
+                    else if (pct >= 0.7) timeZ3 += pt.deltaT;
+                    else if (pct >= 0.6) timeZ2 += pt.deltaT;
+                    else if (pct >= 0.5) timeZ1 += pt.deltaT;
+                }
+
+                // Dificultad Terreno
+                if (segmentDist >= 0.05 || i === mergedTrack.length - 1) {
+                    let grade = 0;
+                    if (pt.baseEle !== null && !isNaN(pt.baseEle) && segmentEleStart !== null && !isNaN(segmentEleStart)) {
+                        let eleDiff = pt.baseEle - segmentEleStart;
+                        grade = (eleDiff / (segmentDist * 1000)) * 100;
+                    }
+
+                    if (grade >= 15) hardnessScore += segmentDist * 15;
+                    else if (grade >= 10) hardnessScore += segmentDist * 10;
+                    else if (grade >= 5) hardnessScore += segmentDist * 4.5;
+                    else if (grade >= 1) hardnessScore += segmentDist * 1.5;
+                    else hardnessScore += segmentDist * 0.6;
+
+                    segmentDist = 0;
+                    segmentEleStart = pt.baseEle;
+                }
+            }
+            
+            hardnessScore += (totalAscent / 100);
+            document.getElementById('stat-hardness').innerText = Math.round(hardnessScore) + ' pts';
+
+            // CÁLCULO DE TE (TRAINING EFFECT)
+            let aerobicTE = 0;
+            let anaerobicTE = 0;
+            
+            if (maxHr !== '--') {
+                document.getElementById('zones-panel').classList.replace('hidden', 'grid');
+                
+                // Representación UI de Zonas
+                let totalZTime = timeZ1 + timeZ2 + timeZ3 + timeZ4 + timeZ5;
+                if(totalZTime === 0) totalZTime = 1; // Prevenir div / 0
+                
+                const zonesHtml = `
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z5</div><div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden"><div class="bg-red-500 h-full zone-bar" style="width: ${(timeZ5/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ5/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z4</div><div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden"><div class="bg-orange-500 h-full zone-bar" style="width: ${(timeZ4/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ4/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z3</div><div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden"><div class="bg-green-500 h-full zone-bar" style="width: ${(timeZ3/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ3/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z2</div><div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden"><div class="bg-blue-400 h-full zone-bar" style="width: ${(timeZ2/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ2/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z1</div><div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden"><div class="bg-gray-400 h-full zone-bar" style="width: ${(timeZ1/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ1/60))}m</div></div>
+                `;
+                document.getElementById('hr-zones-container').innerHTML = zonesHtml;
+                
+                // Algoritmo simple de Training Effect (0.0 a 5.0)
+                aerobicTE = ((timeZ1*0.3 + timeZ2*1.0 + timeZ3*2.0 + timeZ4*2.5 + timeZ5*1.0) / 3600) * 1.8;
+                anaerobicTE = ((timeZ4*1.0 + timeZ5*2.5) / 1800) * 1.5;
+                
+            } else {
+                document.getElementById('zones-panel').classList.replace('grid', 'hidden');
+                aerobicTE = (activeSeconds / 3600) * (avgSpeed / 20) * 2;
+                anaerobicTE = (hardnessScore / 100);
+            }
+            
+            aerobicTE = Math.min(5.0, Math.max(0.0, aerobicTE));
+            anaerobicTE = Math.min(5.0, Math.max(0.0, anaerobicTE));
+            
+            document.getElementById('te-aerobic-val').innerText = aerobicTE.toFixed(1);
+            document.getElementById('te-aerobic-bar').style.width = `${(aerobicTE/5)*100}%`;
+            document.getElementById('te-aerobic-desc').innerText = aerobicTE >= 4 ? "Altamente Productivo" : aerobicTE >= 3 ? "Mejora Aeróbica" : "Mantenimiento Base";
+            
+            document.getElementById('te-anaerobic-val').innerText = anaerobicTE.toFixed(1);
+            document.getElementById('te-anaerobic-bar').style.width = `${(anaerobicTE/5)*100}%`;
+            document.getElementById('te-anaerobic-desc').innerText = anaerobicTE >= 4 ? "Capacidad Láctica Severa" : anaerobicTE >= 3 ? "Mejora Anaeróbica" : anaerobicTE >= 2 ? "Estímulo Ligero" : "Sin Estímulo Directo";
+
+
+            let effortText = "Moderado";
+            let effortColor = "bg-green-100 text-green-700";
+            
+            if (avgHr && avgHr > 50) {
+                if (avgHr < 120) { effortText = "Recuperación"; effortColor = "bg-blue-100 text-blue-700"; }
+                else if (avgHr < 140) { effortText = "Moderado"; effortColor = "bg-green-100 text-green-700"; }
+                else if (avgHr < 160) { effortText = "Duro"; effortColor = "bg-orange-100 text-orange-700"; }
+                else { effortText = "Muy Duro"; effortColor = "bg-red-100 text-red-700"; }
+            } else {
+                let hours = activeSeconds / 3600;
+                let intensity = hours > 0 ? hardnessScore / hours : 0;
+                if (intensity < 30) { effortText = "Paseo"; effortColor = "bg-blue-100 text-blue-700"; }
+                else if (intensity < 60) { effortText = "Moderado"; effortColor = "bg-green-100 text-green-700"; }
+                else if (intensity < 100) { effortText = "Duro"; effortColor = "bg-orange-100 text-orange-700"; }
+                else { effortText = "Muy Duro"; effortColor = "bg-red-100 text-red-700"; }
+            }
+            
+            const effortBadge = document.getElementById('stat-effort');
+            const effortContainer = document.getElementById('effort-container');
+            
+            effortBadge.innerText = effortText;
+            effortBadge.className = `text-lg font-bold px-2 py-1 rounded-md inline-block leading-none ${effortColor}`;
+            
+            if (avgHr && avgHr > 50) {
+                effortContainer.title = "Esfuerzo estimado en base a la medición real de tus pulsaciones medias (FC).";
+            } else {
+                effortContainer.title = "Esfuerzo estimado evaluando algorítmicamente la dureza del terreno (pendientes), la velocidad y la duración (sin datos de pulso).";
+            }
+
             const tbody = document.getElementById('detailed-stats-body');
             tbody.innerHTML = '';
 
@@ -926,7 +1119,7 @@
             const hrMetrics = getMetrics(mergedTrack.map(p => p.hr));
             const cadMetrics = getMetrics(mergedTrack.map(p => p.cad));
             const tempMetrics = getMetrics(mergedTrack.map(p => p.temp));
-            const powerMetrics = getMetrics(mergedTrack.filter(p => p.isMoving).map(p => p.power)); 
+            const powerMetrics = hasRecalculated ? getMetrics(mergedTrack.filter(p => p.isMoving).map(p => p.power)) : { min: '--', avg: '--', max: '--' }; 
 
             speedMetrics.avg = avgSpeed;
 
@@ -937,20 +1130,21 @@
                 { name: 'Elevación (m)', m: eleMetrics, dec: 0, total: '--' },
                 { name: 'Desnivel Acum. (m)', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: `+${Math.round(totalAscent)} / -${Math.round(totalDescent)}` },
                 { name: 'Velocidad (km/h)', m: speedMetrics, dec: 1, total: '--' },
-                { name: 'Potencia Estimada (W)', m: powerMetrics, dec: 0, total: '--' },
+                { name: 'Potencia Estimada (W)', m: powerMetrics, dec: 0, total: hasRecalculated ? '--' : 'Pendiente' },
                 { name: 'Frec. Cardíaca (bpm)', m: hrMetrics, dec: 0, total: '--' },
                 { name: 'Cadencia (rpm)', m: cadMetrics, dec: 0, total: '--' },
                 { name: 'Temperatura (°C)', m: tempMetrics, dec: 1, total: '--' }
             ];
 
             rows.forEach(r => {
+                const blurClass = (!hasRecalculated && r.name === 'Potencia Estimada (W)') ? 'blur-[2px] opacity-50 select-none' : '';
                 tbody.innerHTML += `
-                    <tr class="transition-colors hover:bg-gray-50">
+                    <tr class="transition-colors hover:bg-gray-50 ${blurClass}">
                         <td class="py-3 px-4 font-medium text-gray-700">${r.name}</td>
+                        <td class="py-3 px-4 text-gray-600 font-bold text-blue-600">${r.total}</td>
                         <td class="py-3 px-4 text-gray-600">${formatVal(r.m.min, r.dec)}</td>
                         <td class="py-3 px-4 text-gray-600 font-semibold">${formatVal(r.m.avg, r.dec)}</td>
                         <td class="py-3 px-4 text-gray-600">${formatVal(r.m.max, r.dec)}</td>
-                        <td class="py-3 px-4 text-gray-600 font-bold text-blue-600">${r.total}</td>
                     </tr>
                 `;
             });
@@ -983,7 +1177,7 @@
                 {id: 'chartCad', chart: chartCad},
                 {id: 'chartPower', chart: chartPower},
                 {id: 'chartTemp', chart: chartTemp},
-                {id: 'modalCanvas', chart: modalChartInstance} // Sincroniza también el modal
+                {id: 'modalCanvas', chart: modalChartInstance} 
             ];
 
             charts.forEach(c => {
@@ -1066,9 +1260,8 @@
             const hrData = mergedTrack.map(p => p.hr);
             const tempData = mergedTrack.map(p => p.temp);
             const cadData = mergedTrack.map(p => p.cad);
-            const powerData = mergedTrack.map(p => p.power);
+            const powerData = hasRecalculated ? mergedTrack.map(p => p.power) : mergedTrack.map(p => null);
 
-            // Guardamos globalmente los datos extraídos para inyectarlos en el modal rápidamente
             currentChartData = {
                 labels,
                 ele: eleData,
@@ -1088,13 +1281,11 @@
             createChart('chartCad', chartCad, 'Cadencia (rpm)', labels, cadData, chartColors.cad, chartColors.cadBg, xTitle, (c) => chartCad = c);
             createChart('chartTemp', chartTemp, 'Temperatura (°C)', labels, tempData, chartColors.temp, chartColors.tempBg, xTitle, (c) => chartTemp = c);
             
-            // Si el modal está abierto, lo actualiza
             if(document.getElementById('chartModal').classList.contains('hidden') === false) {
                 updateModalChart();
             }
         }
 
-        // NUEVAS FUNCIONES PARA EL MODAL DE GRÁFICAS
         const metricDetails = {
             ele: { label: 'Elevación (m)', color: chartColors.ele, bgColor: chartColors.eleBg },
             speed: { label: 'Velocidad (km/h)', color: chartColors.speed, bgColor: chartColors.speedBg },
@@ -1108,24 +1299,21 @@
             const modal = document.getElementById('chartModal');
             const modalContent = document.getElementById('chartModalContent');
             
-            // Resetear y marcar checkboxes
             document.querySelectorAll('.modal-toggle').forEach(cb => {
                 cb.checked = (cb.value === baseMetric);
             });
             
             modal.classList.remove('hidden');
-            // Timeout para animación y petición de pantalla completa
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modalContent.classList.remove('scale-95');
                 
-                // Forzar pantalla completa (Fullscreen API) para escapar del iframe
                 const elem = document.documentElement;
                 if (elem.requestFullscreen) {
                     elem.requestFullscreen().catch(err => console.log("Fullscreen error:", err));
-                } else if (elem.webkitRequestFullscreen) { /* Safari */
+                } else if (elem.webkitRequestFullscreen) { 
                     elem.webkitRequestFullscreen();
-                } else if (elem.msRequestFullscreen) { /* IE11 */
+                } else if (elem.msRequestFullscreen) { 
                     elem.msRequestFullscreen();
                 }
             }, 10);
@@ -1140,13 +1328,12 @@
             modal.classList.add('opacity-0');
             modalContent.classList.add('scale-95');
             
-            // Salir de pantalla completa si estamos en ella
             if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) { /* Safari */
+                } else if (document.webkitExitFullscreen) { 
                     document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) { /* IE11 */
+                } else if (document.msExitFullscreen) { 
                     document.msExitFullscreen();
                 }
             }
@@ -1157,7 +1344,7 @@
                     modalChartInstance.destroy();
                     modalChartInstance = null;
                 }
-            }, 300); // Wait for transition
+            }, 300); 
         }
 
         document.querySelectorAll('.modal-toggle').forEach(cb => {
@@ -1169,7 +1356,7 @@
                                        .filter(cb => cb.checked)
                                        .map(cb => cb.value);
             
-            if (activeMetrics.length === 0) return; // Prevenir gráfica vacía
+            if (activeMetrics.length === 0) return; 
 
             const ctx = document.getElementById('modalCanvas').getContext('2d');
             if (modalChartInstance) modalChartInstance.destroy();
@@ -1182,7 +1369,7 @@
                     borderColor: conf.color,
                     backgroundColor: conf.bgColor,
                     borderWidth: 2,
-                    fill: activeMetrics.length === 1, // Solo rellenar fondo si hay 1 métrica para que no se pise el color
+                    fill: activeMetrics.length === 1, 
                     pointRadius: 0,
                     tension: 0.3,
                     spanGaps: true,
@@ -1197,14 +1384,13 @@
                 }
             };
 
-            // Crear un Eje Y independiente para cada métrica seleccionada
             activeMetrics.forEach((metric, index) => {
                 scales[`y-${metric}`] = {
                     type: 'linear',
                     display: true,
-                    position: index % 2 === 0 ? 'left' : 'right', // Alternar ejes izquierda/derecha
+                    position: index % 2 === 0 ? 'left' : 'right', 
                     title: { display: true, text: metricDetails[metric].label },
-                    grid: { drawOnChartArea: index === 0 } // Solo dibujar la cuadrícula del fondo para el primer eje
+                    grid: { drawOnChartArea: index === 0 } 
                 };
             });
 
@@ -1235,7 +1421,10 @@
         }
 
         function createChart(canvasId, chartInstance, title, labels, data, color, bgColor, xTitle, saveInstance) {
-            const ctx = document.getElementById(canvasId).getContext('2d');
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
             if (chartInstance) chartInstance.destroy();
 
             const hasData = data.some(d => d !== null && !isNaN(d));
