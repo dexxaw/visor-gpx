@@ -70,14 +70,8 @@
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                     <div class="bg-blue-100 p-3 rounded-lg text-blue-600"><i data-lucide="map"></i></div>
                     <div>
-                        <div class="flex items-center gap-1 cursor-help transition-opacity hover:opacity-80" title="Velocidad de Ascenso Media (metros verticales por hora)">
-                            <p class="text-sm text-gray-500 font-medium">Distancia / VAM</p>
-                            <i data-lucide="info" class="w-3.5 h-3.5 text-gray-400"></i>
-                        </div>
-                        <div class="flex items-baseline gap-1 mt-0.5">
-                            <p id="stat-dist" class="text-2xl font-bold">0.00 km</p>
-                            <span id="stat-vam" class="text-xs font-semibold text-gray-400">0 m/h</span>
-                        </div>
+                        <p class="text-sm text-gray-500 font-medium">Distancia Total</p>
+                        <p id="stat-dist" class="text-2xl font-bold">0.00 km</p>
                     </div>
                 </div>
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
@@ -99,11 +93,8 @@
                     <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform"><i data-lucide="flame" class="w-24 h-24"></i></div>
                     <div class="bg-rose-100 p-3 rounded-lg text-rose-600 z-10"><i data-lucide="flame"></i></div>
                     <div class="z-10 flex flex-col justify-center">
-                        <p class="text-sm text-gray-500 font-medium">Nivel Dureza / Cal.</p>
-                        <div class="flex items-baseline gap-1">
-                            <p id="stat-hardness" class="text-2xl font-bold text-rose-600">0 pts</p>
-                            <span id="stat-calories" class="text-xs font-semibold text-gray-400">0 kcal</span>
-                        </div>
+                        <p class="text-sm text-gray-500 font-medium">Nivel Dureza</p>
+                        <p id="stat-hardness" class="text-2xl font-bold text-rose-600">0 pts</p>
                     </div>
                 </div>
                 <!-- Esfuerzo Estimado (Panel 2) -->
@@ -145,7 +136,12 @@
                     <div class="bg-orange-100 p-3 rounded-lg text-orange-600"><i data-lucide="thermometer"></i></div>
                     <div>
                         <p class="text-sm text-gray-500 font-medium">Temp. (Min / Max)</p>
-                        <p class="text-2xl font-bold"><span id="stat-temp-min">--</span> <span class="text-lg text-gray-400 font-normal">/ <span id="stat-temp-max">--</span> °C</span></p>
+                        <p class="text-2xl font-bold flex items-baseline gap-1">
+                            <span id="stat-temp-min" class="text-blue-500">--</span>
+                            <span class="text-lg text-gray-400 font-normal">/</span>
+                            <span id="stat-temp-max" class="text-red-500">--</span>
+                            <span class="text-base text-gray-500 font-normal">°C</span>
+                        </p>
                     </div>
                 </div>
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
@@ -155,11 +151,22 @@
                         <p id="stat-cad-avg" class="text-2xl font-bold">-- rpm</p>
                     </div>
                 </div>
+                
+                <!-- Ko'ápe oñemoambue Desnivel ha VAM -->
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div class="bg-indigo-100 p-3 rounded-lg text-indigo-600"><i data-lucide="trending-up"></i></div>
-                    <div>
-                        <p class="text-sm text-gray-500 font-medium">Desnivel (+)</p>
-                        <p id="stat-ascent" class="text-2xl font-bold">0 m</p>
+                    <div class="bg-indigo-100 p-3 rounded-lg text-indigo-600 shrink-0"><i data-lucide="trending-up"></i></div>
+                    <div class="flex flex-col gap-3">
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium leading-none mb-1">Desnivel (+)</p>
+                            <p id="stat-ascent" class="text-2xl font-bold leading-none text-gray-800">0 m</p>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1 cursor-help transition-opacity hover:opacity-80 mb-1" title="Velocidad de Ascenso Media (metros verticales por hora)">
+                                <p class="text-sm text-gray-500 font-medium leading-none">VAM</p>
+                                <i data-lucide="info" class="w-3.5 h-3.5 text-gray-400"></i>
+                            </div>
+                            <p id="stat-vam" class="text-xl font-bold leading-none text-gray-600">0 m/h</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1118,11 +1125,9 @@
                 document.getElementById('stat-wkg').innerText = '(' + (avgPower/mRider).toFixed(1) + ' W/kg)';
                 // Calorías: Trabajo (Kj) = Vatios Promedio * Segundos Activos / 1000. 1 Kj ~ 1 Kcal en cuerpo humano
                 kcal = (avgPower * activeSeconds) / 1000;
-                document.getElementById('stat-calories').innerText = Math.round(kcal) + ' kcal';
             } else {
                 document.getElementById('stat-power').innerText = '-- W';
                 document.getElementById('stat-wkg').innerText = '(-- W/kg)';
-                document.getElementById('stat-calories').innerText = '0 kcal';
             }
 
             let totalAscent = 0;
