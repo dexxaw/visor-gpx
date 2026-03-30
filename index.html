@@ -52,9 +52,15 @@
 
     <!-- Navbar -->
     <nav class="bg-gray-950 text-white shadow-xl border-b border-teal-900/50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-3">
-            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo MNMTB" class="w-12 h-12 object-contain bg-gray-900 rounded-full p-0.5 shadow-sm border border-gray-800">
-            <h1 class="text-2xl font-bold tracking-tight text-teal-400">GPX Sync & Merge</h1>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo MNMTB" class="w-12 h-12 object-contain bg-gray-900 rounded-full p-0.5 shadow-sm border border-gray-800">
+                <h1 class="text-2xl font-bold tracking-tight text-teal-400">GPX Sync & Merge</h1>
+            </div>
+            <!-- Botón de pantalla completa (sutil) -->
+            <button id="btnFullscreen" class="text-gray-600 hover:text-teal-400 transition-all p-2 rounded-lg hover:bg-gray-900 focus:outline-none opacity-60 hover:opacity-100" title="Pantalla completa">
+                <i data-lucide="maximize" class="w-5 h-5"></i>
+            </button>
         </div>
     </nav>
 
@@ -540,6 +546,34 @@
         const rangeStart = document.getElementById('rangeStart');
         const rangeEnd = document.getElementById('rangeEnd');
         const mapColorMode = document.getElementById('mapColorMode');
+        const btnFullscreen = document.getElementById('btnFullscreen');
+
+        // Lógica de pantalla completa
+        if (btnFullscreen) {
+            btnFullscreen.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Error al activar pantalla completa: ${err.message}`);
+                    });
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            });
+
+            document.addEventListener('fullscreenchange', () => {
+                const icon = btnFullscreen.querySelector('i');
+                if (document.fullscreenElement) {
+                    icon.setAttribute('data-lucide', 'minimize');
+                    btnFullscreen.title = "Salir de pantalla completa";
+                } else {
+                    icon.setAttribute('data-lucide', 'maximize');
+                    btnFullscreen.title = "Pantalla completa";
+                }
+                lucide.createIcons();
+            });
+        }
 
         dropzone.addEventListener('click', () => fileInput.click());
         dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag-over'); });
