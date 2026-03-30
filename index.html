@@ -23,6 +23,11 @@
         .drag-over { border-color: #3b82f6 !important; background-color: #eff6ff !important; }
         .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .zone-bar { transition: width 1s ease-out; }
+        /* Sliders personalizados */
+        input[type=range] { -webkit-appearance: none; background: transparent; height: 4px; border-radius: 2px; }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #2563eb; cursor: pointer; margin-top: -6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #e5e7eb; border-radius: 2px; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
@@ -65,8 +70,14 @@
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                     <div class="bg-blue-100 p-3 rounded-lg text-blue-600"><i data-lucide="map"></i></div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Distancia Total</p>
-                        <p id="stat-dist" class="text-2xl font-bold">0.00 km</p>
+                        <div class="flex items-center gap-1 cursor-help transition-opacity hover:opacity-80" title="Velocidad de Ascenso Media (metros verticales por hora)">
+                            <p class="text-sm text-gray-500 font-medium">Distancia / VAM</p>
+                            <i data-lucide="info" class="w-3.5 h-3.5 text-gray-400"></i>
+                        </div>
+                        <div class="flex items-baseline gap-1 mt-0.5">
+                            <p id="stat-dist" class="text-2xl font-bold">0.00 km</p>
+                            <span id="stat-vam" class="text-xs font-semibold text-gray-400">0 m/h</span>
+                        </div>
                     </div>
                 </div>
                 <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
@@ -88,8 +99,11 @@
                     <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform"><i data-lucide="flame" class="w-24 h-24"></i></div>
                     <div class="bg-rose-100 p-3 rounded-lg text-rose-600 z-10"><i data-lucide="flame"></i></div>
                     <div class="z-10 flex flex-col justify-center">
-                        <p class="text-sm text-gray-500 font-medium">Nivel Dureza</p>
-                        <p id="stat-hardness" class="text-2xl font-bold text-rose-600">0 pts</p>
+                        <p class="text-sm text-gray-500 font-medium">Nivel Dureza / Cal.</p>
+                        <div class="flex items-baseline gap-1">
+                            <p id="stat-hardness" class="text-2xl font-bold text-rose-600">0 pts</p>
+                            <span id="stat-calories" class="text-xs font-semibold text-gray-400">0 kcal</span>
+                        </div>
                     </div>
                 </div>
                 <!-- Esfuerzo Estimado (Panel 2) -->
@@ -111,7 +125,10 @@
                     <div class="bg-yellow-100 p-3 rounded-lg text-yellow-600"><i data-lucide="zap"></i></div>
                     <div id="powerStatContent" class="blur-sm select-none transition-all duration-500">
                         <p class="text-sm text-gray-500 font-medium">Potencia Med.</p>
-                        <p id="stat-power" class="text-2xl font-bold">-- W</p>
+                        <div class="flex items-baseline gap-1">
+                            <p id="stat-power" class="text-2xl font-bold">-- W</p>
+                            <span id="stat-wkg" class="text-xs font-semibold text-yellow-600">(-- W/kg)</span>
+                        </div>
                     </div>
                     <div id="powerStatOverlay" class="absolute inset-0 flex items-center justify-center z-10 cursor-help transition-opacity duration-500" title="Ajusta los datos físicos y pulsa 'Aplicar y Recalcular' para desbloquear la estimación">
                         <i data-lucide="info" class="w-6 h-6 text-gray-600 bg-white/90 rounded-full p-1 shadow-sm"></i>
@@ -186,17 +203,43 @@
                         </div>
                     </div>
 
-                    <!-- Mapa -->
-                    <div class="glass-panel rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <!-- Mapa interactivo y recortes -->
+                    <div class="glass-panel rounded-xl shadow-sm border border-gray-100 overflow-hidden relative flex flex-col">
+                        <!-- Control de colores flotante -->
+                        <div class="absolute top-4 left-14 z-[400] bg-white rounded-md shadow px-3 py-1.5 text-xs font-semibold flex items-center gap-2 border border-gray-200">
+                            <i data-lucide="palette" class="w-3.5 h-3.5 text-gray-500"></i>
+                            <select id="mapColorMode" class="bg-transparent outline-none cursor-pointer text-gray-700">
+                                <option value="solid">Línea Sólida</option>
+                                <option value="speed">Velocidad</option>
+                                <option value="hr">Pulso (Zonas)</option>
+                            </select>
+                        </div>
                         <div id="map"></div>
+                        
+                        <!-- Selector de Segmentos Interactivo (MOVIDO AQUÍ) -->
+                        <div id="segmentAnalyzer" class="space-y-3 bg-white p-5 border-t border-gray-100 hidden">
+                            <label class="text-sm font-medium text-gray-700 flex justify-between items-center">
+                                <span class="flex items-center gap-1.5"><i data-lucide="scissors" class="w-4 h-4 text-blue-500"></i> Cortar Segmento</span>
+                                <button id="btnResetSegment" class="text-xs text-blue-600 hover:text-blue-800 font-bold bg-blue-50 px-2 py-1 rounded">Reset</button>
+                            </label>
+                            <div class="px-1 relative h-6 mt-2">
+                                <input type="range" id="rangeStart" class="absolute w-full top-0 pointer-events-auto" min="0" max="100" value="0">
+                                <input type="range" id="rangeEnd" class="absolute w-full top-0 pointer-events-auto" min="0" max="100" value="100">
+                            </div>
+                            <div class="flex justify-between text-xs font-medium text-gray-500 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                <span class="flex flex-col text-left w-1/3">Inicio <strong id="lblStartKm" class="text-gray-800">0.0 km</strong></span>
+                                <span class="flex flex-col text-center border-l border-r border-gray-200 px-4 w-1/3">Dist. Análisis <strong id="lblSegmentDist" class="text-blue-600 text-sm">-- km</strong></span>
+                                <span class="flex flex-col text-right w-1/3">Fin <strong id="lblEndKm" class="text-gray-800">Max km</strong></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Columna Derecha: Controles -->
                 <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4 order-1">
-                    <h3 class="text-lg font-bold flex items-center gap-2"><i data-lucide="layers" class="w-5 h-5"></i> Capas y Ejes</h3>
+                    <h3 class="text-lg font-bold flex items-center gap-2"><i data-lucide="sliders" class="w-5 h-5"></i> Controles de Análisis</h3>
                     
-                    <div class="space-y-2">
+                    <div class="space-y-2 pt-2">
                         <label class="text-sm font-medium text-gray-700">Eje X de las Gráficas:</label>
                         <div class="flex gap-2">
                             <button id="btnXDist" class="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg font-medium shadow-sm transition-colors hover:bg-blue-700">Distancia</button>
@@ -240,7 +283,7 @@
                         <button id="btnRecalculate" class="w-full mt-3 py-2 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg font-medium text-sm hover:bg-yellow-100 transition-colors">Aplicar y Recalcular</button>
                     </div>
 
-                    <div class="mt-4 flex-1">
+                    <div class="mt-4">
                         <p class="text-sm font-medium text-gray-700 mb-2">Pistas cargadas:</p>
                         <ul id="trackList" class="space-y-2 text-sm">
                             <!-- Lista generada dinámicamente -->
@@ -250,13 +293,6 @@
                         <button id="btnDownloadGPX" disabled title="Ajusta los datos físicos y pulsa 'Aplicar y Recalcular' para habilitar la descarga" class="w-full mt-6 py-2.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-lg font-medium shadow-sm cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-300">
                             <i data-lucide="calculator" class="w-4 h-4"></i> Descargar GPX (Requiere cálculo)
                         </button>
-                    </div>
-
-                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 mt-auto">
-                        <p class="text-xs text-blue-800 flex items-start gap-2">
-                            <i data-lucide="info" class="w-4 h-4 shrink-0 mt-0.5"></i>
-                            Los datos de los distintos archivos se han fusionado cronológicamente para complementar GPS, elevación y pulso.
-                        </p>
                     </div>
                 </div>
             </section>
@@ -307,23 +343,64 @@
             </section>
 
             <!-- Estadísticas Detalladas -->
-            <section class="glass-panel p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 class="text-lg font-bold flex items-center gap-2 mb-4 text-gray-800"><i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-500"></i> Estadísticas Detalladas</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b-2 border-gray-200 text-sm text-gray-500 uppercase tracking-wider">
-                                <th class="py-3 px-4">Métrica</th>
-                                <th class="py-3 px-4">Total</th>
-                                <th class="py-3 px-4">Mínimo</th>
-                                <th class="py-3 px-4">Media</th>
-                                <th class="py-3 px-4">Máximo</th>
-                            </tr>
-                        </thead>
-                        <tbody id="detailed-stats-body" class="text-sm divide-y divide-gray-100">
-                            <!-- Generado dinámicamente -->
-                        </tbody>
-                    </table>
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Tabla Principal -->
+                <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2">
+                    <h3 class="text-lg font-bold flex items-center gap-2 mb-4 text-gray-800"><i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-500"></i> Estadísticas Detalladas</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b-2 border-gray-200 text-sm text-gray-500 uppercase tracking-wider">
+                                    <th class="py-3 px-4">Métrica</th>
+                                    <th class="py-3 px-4">Total / Info</th>
+                                    <th class="py-3 px-4">Mínimo</th>
+                                    <th class="py-3 px-4">Media</th>
+                                    <th class="py-3 px-4">Máximo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailed-stats-body" class="text-sm divide-y divide-gray-100">
+                                <!-- Generado dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- NUEVO: Power Curve Box -->
+                <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col relative" id="power-curve-container">
+                    <div id="curveOverlay" class="absolute inset-0 z-30 bg-white/70 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4 transition-opacity duration-500">
+                        <i data-lucide="lock" class="w-8 h-8 text-gray-500 mb-2 bg-white rounded-full p-1.5 shadow-sm"></i>
+                        <p class="text-xs font-medium text-gray-800">Recalcula la potencia para desbloquear.</p>
+                    </div>
+                    <h3 class="text-base font-bold flex items-center gap-2 mb-4 text-gray-800 border-b border-gray-100 pb-2"><i data-lucide="zap" class="w-5 h-5 text-yellow-500"></i> Curva de Potencia (Picos)</h3>
+                    
+                    <!-- Contenedor del Gráfico de Curva de Potencia -->
+                    <div class="flex-1 w-full relative min-h-[220px]">
+                        <canvas id="chartPowerCurve"></canvas>
+                    </div>
+                    
+                    <!-- Resumen rápido en la parte inferior -->
+                    <div class="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-gray-100">
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">5s (Sprint)</p>
+                            <p id="pc-5s" class="text-sm font-bold text-yellow-600">-- W</p>
+                            <p id="pc-5s-wkg" class="text-[10px] text-gray-400">-- W/kg</p>
+                        </div>
+                        <div class="text-center border-l border-gray-100">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">1m (Anaerób.)</p>
+                            <p id="pc-1m" class="text-sm font-bold text-yellow-600">-- W</p>
+                            <p id="pc-1m-wkg" class="text-[10px] text-gray-400">-- W/kg</p>
+                        </div>
+                        <div class="text-center border-l border-gray-100">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">5m (VO2Max)</p>
+                            <p id="pc-5m" class="text-sm font-bold text-yellow-600">-- W</p>
+                            <p id="pc-5m-wkg" class="text-[10px] text-gray-400">-- W/kg</p>
+                        </div>
+                        <div class="text-center border-l border-gray-100">
+                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">20m (FTP)</p>
+                            <p id="pc-20m" class="text-sm font-bold text-yellow-600">-- W</p>
+                            <p id="pc-20m-wkg" class="text-[10px] text-gray-400">-- W/kg</p>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -380,15 +457,21 @@
         lucide.createIcons();
 
         let map;
-        let mapPolyline;
+        let mapLayerGroup;
+        let mapTileLayer;
         let hoverMarker = null;
         let chartElevation, chartSpeed, chartHR, chartTemp, chartCad, chartPower;
         let modalChartInstance = null; 
+        let chartPowerCurveInstance = null; // NUEVA VARIABLE
         let xAxisMode = 'distance'; 
         let mergedTrack = []; 
         let rawTracks = [];
         let currentChartData = {}; 
         let hasRecalculated = false; 
+        
+        // Variables para el análisis de segmentos
+        let trimStartIdx = 0;
+        let trimEndIdx = 0;
 
         const chartColors = {
             ele: 'rgb(16, 185, 129)', 
@@ -417,6 +500,10 @@
         const inputBikeWeight = document.getElementById('inputBikeWeight');
         const inputBikeType = document.getElementById('inputBikeType');
         const inputDeviceType = document.getElementById('inputDeviceType');
+
+        const rangeStart = document.getElementById('rangeStart');
+        const rangeEnd = document.getElementById('rangeEnd');
+        const mapColorMode = document.getElementById('mapColorMode');
 
         dropzone.addEventListener('click', () => fileInput.click());
         dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag-over'); });
@@ -447,11 +534,43 @@
             renderCharts();
         });
 
+        // Configurar los selectores de corte de segmento
+        rangeStart.addEventListener('input', (e) => {
+            let start = parseInt(e.target.value);
+            let end = parseInt(rangeEnd.value);
+            if (start >= end) { start = end - 1; e.target.value = start; }
+            trimStartIdx = start;
+            updateDashboardCore();
+        });
+        
+        rangeEnd.addEventListener('input', (e) => {
+            let end = parseInt(e.target.value);
+            let start = parseInt(rangeStart.value);
+            if (end <= start) { end = start + 1; e.target.value = end; }
+            trimEndIdx = end;
+            updateDashboardCore();
+        });
+
+        document.getElementById('btnResetSegment').addEventListener('click', () => {
+            if(mergedTrack.length > 0) {
+                trimStartIdx = 0;
+                trimEndIdx = mergedTrack.length - 1;
+                rangeStart.value = trimStartIdx;
+                rangeEnd.value = trimEndIdx;
+                updateDashboardCore();
+            }
+        });
+
+        mapColorMode.addEventListener('change', () => {
+            initOrUpdateMap();
+        });
+
         btnRecalculate.addEventListener('click', () => {
             hasRecalculated = true;
             document.getElementById('powerOverlay').classList.add('opacity-0', 'pointer-events-none');
             document.getElementById('powerStatOverlay').classList.add('opacity-0', 'pointer-events-none');
             document.getElementById('powerStatContent').classList.remove('blur-sm', 'select-none');
+            document.getElementById('curveOverlay').classList.add('opacity-0', 'pointer-events-none');
             
             const btnDownload = document.getElementById('btnDownloadGPX');
             btnDownload.disabled = false;
@@ -462,8 +581,11 @@
             
             if (rawTracks.length > 0) {
                 fuseTracks();
-                updateStats();
-                renderCharts();
+                // Reiniciamos segmentación tras recalcular
+                trimStartIdx = 0;
+                trimEndIdx = mergedTrack.length - 1;
+                setupSegmentSliders();
+                updateDashboardCore();
             }
         });
 
@@ -471,7 +593,6 @@
 
         async function handleFiles(files) {
             rawTracks = [];
-            
             for (let file of files) {
                 const text = await file.text();
                 const track = parseGPX(text, file.name);
@@ -483,8 +604,13 @@
             if (rawTracks.length > 0) {
                 dashboard.classList.remove('hidden');
                 document.getElementById('welcome-screen').classList.add('hidden');
+                document.getElementById('segmentAnalyzer').classList.remove('hidden');
                 
                 fuseTracks();
+                
+                trimStartIdx = 0;
+                trimEndIdx = mergedTrack.length - 1;
+                setupSegmentSliders();
                 
                 const trackList = document.getElementById('trackList');
                 trackList.innerHTML = '';
@@ -503,12 +629,30 @@
                 });
                 lucide.createIcons();
 
-                updateStats();
-                initOrUpdateMap();
-                renderCharts();
+                updateDashboardCore();
             } else {
                 alert("No se pudieron leer datos válidos de los archivos GPX.");
             }
+        }
+
+        function setupSegmentSliders() {
+            if(!mergedTrack.length) return;
+            rangeStart.max = mergedTrack.length - 1;
+            rangeEnd.max = mergedTrack.length - 1;
+            rangeStart.value = trimStartIdx;
+            rangeEnd.value = trimEndIdx;
+        }
+
+        // Obtiene la porción del track seleccionada para el análisis
+        function getWorkingTrack() {
+            if(!mergedTrack.length) return [];
+            return mergedTrack.slice(trimStartIdx, trimEndIdx + 1);
+        }
+
+        function updateDashboardCore() {
+            updateStats();
+            initOrUpdateMap();
+            renderCharts();
         }
 
         function parseGPX(gpxText, filename) {
@@ -794,6 +938,30 @@
             }
         }
 
+        // Calcula el pico de potencia para X segundos (Sliding Window Algorithm)
+        function getPeakPower(track, seconds) {
+            if (!hasRecalculated || track.length === 0) return '--';
+            let maxAvg = 0;
+            let windowSum = 0;
+            let startIdx = 0;
+            
+            for (let endIdx = 0; endIdx < track.length; endIdx++) {
+                windowSum += track[endIdx].power || 0;
+                while (startIdx <= endIdx && ((track[endIdx].time - track[startIdx].time) / 1000) > seconds) {
+                    windowSum -= track[startIdx].power || 0;
+                    startIdx++;
+                }
+                let windowDur = (track[endIdx].time - track[startIdx].time) / 1000;
+                // Validamos que haya un mínimo de datos para considerar el esfuerzo
+                if (windowDur >= seconds * 0.85) { 
+                    let count = endIdx - startIdx + 1;
+                    let avg = windowSum / count;
+                    if (avg > maxAvg) maxAvg = avg;
+                }
+            }
+            return maxAvg > 0 ? Math.round(maxAvg) : '--';
+        }
+
         function downloadGPXFile() {
             if (!mergedTrack || mergedTrack.length === 0) return;
 
@@ -888,16 +1056,26 @@
         }
 
         function updateStats() {
-            if(!mergedTrack.length) return;
-            const lastPoint = mergedTrack[mergedTrack.length - 1];
+            let track = getWorkingTrack();
+            if(!track.length) return;
             
-            document.getElementById('stat-dist').innerText = lastPoint.dist.toFixed(2) + ' km';
+            // Etiquetas UI de Distancia/Segmentos
+            const firstPoint = track[0];
+            const lastPoint = track[track.length - 1];
             
-            const totalSeconds = (lastPoint.time - mergedTrack[0].time) / 1000;
+            let segmentDistance = lastPoint.dist - firstPoint.dist;
+            
+            document.getElementById('lblStartKm').innerText = firstPoint.dist.toFixed(1) + ' km';
+            document.getElementById('lblEndKm').innerText = lastPoint.dist.toFixed(1) + ' km';
+            document.getElementById('lblSegmentDist').innerText = segmentDistance.toFixed(1) + ' km';
+            
+            document.getElementById('stat-dist').innerText = segmentDistance.toFixed(2) + ' km';
+            
+            const totalSeconds = (lastPoint.time - firstPoint.time) / 1000;
             let activeSeconds = 0;
-            for (let i = 1; i < mergedTrack.length; i++) {
-                if (mergedTrack[i].isMoving) {
-                    activeSeconds += mergedTrack[i].deltaT;
+            for (let i = 1; i < track.length; i++) {
+                if (track[i].isMoving) {
+                    activeSeconds += track[i].deltaT;
                 }
             }
             if (activeSeconds <= 0) activeSeconds = totalSeconds; 
@@ -911,33 +1089,46 @@
 
             document.getElementById('stat-time-active').innerText = formatTime(activeSeconds);
 
-            const avgSpeed = lastPoint.dist / (activeSeconds / 3600);
+            const avgSpeed = activeSeconds > 0 ? segmentDistance / (activeSeconds / 3600) : 0;
             document.getElementById('stat-speed').innerText = avgSpeed.toFixed(1) + ' km/h';
 
-            const hrs = mergedTrack.map(p => p.hr).filter(hr => hr !== null && !isNaN(hr));
+            const hrs = track.map(p => p.hr).filter(hr => hr !== null && !isNaN(hr));
             const maxHr = hrs.length > 0 ? Math.max(...hrs) : '--';
             const avgHr = hrs.length > 0 ? Math.round(hrs.reduce((a,b)=>a+b,0) / hrs.length) : null;
             document.getElementById('stat-hr-max').innerText = maxHr;
             document.getElementById('stat-hr-avg').innerText = avgHr !== null ? avgHr : '--';
 
-            const temps = mergedTrack.map(p => p.temp).filter(t => t !== null && !isNaN(t));
+            const temps = track.map(p => p.temp).filter(t => t !== null && !isNaN(t));
             const minTemp = temps.length > 0 ? Math.min(...temps).toFixed(1) : '--';
             const maxTemp = temps.length > 0 ? Math.max(...temps).toFixed(1) : '--';
             document.getElementById('stat-temp-min').innerText = minTemp;
             document.getElementById('stat-temp-max').innerText = maxTemp;
 
-            const cads = mergedTrack.map(p => p.cad).filter(c => c !== null && !isNaN(c));
+            const cads = track.map(p => p.cad).filter(c => c !== null && !isNaN(c));
             const avgCad = cads.length > 0 ? Math.round(cads.reduce((a,b)=>a+b,0) / cads.length) : '--';
             document.getElementById('stat-cad-avg').innerText = avgCad !== '--' ? avgCad + ' rpm' : '-- rpm';
 
-            const powers = mergedTrack.filter(p => p.isMoving).map(p => p.power);
-            const avgPower = powers.length > 0 ? (powers.reduce((a,b)=>a+b,0) / powers.length).toFixed(0) : '--';
-            document.getElementById('stat-power').innerText = avgPower !== '--' ? avgPower + ' W' : '-- W';
+            const powers = track.filter(p => p.isMoving).map(p => p.power);
+            const avgPower = powers.length > 0 ? (powers.reduce((a,b)=>a+b,0) / powers.length) : null;
+            
+            let mRider = parseFloat(inputRiderWeight.value) || 105;
+            let kcal = 0;
+            if (hasRecalculated && avgPower) {
+                document.getElementById('stat-power').innerText = Math.round(avgPower) + ' W';
+                document.getElementById('stat-wkg').innerText = '(' + (avgPower/mRider).toFixed(1) + ' W/kg)';
+                // Calorías: Trabajo (Kj) = Vatios Promedio * Segundos Activos / 1000. 1 Kj ~ 1 Kcal en cuerpo humano
+                kcal = (avgPower * activeSeconds) / 1000;
+                document.getElementById('stat-calories').innerText = Math.round(kcal) + ' kcal';
+            } else {
+                document.getElementById('stat-power').innerText = '-- W';
+                document.getElementById('stat-wkg').innerText = '(-- W/kg)';
+                document.getElementById('stat-calories').innerText = '0 kcal';
+            }
 
             let totalAscent = 0;
             let totalDescent = 0;
             
-            const validEles = mergedTrack.filter(p => p.baseEle !== null && !isNaN(p.baseEle)).map(p => p.baseEle);
+            const validEles = track.filter(p => p.baseEle !== null && !isNaN(p.baseEle)).map(p => p.baseEle);
 
             if (validEles.length > 0) {
                 let localMin = validEles[0];
@@ -969,33 +1160,40 @@
                 }
             }
 
-            let nativeA = null, nativeD = null;
-            rawTracks.forEach(t => {
-                if (t.nativeAscent !== null) {
-                    nativeA = t.nativeAscent;
-                    nativeD = t.nativeDescent;
+            // Aplicar nativos solo si estamos viendo el track COMPLETO
+            if (track.length === mergedTrack.length) {
+                let nativeA = null, nativeD = null;
+                rawTracks.forEach(t => {
+                    if (t.nativeAscent !== null) {
+                        nativeA = t.nativeAscent;
+                        nativeD = t.nativeDescent;
+                    }
+                });
+                if (nativeA !== null) {
+                    totalAscent = nativeA;
+                    if (nativeD !== null) totalDescent = nativeD;
                 }
-            });
-            if (nativeA !== null) {
-                totalAscent = nativeA;
-                if (nativeD !== null) totalDescent = nativeD;
             }
             
             document.getElementById('stat-ascent').innerText = '+' + Math.round(totalAscent) + ' m';
+            
+            // Calcular VAM (Metros verticales por hora)
+            let vam = activeSeconds > 0 ? (totalAscent / activeSeconds) * 3600 : 0;
+            document.getElementById('stat-vam').innerText = Math.round(vam) + ' m/h';
 
-            // ALGORITMO PARA EL NIVEL DE DUREZA Y ZONAS
+            // ALGORITMO PARA EL NIVEL DE DUREZA Y ZONAS (Para el segmento seleccionado)
             let hardnessScore = 0;
-            let segmentDist = 0;
-            let segmentEleStart = mergedTrack.length > 0 ? mergedTrack[0].baseEle : null;
+            let currentSegDist = 0;
+            let segmentEleStart = track.length > 0 ? track[0].baseEle : null;
             
             let timeZ1 = 0, timeZ2 = 0, timeZ3 = 0, timeZ4 = 0, timeZ5 = 0;
             let assumedMaxHr = maxHr !== '--' && maxHr > 140 ? maxHr : 185;
             
-            for (let i = 1; i < mergedTrack.length; i++) {
-                let pt = mergedTrack[i];
-                let prevPt = mergedTrack[i-1];
+            for (let i = 1; i < track.length; i++) {
+                let pt = track[i];
+                let prevPt = track[i-1];
                 let distKm = pt.dist - prevPt.dist;
-                segmentDist += distKm;
+                currentSegDist += distKm;
 
                 // Zonas Cardíacas
                 if (pt.isMoving && pt.hr) {
@@ -1008,20 +1206,20 @@
                 }
 
                 // Dificultad Terreno
-                if (segmentDist >= 0.05 || i === mergedTrack.length - 1) {
+                if (currentSegDist >= 0.05 || i === track.length - 1) {
                     let grade = 0;
                     if (pt.baseEle !== null && !isNaN(pt.baseEle) && segmentEleStart !== null && !isNaN(segmentEleStart)) {
                         let eleDiff = pt.baseEle - segmentEleStart;
-                        grade = (eleDiff / (segmentDist * 1000)) * 100;
+                        grade = (eleDiff / (currentSegDist * 1000)) * 100;
                     }
 
-                    if (grade >= 15) hardnessScore += segmentDist * 15;
-                    else if (grade >= 10) hardnessScore += segmentDist * 10;
-                    else if (grade >= 5) hardnessScore += segmentDist * 4.5;
-                    else if (grade >= 1) hardnessScore += segmentDist * 1.5;
-                    else hardnessScore += segmentDist * 0.6;
+                    if (grade >= 15) hardnessScore += currentSegDist * 15;
+                    else if (grade >= 10) hardnessScore += currentSegDist * 10;
+                    else if (grade >= 5) hardnessScore += currentSegDist * 4.5;
+                    else if (grade >= 1) hardnessScore += currentSegDist * 1.5;
+                    else hardnessScore += currentSegDist * 0.6;
 
-                    segmentDist = 0;
+                    currentSegDist = 0;
                     segmentEleStart = pt.baseEle;
                 }
             }
@@ -1036,9 +1234,8 @@
             if (maxHr !== '--') {
                 document.getElementById('zones-panel').classList.replace('hidden', 'grid');
                 
-                // Representación UI de Zonas
                 let totalZTime = timeZ1 + timeZ2 + timeZ3 + timeZ4 + timeZ5;
-                if(totalZTime === 0) totalZTime = 1; // Prevenir div / 0
+                if(totalZTime === 0) totalZTime = 1; 
                 
                 const zonesHtml = `
                     <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z5</div><div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden"><div class="bg-red-500 h-full zone-bar" style="width: ${(timeZ5/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ5/60))}m</div></div>
@@ -1049,7 +1246,6 @@
                 `;
                 document.getElementById('hr-zones-container').innerHTML = zonesHtml;
                 
-                // Algoritmo simple de Training Effect (0.0 a 5.0)
                 aerobicTE = ((timeZ1*0.3 + timeZ2*1.0 + timeZ3*2.0 + timeZ4*2.5 + timeZ5*1.0) / 3600) * 1.8;
                 anaerobicTE = ((timeZ4*1.0 + timeZ5*2.5) / 1800) * 1.5;
                 
@@ -1069,7 +1265,6 @@
             document.getElementById('te-anaerobic-val').innerText = anaerobicTE.toFixed(1);
             document.getElementById('te-anaerobic-bar').style.width = `${(anaerobicTE/5)*100}%`;
             document.getElementById('te-anaerobic-desc').innerText = anaerobicTE >= 4 ? "Capacidad Láctica Severa" : anaerobicTE >= 3 ? "Mejora Anaeróbica" : anaerobicTE >= 2 ? "Estímulo Ligero" : "Sin Estímulo Directo";
-
 
             let effortText = "Moderado";
             let effortColor = "bg-green-100 text-green-700";
@@ -1100,6 +1295,23 @@
                 effortContainer.title = "Esfuerzo estimado evaluando algorítmicamente la dureza del terreno (pendientes), la velocidad y la duración (sin datos de pulso).";
             }
 
+            // Power Curve
+            let p5 = getPeakPower(track, 5);
+            let p60 = getPeakPower(track, 60);
+            let p300 = getPeakPower(track, 300);
+            let p1200 = getPeakPower(track, 1200);
+
+            document.getElementById('pc-5s').innerText = p5 !== '--' ? p5 + ' W' : '-- W';
+            document.getElementById('pc-1m').innerText = p60 !== '--' ? p60 + ' W' : '-- W';
+            document.getElementById('pc-5m').innerText = p300 !== '--' ? p300 + ' W' : '-- W';
+            document.getElementById('pc-20m').innerText = p1200 !== '--' ? p1200 + ' W' : '-- W';
+            
+            document.getElementById('pc-5s-wkg').innerText = p5 !== '--' ? (p5/mRider).toFixed(1) + ' W/kg' : '-- W/kg';
+            document.getElementById('pc-1m-wkg').innerText = p60 !== '--' ? (p60/mRider).toFixed(1) + ' W/kg' : '-- W/kg';
+            document.getElementById('pc-5m-wkg').innerText = p300 !== '--' ? (p300/mRider).toFixed(1) + ' W/kg' : '-- W/kg';
+            document.getElementById('pc-20m-wkg').innerText = p1200 !== '--' ? (p1200/mRider).toFixed(1) + ' W/kg' : '-- W/kg';
+
+            // Tabla Estadísticas Detalladas
             const tbody = document.getElementById('detailed-stats-body');
             tbody.innerHTML = '';
 
@@ -1114,30 +1326,31 @@
 
             const formatVal = (val, dec) => val === '--' ? val : val.toFixed(dec);
 
-            const eleMetrics = getMetrics(mergedTrack.map(p => p.baseEle));
-            const speedMetrics = getMetrics(mergedTrack.map(p => p.speed));
-            const hrMetrics = getMetrics(mergedTrack.map(p => p.hr));
-            const cadMetrics = getMetrics(mergedTrack.map(p => p.cad));
-            const tempMetrics = getMetrics(mergedTrack.map(p => p.temp));
-            const powerMetrics = hasRecalculated ? getMetrics(mergedTrack.filter(p => p.isMoving).map(p => p.power)) : { min: '--', avg: '--', max: '--' }; 
+            const eleMetrics = getMetrics(track.map(p => p.baseEle));
+            const speedMetrics = getMetrics(track.map(p => p.speed));
+            const hrMetrics = getMetrics(track.map(p => p.hr));
+            const cadMetrics = getMetrics(track.map(p => p.cad));
+            const tempMetrics = getMetrics(track.map(p => p.temp));
+            const powerMetrics = hasRecalculated ? getMetrics(track.filter(p => p.isMoving).map(p => p.power)) : { min: '--', avg: '--', max: '--' }; 
 
             speedMetrics.avg = avgSpeed;
 
             const rows = [
-                { name: 'Distancia (km)', m: {min:'--', avg:'--', max:'--'}, dec: 2, total: lastPoint.dist.toFixed(2) },
+                { name: 'Distancia (km)', m: {min:'--', avg:'--', max:'--'}, dec: 2, total: segmentDistance.toFixed(2) },
                 { name: 'Tiempo en Movimiento', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: formatTime(activeSeconds) },
-                { name: 'Tiempo Transcurrido', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: formatTime(totalSeconds) },
                 { name: 'Elevación (m)', m: eleMetrics, dec: 0, total: '--' },
-                { name: 'Desnivel Acum. (m)', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: `+${Math.round(totalAscent)} / -${Math.round(totalDescent)}` },
+                { name: 'Desnivel Acumulado (m)', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: `+${Math.round(totalAscent)} / -${Math.round(totalDescent)}` },
+                { name: 'VAM (Vel. Ascenso Media)', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: `${Math.round(vam)} m/h` },
                 { name: 'Velocidad (km/h)', m: speedMetrics, dec: 1, total: '--' },
                 { name: 'Potencia Estimada (W)', m: powerMetrics, dec: 0, total: hasRecalculated ? '--' : 'Pendiente' },
+                { name: 'Calorías Estimadas', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: hasRecalculated ? `${Math.round(kcal)} kcal` : 'Pendiente' },
                 { name: 'Frec. Cardíaca (bpm)', m: hrMetrics, dec: 0, total: '--' },
                 { name: 'Cadencia (rpm)', m: cadMetrics, dec: 0, total: '--' },
                 { name: 'Temperatura (°C)', m: tempMetrics, dec: 1, total: '--' }
             ];
 
             rows.forEach(r => {
-                const blurClass = (!hasRecalculated && r.name === 'Potencia Estimada (W)') ? 'blur-[2px] opacity-50 select-none' : '';
+                const blurClass = (!hasRecalculated && (r.name === 'Potencia Estimada (W)' || r.name === 'Calorías Estimadas')) ? 'blur-[2px] opacity-50 select-none' : '';
                 tbody.innerHTML += `
                     <tr class="transition-colors hover:bg-gray-50 ${blurClass}">
                         <td class="py-3 px-4 font-medium text-gray-700">${r.name}</td>
@@ -1150,16 +1363,19 @@
             });
         }
 
-        function syncHighlight(index, source) {
-            if (!mergedTrack || !mergedTrack[index]) return;
-            const pt = mergedTrack[index];
+        function syncHighlight(globalIndex, source) {
+            // El índice recibido pertenece al track recortado (workingTrack). 
+            // Necesitamos usarlo directamente.
+            let track = getWorkingTrack();
+            if (!track || !track[globalIndex]) return;
+            const pt = track[globalIndex];
 
             if (pt.lat && pt.lon && map) {
                 if (!hoverMarker) {
                     hoverMarker = L.circleMarker([pt.lat, pt.lon], {
                         radius: 6,
-                        color: '#ef4444',
-                        fillColor: '#ef4444',
+                        color: '#1d4ed8',
+                        fillColor: '#3b82f6',
                         fillOpacity: 1,
                         weight: 2,
                         zIndexOffset: 1000
@@ -1183,11 +1399,11 @@
             charts.forEach(c => {
                 if (c.chart && c.id !== source) {
                     const meta = c.chart.getDatasetMeta(0);
-                    if (meta.data[index]) {
-                        c.chart.setActiveElements([{ datasetIndex: 0, index: index }]);
-                        c.chart.tooltip.setActiveElements([{ datasetIndex: 0, index: index }], {
-                            x: meta.data[index].x,
-                            y: meta.data[index].y
+                    if (meta.data[globalIndex]) {
+                        c.chart.setActiveElements([{ datasetIndex: 0, index: globalIndex }]);
+                        c.chart.tooltip.setActiveElements([{ datasetIndex: 0, index: globalIndex }], {
+                            x: meta.data[globalIndex].x,
+                            y: meta.data[globalIndex].y
                         });
                         c.chart.update();
                     }
@@ -1211,20 +1427,29 @@
 
         function initOrUpdateMap() {
             if (!map) {
-                map = L.map('map');
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors'
+                const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' });
+                const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenTopoMap' });
+                const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Esri' });
+
+                map = L.map('map', { layers: [osm] });
+                
+                // Añadir Control de Capas de Leaflet
+                L.control.layers({
+                    "Mapa Normal": osm,
+                    "Topográfico": topo,
+                    "Satélite": sat
                 }).addTo(map);
 
                 map.on('mousemove', function(e) {
-                    if (!mergedTrack.length) return;
+                    let track = getWorkingTrack();
+                    if (!track.length) return;
                     let minSqDist = Infinity;
                     let closestIndex = -1;
                     const lat = e.latlng.lat;
                     const lng = e.latlng.lng;
                     
-                    for(let i=0; i<mergedTrack.length; i++) {
-                        const pt = mergedTrack[i];
+                    for(let i=0; i<track.length; i++) {
+                        const pt = track[i];
                         if(pt.lat && pt.lon) {
                             const sqDist = (pt.lat - lat)**2 + (pt.lon - lng)**2;
                             if(sqDist < minSqDist) {
@@ -1244,23 +1469,83 @@
                 map.on('mouseout', clearHighlight);
             }
 
-            if (mapPolyline) map.removeLayer(mapPolyline);
+            if (mapLayerGroup) map.removeLayer(mapLayerGroup);
+            mapLayerGroup = L.layerGroup().addTo(map);
 
-            const latlngs = mergedTrack.filter(p => p.lat && p.lon).map(p => [p.lat, p.lon]);
-            if(latlngs.length > 0) {
-                mapPolyline = L.polyline(latlngs, {color: 'rgb(59, 130, 246)', weight: 4}).addTo(map);
-                map.fitBounds(mapPolyline.getBounds());
+            let track = getWorkingTrack();
+            if(track.length === 0) return;
+
+            let colorMode = document.getElementById('mapColorMode').value;
+            let bounds = L.latLngBounds();
+            let assumedMaxHr = 185;
+            
+            // Si pintamos con colores dinámicos, necesitamos dibujar tramo a tramo
+            let currentLine = [];
+            let currentColor = null;
+
+            for(let i=0; i<track.length; i++) {
+                let pt = track[i];
+                if (!pt.lat || !pt.lon) continue;
+                
+                bounds.extend([pt.lat, pt.lon]);
+
+                let targetColor = '#3b82f6'; // Solid Blue
+
+                if (colorMode === 'speed') {
+                    let speed = pt.speed || 0;
+                    if (speed < 15) targetColor = '#3b82f6'; // Blue (Lento)
+                    else if (speed < 25) targetColor = '#10b981'; // Green (Moderado)
+                    else if (speed < 35) targetColor = '#eab308'; // Yellow (Rápido)
+                    else if (speed < 45) targetColor = '#f97316'; // Orange (Muy rápido)
+                    else targetColor = '#ef4444'; // Red (Sprint/Bajada rápida)
+                } 
+                else if (colorMode === 'hr' && pt.hr) {
+                    let pct = pt.hr / assumedMaxHr;
+                    if (pct < 0.6) targetColor = '#9ca3af'; // Gray Z1
+                    else if (pct < 0.7) targetColor = '#60a5fa'; // Blue Z2
+                    else if (pct < 0.8) targetColor = '#34d399'; // Green Z3
+                    else if (pct < 0.9) targetColor = '#f97316'; // Orange Z4
+                    else targetColor = '#ef4444'; // Red Z5
+                }
+
+                if (targetColor !== currentColor && currentLine.length > 0) {
+                    // Terminamos el tramo anterior y lo dibujamos
+                    currentLine.push([pt.lat, pt.lon]); // Conectar con el siguiente
+                    L.polyline(currentLine, {color: currentColor, weight: 4}).addTo(mapLayerGroup);
+                    currentLine = [[pt.lat, pt.lon]];
+                    currentColor = targetColor;
+                } else {
+                    currentLine.push([pt.lat, pt.lon]);
+                    if (currentColor === null) currentColor = targetColor;
+                }
+            }
+            
+            if (currentLine.length > 1) {
+                L.polyline(currentLine, {color: currentColor, weight: 4}).addTo(mapLayerGroup);
+            }
+
+            if(bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [20, 20] });
             }
         }
 
         function renderCharts() {
-            const labels = mergedTrack.map(p => xAxisMode === 'distance' ? p.dist.toFixed(2) : p.relativeTimeMin.toFixed(1));
-            const eleData = mergedTrack.map(p => p.baseEle);
-            const speedData = mergedTrack.map(p => p.speed);
-            const hrData = mergedTrack.map(p => p.hr);
-            const tempData = mergedTrack.map(p => p.temp);
-            const cadData = mergedTrack.map(p => p.cad);
-            const powerData = hasRecalculated ? mergedTrack.map(p => p.power) : mergedTrack.map(p => null);
+            let track = getWorkingTrack();
+            if(!track.length) return;
+
+            let firstPtTime = track[0].time;
+            let firstPtDist = track[0].dist;
+
+            const labels = track.map(p => xAxisMode === 'distance' 
+                ? (p.dist - firstPtDist).toFixed(2) 
+                : ((p.time - firstPtTime) / 60000).toFixed(1));
+            
+            const eleData = track.map(p => p.baseEle);
+            const speedData = track.map(p => p.speed);
+            const hrData = track.map(p => p.hr);
+            const tempData = track.map(p => p.temp);
+            const cadData = track.map(p => p.cad);
+            const powerData = hasRecalculated ? track.map(p => p.power) : track.map(p => null);
 
             currentChartData = {
                 labels,
@@ -1281,9 +1566,85 @@
             createChart('chartCad', chartCad, 'Cadencia (rpm)', labels, cadData, chartColors.cad, chartColors.cadBg, xTitle, (c) => chartCad = c);
             createChart('chartTemp', chartTemp, 'Temperatura (°C)', labels, tempData, chartColors.temp, chartColors.tempBg, xTitle, (c) => chartTemp = c);
             
+            // Render Power Curve
+            const curveDurations = [1, 5, 10, 30, 60, 120, 300, 600, 1200, 3600];
+            const curveLabels = ['1s', '5s', '10s', '30s', '1m', '2m', '5m', '10m', '20m', '1h'];
+            let curveData = [];
+            if (hasRecalculated) {
+                curveDurations.forEach(sec => {
+                    let peak = getPeakPower(track, sec);
+                    curveData.push(peak !== '--' ? peak : null);
+                });
+            } else {
+                curveData = curveDurations.map(() => null);
+            }
+            renderPowerCurveChart(curveLabels, curveData);
+
             if(document.getElementById('chartModal').classList.contains('hidden') === false) {
                 updateModalChart();
             }
+        }
+
+        function renderPowerCurveChart(labels, data) {
+            const canvas = document.getElementById('chartPowerCurve');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            if (chartPowerCurveInstance) chartPowerCurveInstance.destroy();
+
+            chartPowerCurveInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Potencia Pico (W)',
+                        data: data,
+                        borderColor: 'rgb(234, 179, 8)',
+                        backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: 'rgb(234, 179, 8)',
+                        tension: 0.4,
+                        spanGaps: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let mRider = parseFloat(document.getElementById('inputRiderWeight').value) || 105;
+                                    let w = context.raw;
+                                    if(w === null) return 'Datos insuficientes';
+                                    let wkg = (w / mRider).toFixed(1);
+                                    return `${w} W  (${wkg} W/kg)`;
+                                },
+                                title: function(tooltipItems) {
+                                    return `Pico de ${tooltipItems[0].label}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            grid: { display: false } 
+                        },
+                        y: { 
+                            beginAtZero: true,
+                            title: { display: true, text: 'Vatios (W)', font: { size: 10 } },
+                            ticks: { maxTicksLimit: 6 }
+                        }
+                    }
+                }
+            });
         }
 
         const metricDetails = {
