@@ -20,23 +20,41 @@
 
     <style>
         #map { height: 400px; z-index: 10; }
-        .drag-over { border-color: #3b82f6 !important; background-color: #eff6ff !important; }
-        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .drag-over { border-color: #14b8a6 !important; background-color: rgba(20, 184, 166, 0.1) !important; }
+        
+        /* Trama sutil de motivos de ciclismo (Relieve MTB - Stickerbomb) */
+        .bg-cycling-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='350' height='350' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%2314b8a6' stroke-width='2' stroke-opacity='0.07' stroke-linecap='round' stroke-linejoin='round'%3E%3C!-- Bicicleta --%3E%3Ccircle cx='80' cy='100' r='25'/%3E%3Ccircle cx='160' cy='100' r='25'/%3E%3Cpath d='M80 100 L110 60 L150 60 L120 100 Z'/%3E%3Cpath d='M150 60 L160 100'/%3E%3Cpath d='M160 100 L145 40 L155 35'/%3E%3Cpath d='M110 60 L105 45 L95 45 M105 45 L115 45'/%3E%3C!-- Montañas --%3E%3Cpath d='M250 120 l40 -60 l30 40 l20 -20 l40 60'/%3E%3Cpath d='M290 60 l-10 15 l10 -5 l10 10 l10 -15'/%3E%3C!-- Pedal plataforma --%3E%3Crect x='40' y='250' width='30' height='15' rx='3'/%3E%3Cpath d='M45 250 v-5 M65 250 v-5 M45 265 v5 M65 265 v5 M30 257 h10 M70 257 h10'/%3E%3C!-- Plato / Corona --%3E%3Ccircle cx='320' cy='280' r='30'/%3E%3Ccircle cx='320' cy='280' r='10'/%3E%3Cpath d='M320 245 v5 M320 315 v-5 M285 280 h5 M355 280 h-5 M295 255 l4 4 M345 305 l-4 -4 M345 255 l-4 4 M295 305 l4 -4'/%3E%3C!-- Casco --%3E%3Cpath d='M120 320 q30 -30 60 0 c5 5 -5 10 -10 10 h-40 c-5 0 -15 -5 -10 -10 z'/%3E%3Cpath d='M140 320 v-15 M160 320 v-10'/%3E%3C!-- GPS / Ciclocomputador --%3E%3Crect x='220' y='180' width='30' height='40' rx='4'/%3E%3Crect x='225' y='185' width='20' height='20' rx='2'/%3E%3Ccircle cx='230' cy='212' r='2'/%3E%3Ccircle cx='240' cy='212' r='2'/%3E%3C!-- Amortiguador --%3E%3Cpath d='M40 360 v-30 m-5 0 h10 m-5 0 v-10 m-8 -5 h16 m-16 -5 h16 m-16 -5 h16 m-8 0 v-15'/%3E%3C!-- Bidón de agua --%3E%3Cpath d='M230 350 v-20 c0 -5 5 -10 10 -10 h10 c5 0 10 5 10 10 v20 z'/%3E%3Cpath d='M240 320 v-5 h10 v5'/%3E%3C!-- Biela y pedal secundario --%3E%3Ccircle cx='120' cy='200' r='20'/%3E%3Cpath d='M120 200 l-20 20'/%3E%3Crect x='95' y='215' width='10' height='10'/%3E%3C!-- Eslabón cadena --%3E%3Crect x='280' y='30' width='40' height='16' rx='8'/%3E%3Ccircle cx='288' cy='38' r='4'/%3E%3Ccircle cx='312' cy='38' r='4'/%3E%3C!-- Huellas de taco --%3E%3Cpath d='M350 160l10-10l10 10l10-10l10 10m-40 10l10-10l10 10l10-10l10 10'/%3E%3C/g%3E%3C/svg%3E");
+            background-attachment: fixed;
+        }
+
+        /* Estilo Dark Glass Premium basado en el Logo */
+        .glass-panel { 
+            background: rgba(31, 41, 55, 0.6); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        }
+        
         .zone-bar { transition: width 1s ease-out; }
-        /* Sliders personalizados */
+        
+        /* Sliders personalizados (Tema oscuro con turquesa) */
         input[type=range] { -webkit-appearance: none; background: transparent; height: 4px; border-radius: 2px; }
         input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #2563eb; cursor: pointer; margin-top: -6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #e5e7eb; border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #14b8a6; cursor: pointer; margin-top: -6px; box-shadow: 0 0 5px rgba(0,0,0,0.5); border: 2px solid #fff; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #4b5563; border-radius: 2px; }
+        
+        /* Ajustes para inputs oscuros */
+        input[type="number"], select { color-scheme: dark; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+<body class="bg-gray-900 bg-cycling-pattern text-gray-200 font-sans min-h-screen">
 
     <!-- Navbar -->
-    <nav class="bg-blue-600 text-white shadow-md">
+    <nav class="bg-gray-950 text-white shadow-xl border-b border-teal-900/50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-3">
-            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo de mi Club" class="w-10 h-10 object-contain bg-white rounded-full p-1 shadow-sm">
-            <h1 class="text-2xl font-bold tracking-tight">GPX Sync & Merge</h1>
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo MNMTB" class="w-12 h-12 object-contain bg-gray-900 rounded-full p-0.5 shadow-sm border border-gray-800">
+            <h1 class="text-2xl font-bold tracking-tight text-teal-400">GPX Sync & Merge</h1>
         </div>
     </nav>
 
@@ -45,20 +63,20 @@
         <!-- Pantalla de Inicio (Dropzone + Logo) -->
         <div id="welcome-screen" class="flex flex-col gap-16 mt-4 mb-10">
             <!-- Zona de subida de archivos -->
-            <section id="dropzone" class="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center transition-colors bg-white shadow-sm cursor-pointer hover:bg-gray-50">
+            <section id="dropzone" class="border-2 border-dashed border-gray-700 rounded-xl p-10 text-center transition-colors bg-gray-800/40 shadow-sm cursor-pointer hover:bg-gray-800">
                 <input type="file" id="fileInput" multiple accept=".gpx" class="hidden" />
                 <div class="flex flex-col items-center justify-center gap-4 pointer-events-none">
-                    <i data-lucide="upload-cloud" class="w-16 h-16 text-blue-500"></i>
+                    <i data-lucide="upload-cloud" class="w-16 h-16 text-teal-500"></i>
                     <div>
-                        <p class="text-lg font-semibold text-gray-700">Arrastra tus archivos GPX aquí</p>
-                        <p class="text-sm text-gray-500">o haz clic para seleccionar archivos de distintos dispositivos</p>
+                        <p class="text-lg font-semibold text-gray-200">Arrastra tus archivos GPX aquí</p>
+                        <p class="text-sm text-gray-400">o haz clic para seleccionar archivos de distintos dispositivos</p>
                     </div>
                 </div>
             </section>
 
             <!-- Espacio del Logo Inferior -->
-            <div class="flex justify-center items-center opacity-80 pointer-events-none px-4">
-                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo Principal" class="max-w-full max-h-[35vh] object-contain">
+            <div class="flex justify-center items-center opacity-70 pointer-events-none px-4">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo Principal" class="max-w-full max-h-[35vh] object-contain drop-shadow-2xl">
             </div>
         </div>
 
@@ -67,105 +85,106 @@
             
             <!-- Estadísticas -->
             <section class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div class="bg-blue-100 p-3 rounded-lg text-blue-600"><i data-lucide="map"></i></div>
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-teal-900/40 p-3 rounded-lg text-teal-400"><i data-lucide="map"></i></div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Distancia Total</p>
-                        <p id="stat-dist" class="text-2xl font-bold">0.00 km</p>
+                        <p class="text-sm text-gray-400 font-medium">Distancia Total</p>
+                        <p id="stat-dist" class="text-2xl font-bold text-white">0.00 km</p>
                     </div>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div class="bg-green-100 p-3 rounded-lg text-green-600"><i data-lucide="timer"></i></div>
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-emerald-900/40 p-3 rounded-lg text-emerald-400"><i data-lucide="timer"></i></div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Tiempo Mov.</p>
-                        <p id="stat-time-active" class="text-2xl font-bold">00:00:00</p>
+                        <p class="text-sm text-gray-400 font-medium">Tiempo Mov.</p>
+                        <p id="stat-time-active" class="text-2xl font-bold text-white">00:00:00</p>
                     </div>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div class="bg-purple-100 p-3 rounded-lg text-purple-600"><i data-lucide="gauge"></i></div>
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-sky-900/40 p-3 rounded-lg text-sky-400"><i data-lucide="gauge"></i></div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Velocidad Med.</p>
-                        <p id="stat-speed" class="text-2xl font-bold">0.0 km/h</p>
+                        <p class="text-sm text-gray-400 font-medium">Velocidad Med.</p>
+                        <p id="stat-speed" class="text-2xl font-bold text-white">0.0 km/h</p>
                     </div>
                 </div>
-                <!-- Nivel de Dureza (Panel 1) -->
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 relative overflow-hidden group">
+                <!-- Nivel de Dureza -->
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4 relative overflow-hidden group">
                     <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform"><i data-lucide="flame" class="w-24 h-24"></i></div>
-                    <div class="bg-rose-100 p-3 rounded-lg text-rose-600 z-10"><i data-lucide="flame"></i></div>
+                    <div class="bg-rose-900/40 p-3 rounded-lg text-rose-400 z-10"><i data-lucide="flame"></i></div>
                     <div class="z-10 flex flex-col justify-center">
-                        <p class="text-sm text-gray-500 font-medium">Nivel Dureza</p>
-                        <p id="stat-hardness" class="text-2xl font-bold text-rose-600">0 pts</p>
+                        <p class="text-sm text-gray-400 font-medium">Nivel Dureza</p>
+                        <p id="stat-hardness" class="text-2xl font-bold text-rose-400">0 pts</p>
                     </div>
                 </div>
-                <!-- Esfuerzo Estimado (Panel 2) -->
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 relative overflow-hidden group">
+                <!-- Esfuerzo Estimado -->
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4 relative overflow-hidden group">
                     <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform"><i data-lucide="activity" class="w-24 h-24"></i></div>
-                    <div class="bg-violet-100 p-3 rounded-lg text-violet-600 z-10"><i data-lucide="activity"></i></div>
+                    <div class="bg-violet-900/40 p-3 rounded-lg text-violet-400 z-10"><i data-lucide="activity"></i></div>
                     <div class="z-10 flex flex-col justify-center w-full">
                         <div class="flex items-center gap-1 cursor-help transition-opacity hover:opacity-80" id="effort-container" title="Estimación calculada a partir de los datos de la actividad">
-                            <p class="text-sm text-gray-500 font-medium">Esfuerzo</p>
-                            <i data-lucide="info" class="w-3.5 h-3.5 text-gray-400"></i>
+                            <p class="text-sm text-gray-400 font-medium">Esfuerzo</p>
+                            <i data-lucide="info" class="w-3.5 h-3.5 text-gray-500"></i>
                         </div>
                         <div class="mt-0.5">
-                            <span id="stat-effort" class="text-lg font-bold px-2 py-1 rounded-md inline-block leading-none bg-gray-100 text-gray-600">--</span>
+                            <span id="stat-effort" class="text-lg font-bold px-2 py-1 rounded-md inline-block leading-none bg-gray-800 text-gray-300">--</span>
                         </div>
                     </div>
                 </div>
                 
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 relative">
-                    <div class="bg-yellow-100 p-3 rounded-lg text-yellow-600"><i data-lucide="zap"></i></div>
+                <!-- Potencia -->
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4 relative">
+                    <div class="bg-yellow-900/40 p-3 rounded-lg text-yellow-400"><i data-lucide="zap"></i></div>
                     <div id="powerStatContent" class="blur-sm select-none transition-all duration-500">
-                        <p class="text-sm text-gray-500 font-medium">Potencia Med.</p>
+                        <p class="text-sm text-gray-400 font-medium">Potencia Med.</p>
                         <div class="flex items-baseline gap-1">
-                            <p id="stat-power" class="text-2xl font-bold">-- W</p>
-                            <span id="stat-wkg" class="text-xs font-semibold text-yellow-600">(-- W/kg)</span>
+                            <p id="stat-power" class="text-2xl font-bold text-white">-- W</p>
+                            <span id="stat-wkg" class="text-xs font-semibold text-yellow-500">(-- W/kg)</span>
                         </div>
                     </div>
                     <div id="powerStatOverlay" class="absolute inset-0 flex items-center justify-center z-10 cursor-help transition-opacity duration-500" title="Ajusta los datos físicos y pulsa 'Aplicar y Recalcular' para desbloquear la estimación">
-                        <i data-lucide="info" class="w-6 h-6 text-gray-600 bg-white/90 rounded-full p-1 shadow-sm"></i>
+                        <i data-lucide="info" class="w-6 h-6 text-gray-300 bg-gray-700/90 rounded-full p-1 shadow-md border border-gray-600"></i>
                     </div>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div class="bg-red-100 p-3 rounded-lg text-red-600"><i data-lucide="heart"></i></div>
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-red-900/40 p-3 rounded-lg text-red-400"><i data-lucide="heart"></i></div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">FC (Med / Max)</p>
-                        <p class="text-2xl font-bold"><span id="stat-hr-avg">--</span> <span class="text-lg text-gray-400 font-normal">/ <span id="stat-hr-max">--</span> bpm</span></p>
+                        <p class="text-sm text-gray-400 font-medium">FC (Med / Max)</p>
+                        <p class="text-2xl font-bold text-white"><span id="stat-hr-avg">--</span> <span class="text-lg text-gray-500 font-normal">/ <span id="stat-hr-max">--</span> bpm</span></p>
                     </div>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div class="bg-orange-100 p-3 rounded-lg text-orange-600"><i data-lucide="thermometer"></i></div>
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-orange-900/40 p-3 rounded-lg text-orange-400"><i data-lucide="thermometer"></i></div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Temp. (Min / Max)</p>
+                        <p class="text-sm text-gray-400 font-medium">Temp. (Min / Max)</p>
                         <p class="text-2xl font-bold flex items-baseline gap-1">
-                            <span id="stat-temp-min" class="text-blue-500">--</span>
-                            <span class="text-lg text-gray-400 font-normal">/</span>
-                            <span id="stat-temp-max" class="text-red-500">--</span>
+                            <span id="stat-temp-min" class="text-sky-400">--</span>
+                            <span class="text-lg text-gray-600 font-normal">/</span>
+                            <span id="stat-temp-max" class="text-rose-400">--</span>
                             <span class="text-base text-gray-500 font-normal">°C</span>
                         </p>
                     </div>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div class="bg-teal-100 p-3 rounded-lg text-teal-600"><i data-lucide="activity-square"></i></div>
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-lime-900/40 p-3 rounded-lg text-lime-400"><i data-lucide="activity-square"></i></div>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium">Cadencia Media</p>
-                        <p id="stat-cad-avg" class="text-2xl font-bold">-- rpm</p>
+                        <p class="text-sm text-gray-400 font-medium">Cadencia Media</p>
+                        <p id="stat-cad-avg" class="text-2xl font-bold text-white">-- rpm</p>
                     </div>
                 </div>
                 
-                <!-- Ko'ápe oñemoambue Desnivel ha VAM -->
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div class="bg-indigo-100 p-3 rounded-lg text-indigo-600 shrink-0"><i data-lucide="trending-up"></i></div>
+                <!-- Desnivel y VAM -->
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-indigo-900/40 p-3 rounded-lg text-indigo-400 shrink-0"><i data-lucide="trending-up"></i></div>
                     <div class="flex flex-col gap-3">
                         <div>
-                            <p class="text-sm text-gray-500 font-medium leading-none mb-1">Desnivel (+)</p>
-                            <p id="stat-ascent" class="text-2xl font-bold leading-none text-gray-800">0 m</p>
+                            <p class="text-sm text-gray-400 font-medium leading-none mb-1">Desnivel (+)</p>
+                            <p id="stat-ascent" class="text-2xl font-bold leading-none text-white">0 m</p>
                         </div>
                         <div>
                             <div class="flex items-center gap-1 cursor-help transition-opacity hover:opacity-80 mb-1" title="Velocidad de Ascenso Media (metros verticales por hora)">
-                                <p class="text-sm text-gray-500 font-medium leading-none">VAM</p>
-                                <i data-lucide="info" class="w-3.5 h-3.5 text-gray-400"></i>
+                                <p class="text-sm text-gray-400 font-medium leading-none">VAM</p>
+                                <i data-lucide="info" class="w-3.5 h-3.5 text-gray-500"></i>
                             </div>
-                            <p id="stat-vam" class="text-xl font-bold leading-none text-gray-600">0 m/h</p>
+                            <p id="stat-vam" class="text-xl font-bold leading-none text-gray-300">0 m/h</p>
                         </div>
                     </div>
                 </div>
@@ -176,32 +195,32 @@
                 <!-- Columna Izquierda: Zonas + Mapa -->
                 <div class="lg:col-span-2 flex flex-col gap-6 order-2">
                     <!-- PANEL: Zonas y Efecto de Entrenamiento -->
-                    <div id="zones-panel" class="glass-panel p-6 rounded-xl shadow-sm border border-gray-100 hidden grid-cols-1 md:grid-cols-2 gap-8">
+                    <div id="zones-panel" class="glass-panel p-6 rounded-xl hidden grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
-                            <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="heart-pulse" class="w-5 h-5 text-red-500"></i> Zonas Cardíacas</h3>
+                            <h3 class="text-base font-bold text-gray-200 mb-4 flex items-center gap-2"><i data-lucide="heart-pulse" class="w-5 h-5 text-red-500"></i> Zonas Cardíacas</h3>
                             <div class="space-y-3" id="hr-zones-container">
                                 <!-- Las barras se generan en JS -->
                             </div>
                         </div>
                         <div>
-                            <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="bar-chart" class="w-5 h-5 text-blue-500"></i> Beneficio del Entrenamiento</h3>
+                            <h3 class="text-base font-bold text-gray-200 mb-4 flex items-center gap-2"><i data-lucide="bar-chart" class="w-5 h-5 text-teal-500"></i> Beneficio del Entrenamiento</h3>
                             <div class="flex flex-col gap-6 justify-center h-full pb-4">
                                 <div>
                                     <div class="flex justify-between items-end mb-1">
-                                        <span class="text-sm font-medium text-gray-700">Aeróbico (TE)</span>
-                                        <span id="te-aerobic-val" class="text-lg font-bold text-blue-600">0.0</span>
+                                        <span class="text-sm font-medium text-gray-400">Aeróbico (TE)</span>
+                                        <span id="te-aerobic-val" class="text-lg font-bold text-teal-400">0.0</span>
                                     </div>
-                                    <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                                        <div id="te-aerobic-bar" class="bg-blue-500 h-full rounded-full zone-bar" style="width: 0%"></div>
+                                    <div class="w-full bg-gray-800 rounded-full h-2.5 overflow-hidden">
+                                        <div id="te-aerobic-bar" class="bg-teal-500 h-full rounded-full zone-bar" style="width: 0%"></div>
                                     </div>
                                     <p id="te-aerobic-desc" class="text-xs text-gray-500 mt-1.5 font-medium">--</p>
                                 </div>
                                 <div>
                                     <div class="flex justify-between items-end mb-1">
-                                        <span class="text-sm font-medium text-gray-700">Anaeróbico (TE)</span>
-                                        <span id="te-anaerobic-val" class="text-lg font-bold text-purple-600">0.0</span>
+                                        <span class="text-sm font-medium text-gray-400">Anaeróbico (TE)</span>
+                                        <span id="te-anaerobic-val" class="text-lg font-bold text-purple-400">0.0</span>
                                     </div>
-                                    <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                    <div class="w-full bg-gray-800 rounded-full h-2.5 overflow-hidden">
                                         <div id="te-anaerobic-bar" class="bg-purple-500 h-full rounded-full zone-bar" style="width: 0%"></div>
                                     </div>
                                     <p id="te-anaerobic-desc" class="text-xs text-gray-500 mt-1.5 font-medium">--</p>
@@ -211,11 +230,11 @@
                     </div>
 
                     <!-- Mapa interactivo y recortes -->
-                    <div class="glass-panel rounded-xl shadow-sm border border-gray-100 overflow-hidden relative flex flex-col">
+                    <div class="glass-panel rounded-xl overflow-hidden relative flex flex-col">
                         <!-- Control de colores flotante -->
-                        <div class="absolute top-4 left-14 z-[400] bg-white rounded-md shadow px-3 py-1.5 text-xs font-semibold flex items-center gap-2 border border-gray-200">
-                            <i data-lucide="palette" class="w-3.5 h-3.5 text-gray-500"></i>
-                            <select id="mapColorMode" class="bg-transparent outline-none cursor-pointer text-gray-700">
+                        <div class="absolute top-4 left-14 z-[400] bg-gray-800/90 backdrop-blur-sm rounded-md shadow-lg px-3 py-1.5 text-xs font-semibold flex items-center gap-2 border border-gray-700">
+                            <i data-lucide="palette" class="w-3.5 h-3.5 text-gray-400"></i>
+                            <select id="mapColorMode" class="bg-transparent outline-none cursor-pointer text-gray-200">
                                 <option value="solid">Línea Sólida</option>
                                 <option value="speed">Velocidad</option>
                                 <option value="hr">Pulso (Zonas)</option>
@@ -223,57 +242,57 @@
                         </div>
                         <div id="map"></div>
                         
-                        <!-- Selector de Segmentos Interactivo (MOVIDO AQUÍ) -->
-                        <div id="segmentAnalyzer" class="space-y-3 bg-white p-5 border-t border-gray-100 hidden">
-                            <label class="text-sm font-medium text-gray-700 flex justify-between items-center">
-                                <span class="flex items-center gap-1.5"><i data-lucide="scissors" class="w-4 h-4 text-blue-500"></i> Cortar Segmento</span>
-                                <button id="btnResetSegment" class="text-xs text-blue-600 hover:text-blue-800 font-bold bg-blue-50 px-2 py-1 rounded">Reset</button>
+                        <!-- Selector de Segmentos Interactivo -->
+                        <div id="segmentAnalyzer" class="space-y-3 bg-gray-800/30 p-5 border-t border-gray-700/50 hidden">
+                            <label class="text-sm font-medium text-gray-300 flex justify-between items-center">
+                                <span class="flex items-center gap-1.5"><i data-lucide="scissors" class="w-4 h-4 text-teal-400"></i> Cortar Segmento</span>
+                                <button id="btnResetSegment" class="text-xs text-teal-400 hover:text-teal-300 font-bold bg-teal-900/40 px-2 py-1 rounded transition-colors">Reset</button>
                             </label>
                             <div class="px-1 relative h-6 mt-2">
                                 <input type="range" id="rangeStart" class="absolute w-full top-0 pointer-events-auto" min="0" max="100" value="0">
                                 <input type="range" id="rangeEnd" class="absolute w-full top-0 pointer-events-auto" min="0" max="100" value="100">
                             </div>
-                            <div class="flex justify-between text-xs font-medium text-gray-500 bg-gray-50 p-2 rounded-lg border border-gray-100">
-                                <span class="flex flex-col text-left w-1/3">Inicio <strong id="lblStartKm" class="text-gray-800">0.0 km</strong></span>
-                                <span class="flex flex-col text-center border-l border-r border-gray-200 px-4 w-1/3">Dist. Análisis <strong id="lblSegmentDist" class="text-blue-600 text-sm">-- km</strong></span>
-                                <span class="flex flex-col text-right w-1/3">Fin <strong id="lblEndKm" class="text-gray-800">Max km</strong></span>
+                            <div class="flex justify-between text-xs font-medium text-gray-400 bg-gray-800/80 p-2 rounded-lg border border-gray-700">
+                                <span class="flex flex-col text-left w-1/3">Inicio <strong id="lblStartKm" class="text-white">0.0 km</strong></span>
+                                <span class="flex flex-col text-center border-l border-r border-gray-600 px-4 w-1/3">Dist. Análisis <strong id="lblSegmentDist" class="text-teal-400 text-sm">-- km</strong></span>
+                                <span class="flex flex-col text-right w-1/3">Fin <strong id="lblEndKm" class="text-white">Max km</strong></span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Columna Derecha: Controles -->
-                <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4 order-1">
-                    <h3 class="text-lg font-bold flex items-center gap-2"><i data-lucide="sliders" class="w-5 h-5"></i> Controles de Análisis</h3>
+                <div class="glass-panel p-6 rounded-xl flex flex-col gap-4 order-1">
+                    <h3 class="text-lg font-bold flex items-center gap-2 text-white"><i data-lucide="sliders" class="w-5 h-5 text-teal-500"></i> Controles</h3>
                     
                     <div class="space-y-2 pt-2">
-                        <label class="text-sm font-medium text-gray-700">Eje X de las Gráficas:</label>
+                        <label class="text-sm font-medium text-gray-400">Eje X de las Gráficas:</label>
                         <div class="flex gap-2">
-                            <button id="btnXDist" class="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg font-medium shadow-sm transition-colors hover:bg-blue-700">Distancia</button>
-                            <button id="btnXTime" class="flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg font-medium shadow-sm transition-colors hover:bg-gray-300">Tiempo</button>
+                            <button id="btnXDist" class="flex-1 py-2 px-4 bg-teal-600 text-white rounded-lg font-medium shadow-sm transition-colors hover:bg-teal-500 border border-teal-500">Distancia</button>
+                            <button id="btnXTime" class="flex-1 py-2 px-4 bg-gray-800 text-gray-300 rounded-lg font-medium shadow-sm transition-colors hover:bg-gray-700 border border-gray-700">Tiempo</button>
                         </div>
                     </div>
 
-                    <div class="space-y-2 mt-2 pt-4 border-t border-gray-100">
-                        <label class="text-sm font-medium text-gray-700">Física y Origen (Potencia):</label>
+                    <div class="space-y-2 mt-2 pt-4 border-t border-gray-700/50">
+                        <label class="text-sm font-medium text-gray-400">Física y Origen (Potencia):</label>
                         <div class="flex gap-2 mb-2">
                             <div class="flex-1">
                                 <span class="text-xs text-gray-500 ml-1">Ciclista (kg)</span>
-                                <input type="number" id="inputRiderWeight" value="105" class="w-full px-3 py-2 border rounded-lg text-sm bg-white" placeholder="Ej: 105">
+                                <input type="number" id="inputRiderWeight" value="105" class="w-full px-3 py-2 border border-gray-600 rounded-lg text-sm bg-gray-800 text-gray-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none">
                             </div>
                             <div class="flex-1">
                                 <span class="text-xs text-gray-500 ml-1">Altura (cm)</span>
-                                <input type="number" id="inputRiderHeight" value="190" class="w-full px-3 py-2 border rounded-lg text-sm bg-white" placeholder="Ej: 190">
+                                <input type="number" id="inputRiderHeight" value="190" class="w-full px-3 py-2 border border-gray-600 rounded-lg text-sm bg-gray-800 text-gray-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none">
                             </div>
                             <div class="flex-1">
                                 <span class="text-xs text-gray-500 ml-1">Bicicleta (kg)</span>
-                                <input type="number" id="inputBikeWeight" value="15" class="w-full px-3 py-2 border rounded-lg text-sm bg-white" placeholder="Ej: 15">
+                                <input type="number" id="inputBikeWeight" value="15" class="w-full px-3 py-2 border border-gray-600 rounded-lg text-sm bg-gray-800 text-gray-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none">
                             </div>
                         </div>
                         <div class="flex gap-2">
                             <div class="flex-1">
                                 <span class="text-xs text-gray-500 ml-1">Terreno / Bici</span>
-                                <select id="inputBikeType" class="w-full px-3 py-2 border rounded-lg text-sm bg-white text-gray-700">
+                                <select id="inputBikeType" class="w-full px-3 py-2 border border-gray-600 rounded-lg text-sm bg-gray-800 text-gray-200 focus:border-teal-500 outline-none">
                                     <option value="road">Carretera (Asfalto)</option>
                                     <option value="gravel">Gravel (Mixto)</option>
                                     <option value="mtb" selected>Montaña (Tierra)</option>
@@ -281,23 +300,23 @@
                             </div>
                             <div class="flex-1">
                                 <span class="text-xs text-gray-500 ml-1">Origen de Datos</span>
-                                <select id="inputDeviceType" class="w-full px-3 py-2 border rounded-lg text-sm bg-white text-gray-700">
+                                <select id="inputDeviceType" class="w-full px-3 py-2 border border-gray-600 rounded-lg text-sm bg-gray-800 text-gray-200 focus:border-teal-500 outline-none">
                                     <option value="computer" selected>Ciclocomputador</option>
                                     <option value="watch">Reloj GPS</option>
                                 </select>
                             </div>
                         </div>
-                        <button id="btnRecalculate" class="w-full mt-3 py-2 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg font-medium text-sm hover:bg-yellow-100 transition-colors">Aplicar y Recalcular</button>
+                        <button id="btnRecalculate" class="w-full mt-3 py-2 bg-yellow-600/20 text-yellow-400 border border-yellow-600/50 rounded-lg font-bold text-sm hover:bg-yellow-600/30 transition-colors">Aplicar y Recalcular</button>
                     </div>
 
                     <div class="mt-4">
-                        <p class="text-sm font-medium text-gray-700 mb-2">Pistas cargadas:</p>
+                        <p class="text-sm font-medium text-gray-400 mb-2">Pistas cargadas:</p>
                         <ul id="trackList" class="space-y-2 text-sm">
                             <!-- Lista generada dinámicamente -->
                         </ul>
                         
                         <!-- BOTÓN DE EXPORTACIÓN -->
-                        <button id="btnDownloadGPX" disabled title="Ajusta los datos físicos y pulsa 'Aplicar y Recalcular' para habilitar la descarga" class="w-full mt-6 py-2.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-lg font-medium shadow-sm cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-300">
+                        <button id="btnDownloadGPX" disabled title="Ajusta los datos físicos y pulsa 'Aplicar y Recalcular' para habilitar la descarga" class="w-full mt-6 py-2.5 bg-gray-800 text-gray-500 border border-gray-700 rounded-lg font-medium shadow-sm cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-300">
                             <i data-lucide="calculator" class="w-4 h-4"></i> Descargar GPX (Requiere cálculo)
                         </button>
                     </div>
@@ -306,43 +325,43 @@
 
             <!-- Gráficas -->
             <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 relative group">
-                    <button onclick="openModalChart('ele')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                <div class="glass-panel p-4 rounded-xl relative group">
+                    <button onclick="openModalChart('ele')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
                         <i data-lucide="maximize-2" class="w-4 h-4"></i>
                     </button>
                     <canvas id="chartElevation"></canvas>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 relative group">
-                    <button onclick="openModalChart('speed')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                <div class="glass-panel p-4 rounded-xl relative group">
+                    <button onclick="openModalChart('speed')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
                         <i data-lucide="maximize-2" class="w-4 h-4"></i>
                     </button>
                     <canvas id="chartSpeed"></canvas>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 relative group">
-                    <button onclick="openModalChart('hr')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                <div class="glass-panel p-4 rounded-xl relative group">
+                    <button onclick="openModalChart('hr')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
                         <i data-lucide="maximize-2" class="w-4 h-4"></i>
                     </button>
                     <canvas id="chartHR"></canvas>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 relative group">
-                    <button onclick="openModalChart('cad')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                <div class="glass-panel p-4 rounded-xl relative group">
+                    <button onclick="openModalChart('cad')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
                         <i data-lucide="maximize-2" class="w-4 h-4"></i>
                     </button>
                     <canvas id="chartCad"></canvas>
                 </div>
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 md:col-span-2 relative group overflow-hidden" id="powerChartContainer">
-                    <div id="powerOverlay" class="absolute inset-0 z-30 bg-white/70 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 transition-opacity duration-500">
-                        <i data-lucide="lock" class="w-10 h-10 text-gray-500 mb-3 bg-white rounded-full p-2 shadow-sm"></i>
-                        <p class="text-sm font-medium text-gray-800">Ajusta tu peso y bici, luego haz clic en <br><span class="font-bold text-yellow-700">"Aplicar y Recalcular"</span><br> para ver la gráfica de potencia.</p>
+                <div class="glass-panel p-4 rounded-xl md:col-span-2 relative group overflow-hidden" id="powerChartContainer">
+                    <div id="powerOverlay" class="absolute inset-0 z-30 bg-gray-900/80 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 transition-opacity duration-500">
+                        <i data-lucide="lock" class="w-10 h-10 text-gray-400 mb-3 bg-gray-800 border border-gray-700 rounded-full p-2 shadow-lg"></i>
+                        <p class="text-sm font-medium text-gray-200">Ajusta tu peso y bici, luego haz clic en <br><span class="font-bold text-yellow-500">"Aplicar y Recalcular"</span><br> para ver la gráfica de potencia.</p>
                     </div>
-                    <button onclick="openModalChart('power')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                    <button onclick="openModalChart('power')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
                         <i data-lucide="maximize-2" class="w-4 h-4"></i>
                     </button>
                     <canvas id="chartPower"></canvas>
                 </div>
                 
-                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-100 md:col-span-2 relative group">
-                    <button onclick="openModalChart('temp')" class="absolute top-3 right-3 p-1.5 bg-white border border-gray-200 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                <div class="glass-panel p-4 rounded-xl md:col-span-2 relative group">
+                    <button onclick="openModalChart('temp')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
                         <i data-lucide="maximize-2" class="w-4 h-4"></i>
                     </button>
                     <canvas id="chartTemp"></canvas>
@@ -352,12 +371,12 @@
             <!-- Estadísticas Detalladas -->
             <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Tabla Principal -->
-                <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2">
-                    <h3 class="text-lg font-bold flex items-center gap-2 mb-4 text-gray-800"><i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-500"></i> Estadísticas Detalladas</h3>
+                <div class="glass-panel p-6 rounded-xl lg:col-span-2">
+                    <h3 class="text-lg font-bold flex items-center gap-2 mb-4 text-white"><i data-lucide="bar-chart-2" class="w-5 h-5 text-teal-500"></i> Estadísticas Detalladas</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="border-b-2 border-gray-200 text-sm text-gray-500 uppercase tracking-wider">
+                                <tr class="border-b border-gray-700 text-sm text-gray-400 uppercase tracking-wider">
                                     <th class="py-3 px-4">Métrica</th>
                                     <th class="py-3 px-4">Total / Info</th>
                                     <th class="py-3 px-4">Mínimo</th>
@@ -365,20 +384,20 @@
                                     <th class="py-3 px-4">Máximo</th>
                                 </tr>
                             </thead>
-                            <tbody id="detailed-stats-body" class="text-sm divide-y divide-gray-100">
+                            <tbody id="detailed-stats-body" class="text-sm divide-y divide-gray-700/50">
                                 <!-- Generado dinámicamente -->
                             </tbody>
                         </table>
                     </div>
                 </div>
                 
-                <!-- NUEVO: Power Curve Box -->
-                <div class="glass-panel p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col relative" id="power-curve-container">
-                    <div id="curveOverlay" class="absolute inset-0 z-30 bg-white/70 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4 transition-opacity duration-500">
-                        <i data-lucide="lock" class="w-8 h-8 text-gray-500 mb-2 bg-white rounded-full p-1.5 shadow-sm"></i>
-                        <p class="text-xs font-medium text-gray-800">Recalcula la potencia para desbloquear.</p>
+                <!-- Power Curve Box -->
+                <div class="glass-panel p-6 rounded-xl flex flex-col relative" id="power-curve-container">
+                    <div id="curveOverlay" class="absolute inset-0 z-30 bg-gray-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4 transition-opacity duration-500 rounded-xl">
+                        <i data-lucide="lock" class="w-8 h-8 text-gray-400 mb-2 bg-gray-800 border border-gray-700 rounded-full p-1.5 shadow-lg"></i>
+                        <p class="text-xs font-medium text-gray-300">Recalcula la potencia para desbloquear.</p>
                     </div>
-                    <h3 class="text-base font-bold flex items-center gap-2 mb-4 text-gray-800 border-b border-gray-100 pb-2"><i data-lucide="zap" class="w-5 h-5 text-yellow-500"></i> Curva de Potencia (Picos)</h3>
+                    <h3 class="text-base font-bold flex items-center gap-2 mb-4 text-white border-b border-gray-700/50 pb-2"><i data-lucide="zap" class="w-5 h-5 text-yellow-500"></i> Curva de Potencia (Picos)</h3>
                     
                     <!-- Contenedor del Gráfico de Curva de Potencia -->
                     <div class="flex-1 w-full relative min-h-[220px]">
@@ -386,26 +405,26 @@
                     </div>
                     
                     <!-- Resumen rápido en la parte inferior -->
-                    <div class="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-gray-100">
+                    <div class="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-gray-700/50">
                         <div class="text-center">
-                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">5s (Sprint)</p>
-                            <p id="pc-5s" class="text-sm font-bold text-yellow-600">-- W</p>
-                            <p id="pc-5s-wkg" class="text-[10px] text-gray-400">-- W/kg</p>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">5s (Sprint)</p>
+                            <p id="pc-5s" class="text-sm font-bold text-yellow-500">-- W</p>
+                            <p id="pc-5s-wkg" class="text-[10px] text-gray-500">-- W/kg</p>
                         </div>
-                        <div class="text-center border-l border-gray-100">
-                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">1m (Anaerób.)</p>
-                            <p id="pc-1m" class="text-sm font-bold text-yellow-600">-- W</p>
-                            <p id="pc-1m-wkg" class="text-[10px] text-gray-400">-- W/kg</p>
+                        <div class="text-center border-l border-gray-700/50">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">1m (Anaerób.)</p>
+                            <p id="pc-1m" class="text-sm font-bold text-yellow-500">-- W</p>
+                            <p id="pc-1m-wkg" class="text-[10px] text-gray-500">-- W/kg</p>
                         </div>
-                        <div class="text-center border-l border-gray-100">
-                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">5m (VO2Max)</p>
-                            <p id="pc-5m" class="text-sm font-bold text-yellow-600">-- W</p>
-                            <p id="pc-5m-wkg" class="text-[10px] text-gray-400">-- W/kg</p>
+                        <div class="text-center border-l border-gray-700/50">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">5m (VO2Max)</p>
+                            <p id="pc-5m" class="text-sm font-bold text-yellow-500">-- W</p>
+                            <p id="pc-5m-wkg" class="text-[10px] text-gray-500">-- W/kg</p>
                         </div>
-                        <div class="text-center border-l border-gray-100">
-                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">20m (FTP)</p>
-                            <p id="pc-20m" class="text-sm font-bold text-yellow-600">-- W</p>
-                            <p id="pc-20m-wkg" class="text-[10px] text-gray-400">-- W/kg</p>
+                        <div class="text-center border-l border-gray-700/50">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">20m (FTP)</p>
+                            <p id="pc-20m" class="text-sm font-bold text-yellow-500">-- W</p>
+                            <p id="pc-20m-wkg" class="text-[10px] text-gray-500">-- W/kg</p>
                         </div>
                     </div>
                 </div>
@@ -413,46 +432,46 @@
         </div>
         
         <!-- Modal para Gráficas Superpuestas -->
-        <div id="chartModal" class="hidden fixed inset-0 z-50 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 opacity-0 transition-opacity duration-300">
-            <div class="bg-white w-full h-full sm:w-[98vw] sm:h-[98vh] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300 max-w-none" id="chartModalContent">
-                <div class="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
-                    <h2 class="text-xl font-bold flex items-center gap-2 text-gray-800">
-                        <i data-lucide="activity" class="w-6 h-6 text-blue-600"></i> Análisis Comparativo
+        <div id="chartModal" class="hidden fixed inset-0 z-50 bg-gray-950/90 backdrop-blur-md flex items-center justify-center p-0 sm:p-4 opacity-0 transition-opacity duration-300">
+            <div class="bg-gray-900 border border-gray-700 w-full h-full sm:w-[98vw] sm:h-[98vh] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300 max-w-none" id="chartModalContent">
+                <div class="flex justify-between items-center p-4 border-b border-gray-700 bg-gray-800/50">
+                    <h2 class="text-xl font-bold flex items-center gap-2 text-white">
+                        <i data-lucide="activity" class="w-6 h-6 text-teal-500"></i> Análisis Comparativo
                     </h2>
-                    <button onclick="closeModalChart()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors">
+                    <button onclick="closeModalChart()" class="text-gray-400 hover:text-rose-400 hover:bg-gray-800 p-2 rounded-lg transition-colors">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
                 <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
-                    <div class="w-full md:w-64 border-r border-gray-200 p-5 bg-white flex flex-col gap-4 overflow-y-auto shrink-0">
-                        <h3 class="font-semibold text-sm text-gray-500 uppercase tracking-wider mb-2">Superponer Métricas</h3>
+                    <div class="w-full md:w-64 border-r border-gray-700 p-5 bg-gray-900 flex flex-col gap-4 overflow-y-auto shrink-0">
+                        <h3 class="font-semibold text-sm text-gray-400 uppercase tracking-wider mb-2">Superponer Métricas</h3>
                         
-                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
-                            <input type="checkbox" value="ele" class="modal-toggle w-4 h-4 text-emerald-500 rounded focus:ring-emerald-500">
-                            <span class="text-sm font-medium flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-emerald-500"></div> Elevación</span>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer border border-transparent hover:border-gray-700 transition-colors">
+                            <input type="checkbox" value="ele" class="modal-toggle w-4 h-4 text-teal-500 bg-gray-700 border-gray-600 rounded focus:ring-teal-500 focus:ring-offset-gray-900">
+                            <span class="text-sm font-medium flex items-center gap-2 text-gray-300"><div class="w-3 h-3 rounded-full bg-teal-500"></div> Elevación</span>
                         </label>
-                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
-                            <input type="checkbox" value="speed" class="modal-toggle w-4 h-4 text-blue-500 rounded focus:ring-blue-500">
-                            <span class="text-sm font-medium flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-500"></div> Velocidad</span>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer border border-transparent hover:border-gray-700 transition-colors">
+                            <input type="checkbox" value="speed" class="modal-toggle w-4 h-4 text-sky-500 bg-gray-700 border-gray-600 rounded focus:ring-sky-500 focus:ring-offset-gray-900">
+                            <span class="text-sm font-medium flex items-center gap-2 text-gray-300"><div class="w-3 h-3 rounded-full bg-sky-500"></div> Velocidad</span>
                         </label>
-                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
-                            <input type="checkbox" value="power" class="modal-toggle w-4 h-4 text-yellow-500 rounded focus:ring-yellow-500">
-                            <span class="text-sm font-medium flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-yellow-500"></div> Potencia</span>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer border border-transparent hover:border-gray-700 transition-colors">
+                            <input type="checkbox" value="power" class="modal-toggle w-4 h-4 text-yellow-500 bg-gray-700 border-gray-600 rounded focus:ring-yellow-500 focus:ring-offset-gray-900">
+                            <span class="text-sm font-medium flex items-center gap-2 text-gray-300"><div class="w-3 h-3 rounded-full bg-yellow-500"></div> Potencia</span>
                         </label>
-                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
-                            <input type="checkbox" value="hr" class="modal-toggle w-4 h-4 text-red-500 rounded focus:ring-red-500">
-                            <span class="text-sm font-medium flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div> FC</span>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer border border-transparent hover:border-gray-700 transition-colors">
+                            <input type="checkbox" value="hr" class="modal-toggle w-4 h-4 text-rose-500 bg-gray-700 border-gray-600 rounded focus:ring-rose-500 focus:ring-offset-gray-900">
+                            <span class="text-sm font-medium flex items-center gap-2 text-gray-300"><div class="w-3 h-3 rounded-full bg-rose-500"></div> FC</span>
                         </label>
-                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
-                            <input type="checkbox" value="cad" class="modal-toggle w-4 h-4 text-teal-500 rounded focus:ring-teal-500">
-                            <span class="text-sm font-medium flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-teal-500"></div> Cadencia</span>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer border border-transparent hover:border-gray-700 transition-colors">
+                            <input type="checkbox" value="cad" class="modal-toggle w-4 h-4 text-lime-500 bg-gray-700 border-gray-600 rounded focus:ring-lime-500 focus:ring-offset-gray-900">
+                            <span class="text-sm font-medium flex items-center gap-2 text-gray-300"><div class="w-3 h-3 rounded-full bg-lime-500"></div> Cadencia</span>
                         </label>
-                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
-                            <input type="checkbox" value="temp" class="modal-toggle w-4 h-4 text-orange-500 rounded focus:ring-orange-500">
-                            <span class="text-sm font-medium flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-orange-500"></div> Temperatura</span>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer border border-transparent hover:border-gray-700 transition-colors">
+                            <input type="checkbox" value="temp" class="modal-toggle w-4 h-4 text-orange-500 bg-gray-700 border-gray-600 rounded focus:ring-orange-500 focus:ring-offset-gray-900">
+                            <span class="text-sm font-medium flex items-center gap-2 text-gray-300"><div class="w-3 h-3 rounded-full bg-orange-500"></div> Temperatura</span>
                         </label>
                     </div>
-                    <div class="flex-1 p-4 lg:p-6 bg-gray-50/50 relative h-full">
+                    <div class="flex-1 p-4 lg:p-6 bg-gray-900 relative h-full">
                         <canvas id="modalCanvas"></canvas>
                     </div>
                 </div>
@@ -463,35 +482,39 @@
     <script>
         lucide.createIcons();
 
+        // Configuración Global Dark Mode de Chart.js
+        Chart.defaults.color = '#9ca3af'; // Gris claro para los textos de gráficas
+        Chart.defaults.scale.grid.color = '#374151'; // Gris oscuro para las líneas de la cuadrícula
+
         let map;
         let mapLayerGroup;
         let mapTileLayer;
         let hoverMarker = null;
         let chartElevation, chartSpeed, chartHR, chartTemp, chartCad, chartPower;
         let modalChartInstance = null; 
-        let chartPowerCurveInstance = null; // NUEVA VARIABLE
+        let chartPowerCurveInstance = null;
         let xAxisMode = 'distance'; 
         let mergedTrack = []; 
         let rawTracks = [];
         let currentChartData = {}; 
         let hasRecalculated = false; 
         
-        // Variables para el análisis de segmentos
         let trimStartIdx = 0;
         let trimEndIdx = 0;
 
+        // Paleta de Colores inspirada en el Logo MNMTB
         const chartColors = {
-            ele: 'rgb(16, 185, 129)', 
-            eleBg: 'rgba(16, 185, 129, 0.2)',
-            speed: 'rgb(59, 130, 246)', 
-            speedBg: 'rgba(59, 130, 246, 0.2)',
-            hr: 'rgb(239, 68, 68)', 
-            hrBg: 'rgba(239, 68, 68, 0.2)',
-            temp: 'rgb(249, 115, 22)', 
+            ele: 'rgb(20, 184, 166)', // Teal 500 (Montaña frontal)
+            eleBg: 'rgba(20, 184, 166, 0.2)',
+            speed: 'rgb(56, 189, 248)', // Sky 400 (Cielo fresco)
+            speedBg: 'rgba(56, 189, 248, 0.2)',
+            hr: 'rgb(244, 63, 94)', // Rose 500 (Cielo atardecer)
+            hrBg: 'rgba(244, 63, 94, 0.2)',
+            temp: 'rgb(249, 115, 22)', // Orange 500
             tempBg: 'rgba(249, 115, 22, 0.2)',
-            cad: 'rgb(20, 184, 166)', 
-            cadBg: 'rgba(20, 184, 166, 0.2)',
-            power: 'rgb(234, 179, 8)', 
+            cad: 'rgb(163, 230, 53)', // Lime 400 (Tonos tierra/piedras)
+            cadBg: 'rgba(163, 230, 53, 0.2)',
+            power: 'rgb(234, 179, 8)', // Yellow 500 (Bicicleta)
             powerBg: 'rgba(234, 179, 8, 0.2)'
         };
 
@@ -526,22 +549,25 @@
 
         btnXDist.addEventListener('click', () => {
             xAxisMode = 'distance';
-            btnXDist.classList.replace('bg-gray-200', 'bg-blue-600');
-            btnXDist.classList.replace('text-gray-700', 'text-white');
-            btnXTime.classList.replace('bg-blue-600', 'bg-gray-200');
-            btnXTime.classList.replace('text-white', 'text-gray-700');
+            btnXDist.classList.replace('bg-gray-800', 'bg-teal-600');
+            btnXDist.classList.replace('text-gray-300', 'text-white');
+            btnXDist.classList.replace('border-gray-700', 'border-teal-500');
+            btnXTime.classList.replace('bg-teal-600', 'bg-gray-800');
+            btnXTime.classList.replace('text-white', 'text-gray-300');
+            btnXTime.classList.replace('border-teal-500', 'border-gray-700');
             renderCharts();
         });
         btnXTime.addEventListener('click', () => {
             xAxisMode = 'time';
-            btnXTime.classList.replace('bg-gray-200', 'bg-blue-600');
-            btnXTime.classList.replace('text-gray-700', 'text-white');
-            btnXDist.classList.replace('bg-blue-600', 'bg-gray-200');
-            btnXDist.classList.replace('text-white', 'text-gray-700');
+            btnXTime.classList.replace('bg-gray-800', 'bg-teal-600');
+            btnXTime.classList.replace('text-gray-300', 'text-white');
+            btnXTime.classList.replace('border-gray-700', 'border-teal-500');
+            btnXDist.classList.replace('bg-teal-600', 'bg-gray-800');
+            btnXDist.classList.replace('text-white', 'text-gray-300');
+            btnXDist.classList.replace('border-teal-500', 'border-gray-700');
             renderCharts();
         });
 
-        // Configurar los selectores de corte de segmento
         rangeStart.addEventListener('input', (e) => {
             let start = parseInt(e.target.value);
             let end = parseInt(rangeEnd.value);
@@ -582,13 +608,12 @@
             const btnDownload = document.getElementById('btnDownloadGPX');
             btnDownload.disabled = false;
             btnDownload.title = "Descarga tu entrenamiento con la potencia virtual calculada";
-            btnDownload.className = "w-full mt-6 py-2.5 bg-green-600 text-white rounded-lg font-medium shadow-sm transition-colors hover:bg-green-700 flex items-center justify-center gap-2";
+            btnDownload.className = "w-full mt-6 py-2.5 bg-teal-600 text-white rounded-lg font-bold shadow-md transition-colors hover:bg-teal-500 flex items-center justify-center gap-2 border border-teal-500";
             btnDownload.innerHTML = '<i data-lucide="download" class="w-4 h-4"></i> Descargar GPX (Potencia Virtual)';
             lucide.createIcons();
             
             if (rawTracks.length > 0) {
                 fuseTracks();
-                // Reiniciamos segmentación tras recalcular
                 trimStartIdx = 0;
                 trimEndIdx = mergedTrack.length - 1;
                 setupSegmentSliders();
@@ -623,14 +648,14 @@
                 trackList.innerHTML = '';
                 rawTracks.forEach(track => {
                     const isMaster = track.isMaster 
-                        ? '<span class="ml-auto text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-md">Pista Principal (GPS)</span>' 
-                        : '<span class="ml-auto text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded-md">Datos Extra (Pulso)</span>';
+                        ? '<span class="ml-auto text-xs font-bold bg-teal-900 text-teal-400 border border-teal-800 px-2 py-1 rounded-md">Pista Principal</span>' 
+                        : '<span class="ml-auto text-xs font-medium bg-gray-800 text-gray-400 border border-gray-700 px-2 py-1 rounded-md">Datos Extra</span>';
                     
                     trackList.innerHTML += `
-                        <li class="flex items-center gap-2 border-b border-gray-50 pb-2 mb-2 last:border-0 last:pb-0 last:mb-0">
-                            <i data-lucide="file-check" class="w-4 h-4 text-green-500 shrink-0"></i> 
-                            <span class="truncate max-w-[180px] font-medium text-gray-700" title="${track.name}">${track.name}</span> 
-                            <span class="text-xs text-gray-400">(${track.points.length} pts)</span>
+                        <li class="flex items-center gap-2 border-b border-gray-700/50 pb-2 mb-2 last:border-0 last:pb-0 last:mb-0">
+                            <i data-lucide="file-check" class="w-4 h-4 text-emerald-500 shrink-0"></i> 
+                            <span class="truncate max-w-[180px] font-medium text-gray-300" title="${track.name}">${track.name}</span> 
+                            <span class="text-xs text-gray-500">(${track.points.length} pts)</span>
                             ${isMaster}
                         </li>`;
                 });
@@ -650,7 +675,6 @@
             rangeEnd.value = trimEndIdx;
         }
 
-        // Obtiene la porción del track seleccionada para el análisis
         function getWorkingTrack() {
             if(!mergedTrack.length) return [];
             return mergedTrack.slice(trimStartIdx, trimEndIdx + 1);
@@ -945,7 +969,6 @@
             }
         }
 
-        // Calcula el pico de potencia para X segundos (Sliding Window Algorithm)
         function getPeakPower(track, seconds) {
             if (!hasRecalculated || track.length === 0) return '--';
             let maxAvg = 0;
@@ -959,7 +982,6 @@
                     startIdx++;
                 }
                 let windowDur = (track[endIdx].time - track[startIdx].time) / 1000;
-                // Validamos que haya un mínimo de datos para considerar el esfuerzo
                 if (windowDur >= seconds * 0.85) { 
                     let count = endIdx - startIdx + 1;
                     let avg = windowSum / count;
@@ -1066,7 +1088,6 @@
             let track = getWorkingTrack();
             if(!track.length) return;
             
-            // Etiquetas UI de Distancia/Segmentos
             const firstPoint = track[0];
             const lastPoint = track[track.length - 1];
             
@@ -1123,7 +1144,6 @@
             if (hasRecalculated && avgPower) {
                 document.getElementById('stat-power').innerText = Math.round(avgPower) + ' W';
                 document.getElementById('stat-wkg').innerText = '(' + (avgPower/mRider).toFixed(1) + ' W/kg)';
-                // Calorías: Trabajo (Kj) = Vatios Promedio * Segundos Activos / 1000. 1 Kj ~ 1 Kcal en cuerpo humano
                 kcal = (avgPower * activeSeconds) / 1000;
             } else {
                 document.getElementById('stat-power').innerText = '-- W';
@@ -1165,7 +1185,6 @@
                 }
             }
 
-            // Aplicar nativos solo si estamos viendo el track COMPLETO
             if (track.length === mergedTrack.length) {
                 let nativeA = null, nativeD = null;
                 rawTracks.forEach(t => {
@@ -1182,11 +1201,9 @@
             
             document.getElementById('stat-ascent').innerText = '+' + Math.round(totalAscent) + ' m';
             
-            // Calcular VAM (Metros verticales por hora)
             let vam = activeSeconds > 0 ? (totalAscent / activeSeconds) * 3600 : 0;
             document.getElementById('stat-vam').innerText = Math.round(vam) + ' m/h';
 
-            // ALGORITMO PARA EL NIVEL DE DUREZA Y ZONAS (Para el segmento seleccionado)
             let hardnessScore = 0;
             let currentSegDist = 0;
             let segmentEleStart = track.length > 0 ? track[0].baseEle : null;
@@ -1200,7 +1217,6 @@
                 let distKm = pt.dist - prevPt.dist;
                 currentSegDist += distKm;
 
-                // Zonas Cardíacas
                 if (pt.isMoving && pt.hr) {
                     let pct = pt.hr / assumedMaxHr;
                     if (pct >= 0.9) timeZ5 += pt.deltaT;
@@ -1210,7 +1226,6 @@
                     else if (pct >= 0.5) timeZ1 += pt.deltaT;
                 }
 
-                // Dificultad Terreno
                 if (currentSegDist >= 0.05 || i === track.length - 1) {
                     let grade = 0;
                     if (pt.baseEle !== null && !isNaN(pt.baseEle) && segmentEleStart !== null && !isNaN(segmentEleStart)) {
@@ -1232,7 +1247,6 @@
             hardnessScore += (totalAscent / 100);
             document.getElementById('stat-hardness').innerText = Math.round(hardnessScore) + ' pts';
 
-            // CÁLCULO DE TE (TRAINING EFFECT)
             let aerobicTE = 0;
             let anaerobicTE = 0;
             
@@ -1243,11 +1257,11 @@
                 if(totalZTime === 0) totalZTime = 1; 
                 
                 const zonesHtml = `
-                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z5</div><div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden"><div class="bg-red-500 h-full zone-bar" style="width: ${(timeZ5/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ5/60))}m</div></div>
-                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z4</div><div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden"><div class="bg-orange-500 h-full zone-bar" style="width: ${(timeZ4/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ4/60))}m</div></div>
-                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z3</div><div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden"><div class="bg-green-500 h-full zone-bar" style="width: ${(timeZ3/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ3/60))}m</div></div>
-                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z2</div><div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden"><div class="bg-blue-400 h-full zone-bar" style="width: ${(timeZ2/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ2/60))}m</div></div>
-                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z1</div><div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden"><div class="bg-gray-400 h-full zone-bar" style="width: ${(timeZ1/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ1/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z5</div><div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden"><div class="bg-rose-500 h-full zone-bar" style="width: ${(timeZ5/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ5/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z4</div><div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden"><div class="bg-orange-500 h-full zone-bar" style="width: ${(timeZ4/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ4/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z3</div><div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden"><div class="bg-emerald-500 h-full zone-bar" style="width: ${(timeZ3/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ3/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z2</div><div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden"><div class="bg-sky-400 h-full zone-bar" style="width: ${(timeZ2/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ2/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z1</div><div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden"><div class="bg-gray-500 h-full zone-bar" style="width: ${(timeZ1/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ1/60))}m</div></div>
                 `;
                 document.getElementById('hr-zones-container').innerHTML = zonesHtml;
                 
@@ -1272,27 +1286,27 @@
             document.getElementById('te-anaerobic-desc').innerText = anaerobicTE >= 4 ? "Capacidad Láctica Severa" : anaerobicTE >= 3 ? "Mejora Anaeróbica" : anaerobicTE >= 2 ? "Estímulo Ligero" : "Sin Estímulo Directo";
 
             let effortText = "Moderado";
-            let effortColor = "bg-green-100 text-green-700";
+            let effortColor = "bg-emerald-900/60 text-emerald-400 border border-emerald-800";
             
             if (avgHr && avgHr > 50) {
-                if (avgHr < 120) { effortText = "Recuperación"; effortColor = "bg-blue-100 text-blue-700"; }
-                else if (avgHr < 140) { effortText = "Moderado"; effortColor = "bg-green-100 text-green-700"; }
-                else if (avgHr < 160) { effortText = "Duro"; effortColor = "bg-orange-100 text-orange-700"; }
-                else { effortText = "Muy Duro"; effortColor = "bg-red-100 text-red-700"; }
+                if (avgHr < 120) { effortText = "Recuperación"; effortColor = "bg-sky-900/60 text-sky-400 border border-sky-800"; }
+                else if (avgHr < 140) { effortText = "Moderado"; effortColor = "bg-emerald-900/60 text-emerald-400 border border-emerald-800"; }
+                else if (avgHr < 160) { effortText = "Duro"; effortColor = "bg-orange-900/60 text-orange-400 border border-orange-800"; }
+                else { effortText = "Muy Duro"; effortColor = "bg-rose-900/60 text-rose-400 border border-rose-800"; }
             } else {
                 let hours = activeSeconds / 3600;
                 let intensity = hours > 0 ? hardnessScore / hours : 0;
-                if (intensity < 30) { effortText = "Paseo"; effortColor = "bg-blue-100 text-blue-700"; }
-                else if (intensity < 60) { effortText = "Moderado"; effortColor = "bg-green-100 text-green-700"; }
-                else if (intensity < 100) { effortText = "Duro"; effortColor = "bg-orange-100 text-orange-700"; }
-                else { effortText = "Muy Duro"; effortColor = "bg-red-100 text-red-700"; }
+                if (intensity < 30) { effortText = "Paseo"; effortColor = "bg-sky-900/60 text-sky-400 border border-sky-800"; }
+                else if (intensity < 60) { effortText = "Moderado"; effortColor = "bg-emerald-900/60 text-emerald-400 border border-emerald-800"; }
+                else if (intensity < 100) { effortText = "Duro"; effortColor = "bg-orange-900/60 text-orange-400 border border-orange-800"; }
+                else { effortText = "Muy Duro"; effortColor = "bg-rose-900/60 text-rose-400 border border-rose-800"; }
             }
             
             const effortBadge = document.getElementById('stat-effort');
             const effortContainer = document.getElementById('effort-container');
             
             effortBadge.innerText = effortText;
-            effortBadge.className = `text-lg font-bold px-2 py-1 rounded-md inline-block leading-none ${effortColor}`;
+            effortBadge.className = `text-sm font-bold px-3 py-1 rounded-md inline-block leading-none ${effortColor}`;
             
             if (avgHr && avgHr > 50) {
                 effortContainer.title = "Esfuerzo estimado en base a la medición real de tus pulsaciones medias (FC).";
@@ -1300,7 +1314,6 @@
                 effortContainer.title = "Esfuerzo estimado evaluando algorítmicamente la dureza del terreno (pendientes), la velocidad y la duración (sin datos de pulso).";
             }
 
-            // Power Curve
             let p5 = getPeakPower(track, 5);
             let p60 = getPeakPower(track, 60);
             let p300 = getPeakPower(track, 300);
@@ -1316,7 +1329,6 @@
             document.getElementById('pc-5m-wkg').innerText = p300 !== '--' ? (p300/mRider).toFixed(1) + ' W/kg' : '-- W/kg';
             document.getElementById('pc-20m-wkg').innerText = p1200 !== '--' ? (p1200/mRider).toFixed(1) + ' W/kg' : '-- W/kg';
 
-            // Tabla Estadísticas Detalladas
             const tbody = document.getElementById('detailed-stats-body');
             tbody.innerHTML = '';
 
@@ -1357,20 +1369,18 @@
             rows.forEach(r => {
                 const blurClass = (!hasRecalculated && (r.name === 'Potencia Estimada (W)' || r.name === 'Calorías Estimadas')) ? 'blur-[2px] opacity-50 select-none' : '';
                 tbody.innerHTML += `
-                    <tr class="transition-colors hover:bg-gray-50 ${blurClass}">
-                        <td class="py-3 px-4 font-medium text-gray-700">${r.name}</td>
-                        <td class="py-3 px-4 text-gray-600 font-bold text-blue-600">${r.total}</td>
-                        <td class="py-3 px-4 text-gray-600">${formatVal(r.m.min, r.dec)}</td>
-                        <td class="py-3 px-4 text-gray-600 font-semibold">${formatVal(r.m.avg, r.dec)}</td>
-                        <td class="py-3 px-4 text-gray-600">${formatVal(r.m.max, r.dec)}</td>
+                    <tr class="transition-colors hover:bg-gray-800 ${blurClass}">
+                        <td class="py-3 px-4 font-medium text-gray-300">${r.name}</td>
+                        <td class="py-3 px-4 text-teal-400 font-bold">${r.total}</td>
+                        <td class="py-3 px-4 text-gray-400">${formatVal(r.m.min, r.dec)}</td>
+                        <td class="py-3 px-4 text-gray-200 font-semibold">${formatVal(r.m.avg, r.dec)}</td>
+                        <td class="py-3 px-4 text-gray-400">${formatVal(r.m.max, r.dec)}</td>
                     </tr>
                 `;
             });
         }
 
         function syncHighlight(globalIndex, source) {
-            // El índice recibido pertenece al track recortado (workingTrack). 
-            // Necesitamos usarlo directamente.
             let track = getWorkingTrack();
             if (!track || !track[globalIndex]) return;
             const pt = track[globalIndex];
@@ -1379,8 +1389,8 @@
                 if (!hoverMarker) {
                     hoverMarker = L.circleMarker([pt.lat, pt.lon], {
                         radius: 6,
-                        color: '#1d4ed8',
-                        fillColor: '#3b82f6',
+                        color: '#fff',
+                        fillColor: '#14b8a6', // Teal 500
                         fillOpacity: 1,
                         weight: 2,
                         zIndexOffset: 1000
@@ -1438,7 +1448,6 @@
 
                 map = L.map('map', { layers: [osm] });
                 
-                // Añadir Control de Capas de Leaflet
                 L.control.layers({
                     "Mapa Normal": osm,
                     "Topográfico": topo,
@@ -1484,7 +1493,6 @@
             let bounds = L.latLngBounds();
             let assumedMaxHr = 185;
             
-            // Si pintamos con colores dinámicos, necesitamos dibujar tramo a tramo
             let currentLine = [];
             let currentColor = null;
 
@@ -1494,28 +1502,27 @@
                 
                 bounds.extend([pt.lat, pt.lon]);
 
-                let targetColor = '#3b82f6'; // Solid Blue
+                let targetColor = '#14b8a6'; // Base Teal
 
                 if (colorMode === 'speed') {
                     let speed = pt.speed || 0;
-                    if (speed < 15) targetColor = '#3b82f6'; // Blue (Lento)
-                    else if (speed < 25) targetColor = '#10b981'; // Green (Moderado)
+                    if (speed < 15) targetColor = '#14b8a6'; // Teal (Lento)
+                    else if (speed < 25) targetColor = '#10b981'; // Emerald (Moderado)
                     else if (speed < 35) targetColor = '#eab308'; // Yellow (Rápido)
                     else if (speed < 45) targetColor = '#f97316'; // Orange (Muy rápido)
-                    else targetColor = '#ef4444'; // Red (Sprint/Bajada rápida)
+                    else targetColor = '#f43f5e'; // Rose (Sprint/Bajada rápida)
                 } 
                 else if (colorMode === 'hr' && pt.hr) {
                     let pct = pt.hr / assumedMaxHr;
-                    if (pct < 0.6) targetColor = '#9ca3af'; // Gray Z1
-                    else if (pct < 0.7) targetColor = '#60a5fa'; // Blue Z2
-                    else if (pct < 0.8) targetColor = '#34d399'; // Green Z3
+                    if (pct < 0.6) targetColor = '#6b7280'; // Gray Z1
+                    else if (pct < 0.7) targetColor = '#38bdf8'; // Sky Z2
+                    else if (pct < 0.8) targetColor = '#10b981'; // Emerald Z3
                     else if (pct < 0.9) targetColor = '#f97316'; // Orange Z4
-                    else targetColor = '#ef4444'; // Red Z5
+                    else targetColor = '#f43f5e'; // Rose Z5
                 }
 
                 if (targetColor !== currentColor && currentLine.length > 0) {
-                    // Terminamos el tramo anterior y lo dibujamos
-                    currentLine.push([pt.lat, pt.lon]); // Conectar con el siguiente
+                    currentLine.push([pt.lat, pt.lon]);
                     L.polyline(currentLine, {color: currentColor, weight: 4}).addTo(mapLayerGroup);
                     currentLine = [[pt.lat, pt.lon]];
                     currentColor = targetColor;
@@ -1571,7 +1578,6 @@
             createChart('chartCad', chartCad, 'Cadencia (rpm)', labels, cadData, chartColors.cad, chartColors.cadBg, xTitle, (c) => chartCad = c);
             createChart('chartTemp', chartTemp, 'Temperatura (°C)', labels, tempData, chartColors.temp, chartColors.tempBg, xTitle, (c) => chartTemp = c);
             
-            // Render Power Curve
             const curveDurations = [1, 5, 10, 30, 60, 120, 300, 600, 1200, 3600];
             const curveLabels = ['1s', '5s', '10s', '30s', '1m', '2m', '5m', '10m', '20m', '1h'];
             let curveData = [];
@@ -1604,14 +1610,14 @@
                     datasets: [{
                         label: 'Potencia Pico (W)',
                         data: data,
-                        borderColor: 'rgb(234, 179, 8)',
-                        backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                        borderColor: chartColors.power,
+                        backgroundColor: chartColors.powerBg,
                         borderWidth: 2,
                         fill: true,
                         pointRadius: 4,
                         pointHoverRadius: 6,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: 'rgb(234, 179, 8)',
+                        pointBackgroundColor: '#1f2937',
+                        pointBorderColor: chartColors.power,
                         tension: 0.4,
                         spanGaps: true
                     }]
@@ -1778,7 +1784,7 @@
                         }
                     },
                     plugins: {
-                        legend: { display: true, position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
+                        legend: { display: true, position: 'top', labels: { usePointStyle: true, boxWidth: 8, color: '#e5e7eb' } },
                         tooltip: { mode: 'index', intersect: false }
                     },
                     scales: scales
