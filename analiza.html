@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sincronizador de Entrenamientos GPX</title>
+    
+    <!-- Tailwind CSS para los estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS y JS para el mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Chart.js para las gráficas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        #map { height: 400px; z-index: 10; }
+        .drag-over { border-color: #14b8a6 !important; background-color: rgba(20, 184, 166, 0.1) !important; }
+        
+        /* Trama sutil de motivos de ciclismo (Relieve MTB - Stickerbomb) */
+        .bg-cycling-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='350' height='350' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%2314b8a6' stroke-width='2' stroke-opacity='0.07' stroke-linecap='round' stroke-linejoin='round'%3E%3C!-- Bicicleta --%3E%3Ccircle cx='80' cy='100' r='25'/%3E%3Ccircle cx='160' cy='100' r='25'/%3E%3Cpath d='M80 100 L110 60 L150 60 L120 100 Z'/%3E%3Cpath d='M150 60 L160 100'/%3E%3Cpath d='M160 100 L145 40 L155 35'/%3E%3Cpath d='M110 60 L105 45 L95 45 M105 45 L115 45'/%3E%3C!-- Montañas --%3E%3Cpath d='M250 120 l40 -60 l30 40 l20 -20 l40 60'/%3E%3Cpath d='M290 60 l-10 15 l10 -5 l10 10 l10 -15'/%3E%3C!-- Pedal plataforma --%3E%3Crect x='40' y='250' width='30' height='15' rx='3'/%3E%3Cpath d='M45 250 v-5 M65 250 v-5 M45 265 v5 M65 265 v5 M30 257 h10 M70 257 h10'/%3E%3C!-- Plato / Corona --%3E%3Ccircle cx='320' cy='280' r='30'/%3E%3Ccircle cx='320' cy='280' r='10'/%3E%3Cpath d='M320 245 v5 M320 315 v-5 M285 280 h5 M355 280 h-5 M295 255 l4 4 M345 305 l-4 -4 M345 255 l-4 4 M295 305 l4 -4'/%3E%3C!-- Casco --%3E%3Cpath d='M120 320 q30 -30 60 0 c5 5 -5 10 -10 10 h-40 c-5 0 -15 -5 -10 -10 z'/%3E%3Cpath d='M140 320 v-15 M160 320 v-10'/%3E%3C!-- GPS / Ciclocomputador --%3E%3Crect x='220' y='180' width='30' height='40' rx='4'/%3E%3Crect x='225' y='185' width='20' height='20' rx='2'/%3E%3Ccircle cx='230' cy='212' r='2'/%3E%3Ccircle cx='240' cy='212' r='2'/%3E%3C!-- Amortiguador --%3E%3Cpath d='M40 360 v-30 m-5 0 h10 m-5 0 v-10 m-8 -5 h16 m-16 -5 h16 m-16 -5 h16 m-8 0 v-15'/%3E%3C!-- Bidón de agua --%3E%3Cpath d='M230 350 v-20 c0 -5 5 -10 10 -10 h10 c5 0 10 5 10 10 v20 z'/%3E%3Cpath d='M240 320 v-5 h10 v5'/%3E%3C!-- Biela y pedal secundario --%3E%3Ccircle cx='120' cy='200' r='20'/%3E%3Cpath d='M120 200 l-20 20'/%3E%3Crect x='95' y='215' width='10' height='10'/%3E%3C!-- Eslabón cadena --%3E%3Crect x='280' y='30' width='40' height='16' rx='8'/%3E%3Ccircle cx='288' cy='38' r='4'/%3E%3Ccircle cx='312' cy='38' r='4'/%3E%3C!-- Huellas de taco --%3E%3Cpath d='M350 160l10-10l10 10l10-10l10 10m-40 10l10-10l10 10l10-10l10 10'/%3E%3C/g%3E%3C/svg%3E");
+            background-attachment: fixed;
+        }
+
+        /* Estilo Dark Glass Premium basado en el Logo */
+        .glass-panel { 
+            background: rgba(31, 41, 55, 0.6); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        }
+        
+        .zone-bar { transition: width 1s ease-out; }
+        
+        /* Sliders personalizados (Tema oscuro con turquesa) */
+        input[type=range] { -webkit-appearance: none; background: transparent; height: 4px; border-radius: 2px; }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #14b8a6; cursor: pointer; margin-top: -6px; box-shadow: 0 0 5px rgba(0,0,0,0.5); border: 2px solid #fff; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #4b5563; border-radius: 2px; }
+        
+        /* Ajustes para inputs oscuros */
+        input[type="number"], select { color-scheme: dark; }
+    </style>
+</head>
+<body class="bg-gray-900 bg-cycling-pattern text-gray-200 font-sans min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="bg-gray-950 text-white shadow-xl border-b border-teal-900/50 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo MNMTB" class="w-10 h-10 object-contain bg-gray-900 rounded-full p-0.5 shadow-sm border border-gray-800">
+                <h1 class="text-xl font-bold tracking-tight text-teal-400 hidden md:block">GPX Sync & Merge</h1>
+            </div>
+
+            <!-- Navegación central -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                <a href="index.html" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-teal-400 hover:bg-gray-900 hover:border-teal-900/50 transition-all group">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-gray-500 group-hover:text-teal-500"></i> <span class="hidden sm:inline">Miguel Navas MTB</span>
+                </a>
+                <a href="crearuta.html" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-yellow-500 hover:bg-gray-900 hover:border-yellow-900/50 transition-all group">
+                    <i data-lucide="map" class="w-4 h-4 text-gray-500 group-hover:text-yellow-500"></i> <span class="hidden sm:inline">Creador de Rutas</span>
+                </a>
+            </div>
+
+            <!-- Botón de pantalla completa -->
+            <button id="btnFullscreen" class="text-gray-600 hover:text-teal-400 transition-all p-2 rounded-lg hover:bg-gray-900 focus:outline-none opacity-60 hover:opacity-100" title="Pantalla completa">
+                <i data-lucide="maximize" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        
+        <!-- Pantalla de Inicio (Dropzone + Logo + Preview) -->
+        <div id="welcome-screen" class="flex flex-col gap-10 mt-4 mb-10">
+            <!-- Zona de subida de archivos -->
+            <section id="dropzone" class="border-2 border-dashed border-gray-700 rounded-xl p-10 text-center transition-colors bg-gray-800/40 shadow-sm cursor-pointer hover:bg-gray-800 relative z-20">
+                <input type="file" id="fileInput" multiple accept=".gpx" class="hidden" />
+                <div class="flex flex-col items-center justify-center gap-4 pointer-events-none">
+                    <i data-lucide="upload-cloud" class="w-16 h-16 text-teal-500"></i>
+                    <div>
+                        <p class="text-lg font-semibold text-gray-200">Arrastra tus archivos GPX aquí</p>
+                        <p class="text-sm text-gray-400">o haz clic para seleccionar archivos de distintos dispositivos</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Espacio del Logo y Preview -->
+            <div class="flex flex-col items-center gap-8 pointer-events-none px-4">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo Principal" class="max-w-full max-h-[22vh] object-contain drop-shadow-2xl opacity-90 relative z-10">
+                
+                <div class="w-full max-w-4xl relative mt-2">
+                    <!-- Degradado para fundir la imagen inferior con el fondo oscuro -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/10 to-transparent z-10 rounded-xl"></div>
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjjR4ECnleJ907Vli_vyDN2cdtMLsBVIwX5txdBXkmEE_xGPU0b8JHVFfz4Vzd8G_Bmb1aZ8QEV5fd9lxSDhaxryHW6e_Sci4a1TpFXZRSBDM93cdpHZoKK18dUjSzGxJ6Phy7G-Bnu2m5qheQbcVAOqIRcrkiyH-kuoP0BdV2-GhMpNWJzi5bALhY8ksve/w640-h632/Captura%20de%20pantalla%202026-03-30%20231914.png" alt="Vista previa de la herramienta" class="w-full h-auto rounded-xl shadow-[0_0_40px_rgba(20,184,166,0.1)] border border-gray-700/50 opacity-70 object-cover object-top max-h-[50vh]">
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenedor Principal (Dashboard) -->
+        <div id="dashboard" class="hidden space-y-6">
+            
+            <!-- Estadísticas -->
+            <section class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-teal-900/40 p-3 rounded-lg text-teal-400"><i data-lucide="map"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-400 font-medium">Distancia Total</p>
+                        <p id="stat-dist" class="text-2xl font-bold text-white">0.00 km</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-emerald-900/40 p-3 rounded-lg text-emerald-400"><i data-lucide="timer"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-400 font-medium">Tiempo Mov.</p>
+                        <p id="stat-time-active" class="text-2xl font-bold text-white">00:00:00</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-sky-900/40 p-3 rounded-lg text-sky-400"><i data-lucide="gauge"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-400 font-medium">Velocidad Med.</p>
+                        <p id="stat-speed" class="text-2xl font-bold text-white">0.0 km/h</p>
+                    </div>
+                </div>
+                <!-- Nivel de Dureza -->
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4 relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform"><i data-lucide="flame" class="w-24 h-24"></i></div>
+                    <div class="bg-rose-900/40 p-3 rounded-lg text-rose-400 z-10"><i data-lucide="flame"></i></div>
+                    <div class="z-10 flex flex-col justify-center">
+                        <p class="text-sm text-gray-400 font-medium">Nivel Dureza</p>
+                        <p id="stat-hardness" class="text-2xl font-bold text-rose-400">0 pts</p>
+                    </div>
+                </div>
+                <!-- Esfuerzo Estimado -->
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4 relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform"><i data-lucide="activity" class="w-24 h-24"></i></div>
+                    <div class="bg-violet-900/40 p-3 rounded-lg text-violet-400 z-10"><i data-lucide="activity"></i></div>
+                    <div class="z-10 flex flex-col justify-center w-full">
+                        <div class="flex items-center gap-1 cursor-help transition-opacity hover:opacity-80" id="effort-container" title="Estimación calculada a partir de los datos de la actividad">
+                            <p class="text-sm text-gray-400 font-medium">Esfuerzo</p>
+                            <i data-lucide="info" class="w-3.5 h-3.5 text-gray-500"></i>
+                        </div>
+                        <div class="mt-0.5">
+                            <span id="stat-effort" class="text-lg font-bold px-2 py-1 rounded-md inline-block leading-none bg-gray-800 text-gray-300">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Potencia -->
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4 relative">
+                    <div class="bg-yellow-900/40 p-3 rounded-lg text-yellow-400"><i data-lucide="zap"></i></div>
+                    <div id="powerStatContent" class="blur-sm select-none transition-all duration-500">
+                        <p class="text-sm text-gray-400 font-medium">Potencia Med.</p>
+                        <div class="flex items-baseline gap-1">
+                            <p id="stat-power" class="text-2xl font-bold text-white">-- W</p>
+                            <span id="stat-wkg" class="text-xs font-semibold text-yellow-500">(-- W/kg)</span>
+                        </div>
+                    </div>
+                    <div id="powerStatOverlay" class="absolute inset-0 flex items-center justify-center z-10 cursor-help transition-opacity duration-500" title="Ajusta los datos físicos y pulsa 'Aplicar y Recalcular' para desbloquear la estimación">
+                        <i data-lucide="info" class="w-6 h-6 text-gray-300 bg-gray-700/90 rounded-full p-1 shadow-md border border-gray-600"></i>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-red-900/40 p-3 rounded-lg text-red-400"><i data-lucide="heart"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-400 font-medium">FC (Med / Max)</p>
+                        <p class="text-2xl font-bold text-white"><span id="stat-hr-avg">--</span> <span class="text-lg text-gray-500 font-normal">/ <span id="stat-hr-max">--</span> bpm</span></p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-orange-900/40 p-3 rounded-lg text-orange-400"><i data-lucide="thermometer"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-400 font-medium">Temp. (Min / Max)</p>
+                        <p class="text-2xl font-bold flex items-baseline gap-1">
+                            <span id="stat-temp-min" class="text-sky-400">--</span>
+                            <span class="text-lg text-gray-600 font-normal">/</span>
+                            <span id="stat-temp-max" class="text-rose-400">--</span>
+                            <span class="text-base text-gray-500 font-normal">°C</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-lime-900/40 p-3 rounded-lg text-lime-400"><i data-lucide="activity-square"></i></div>
+                    <div>
+                        <p class="text-sm text-gray-400 font-medium">Cadencia Media</p>
+                        <p id="stat-cad-avg" class="text-2xl font-bold text-white">-- rpm</p>
+                    </div>
+                </div>
+                
+                <!-- Desnivel y VAM -->
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4">
+                    <div class="bg-indigo-900/40 p-3 rounded-lg text-indigo-400 shrink-0"><i data-lucide="trending-up"></i></div>
+                    <div class="flex flex-col gap-3">
+                        <div>
+                            <p class="text-sm text-gray-400 font-medium leading-none mb-1">Desnivel (+)</p>
+                            <p id="stat-ascent" class="text-2xl font-bold leading-none text-white">0 m</p>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1 cursor-help transition-opacity hover:opacity-80 mb-1" title="Velocidad de Ascenso Media (metros verticales por hora)">
+                                <p class="text-sm text-gray-400 font-medium leading-none">VAM</p>
+                                <i data-lucide="info" class="w-3.5 h-3.5 text-gray-500"></i>
+                            </div>
+                            <p id="stat-vam" class="text-xl font-bold leading-none text-gray-300">0 m/h</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mapa y Controles -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Columna Izquierda: Zonas + Mapa -->
+                <div class="lg:col-span-2 flex flex-col gap-6 order-2">
+                    <!-- PANEL: Zonas y Efecto de Entrenamiento -->
+                    <div id="zones-panel" class="glass-panel p-6 rounded-xl hidden grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-200 mb-4 flex items-center gap-2"><i data-lucide="heart-pulse" class="w-5 h-5 text-red-500"></i> Zonas Cardíacas</h3>
+                            <div class="space-y-3" id="hr-zones-container">
+                                <!-- Las barras se generan en JS -->
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-200 mb-4 flex items-center gap-2"><i data-lucide="bar-chart" class="w-5 h-5 text-teal-500"></i> Beneficio del Entrenamiento</h3>
+                            <div class="flex flex-col gap-6 justify-center h-full pb-4">
+                                <div>
+                                    <div class="flex justify-between items-end mb-1">
+                                        <span class="text-sm font-medium text-gray-400">Aeróbico (TE)</span>
+                                        <span id="te-aerobic-val" class="text-lg font-bold text-teal-400">0.0</span>
+                                    </div>
+                                    <div class="w-full bg-gray-800 rounded-full h-2.5 overflow-hidden">
+                                        <div id="te-aerobic-bar" class="bg-teal-500 h-full rounded-full zone-bar" style="width: 0%"></div>
+                                    </div>
+                                    <p id="te-aerobic-desc" class="text-xs text-gray-500 mt-1.5 font-medium">--</p>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-end mb-1">
+                                        <span class="text-sm font-medium text-gray-400">Anaeróbico (TE)</span>
+                                        <span id="te-anaerobic-val" class="text-lg font-bold text-purple-400">0.0</span>
+                                    </div>
+                                    <div class="w-full bg-gray-800 rounded-full h-2.5 overflow-hidden">
+                                        <div id="te-anaerobic-bar" class="bg-purple-500 h-full rounded-full zone-bar" style="width: 0%"></div>
+                                    </div>
+                                    <p id="te-anaerobic-desc" class="text-xs text-gray-500 mt-1.5 font-medium">--</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mapa interactivo y recortes -->
+                    <div class="glass-panel rounded-xl overflow-hidden relative flex flex-col">
+                        <!-- Control de colores flotante -->
+                        <div class="absolute top-4 left-14 z-[400] bg-gray-800/90 backdrop-blur-sm rounded-md shadow-lg px-3 py-1.5 text-xs font-semibold flex items-center gap-2 border border-gray-700">
+                            <i data-lucide="palette" class="w-3.5 h-3.5 text-gray-400"></i>
+                            <select id="mapColorMode" class="bg-transparent outline-none cursor-pointer text-gray-200">
+                                <option value="solid">Línea Sólida</option>
+                                <option value="speed">Velocidad</option>
+                                <option value="hr">Pulso (Zonas)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="relative w-full">
+                            <div id="map"></div>
+                        </div>
+                        
+                        <!-- Selector de Segmentos Interactivo -->
+                        <div id="segmentAnalyzer" class="space-y-3 bg-gray-800/30 p-5 border-t border-gray-700/50 hidden">
+                            <label class="text-sm font-medium text-gray-300 flex justify-between items-center">
+                                <span class="flex items-center gap-1.5"><i data-lucide="scissors" class="w-4 h-4 text-teal-400"></i> Cortar Segmento</span>
+                                <button id="btnResetSegment" class="text-xs text-teal-400 hover:text-teal-300 font-bold bg-teal-900/40 px-2 py-1 rounded transition-colors">Reset</button>
+                            </label>
+                            <div class="px-1 relative h-6 mt-2">
+                                <input type="range" id="rangeStart" class="absolute w-full top-0 pointer-events-auto" min="0" max="100" value="0">
+                                <input type="range" id="rangeEnd" class="absolute w-full top-0 pointer-events-auto" min="0" max="100" value="100">
+                            </div>
+                            <div class="flex justify-between text-xs font-medium text-gray-400 bg-gray-800/80 p-2 rounded-lg border border-gray-700">
+                                <span class="flex flex-col text-left w-1/3">Inicio <strong id="lblStartKm" class="text-white">0.0 km</strong></span>
+                                <span class="flex flex-col text-center border-l border-r border-gray-600 px-4 w-1/3">Dist. Análisis <strong id="lblSegmentDist" class="text-teal-400 text-sm">-- km</strong></span>
+                                <span class="flex flex-col text-right w-1/3">Fin <strong id="lblEndKm" class="text-white">Max km</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Controles -->
+                <div class="glass-panel p-6 rounded-xl flex flex-col gap-4 order-1">
+                    <h3 class="text-lg font-bold flex items-center gap-2 text-white"><i data-lucide="sliders" class="w-5 h-5 text-teal-500"></i> Controles</h3>
+                    
+                    <div class="space-y-2 pt-2">
+                        <label class="text-sm font-medium text-gray-400">Eje X de las Gráficas:</label>
+                        <div class="flex gap-2">
+                            <button id="btnXDist" class="flex-1 py-2 px-4 bg-teal-600 text-white rounded-lg font-medium shadow-sm transition-colors hover:bg-teal-500 border border-teal-500">Distancia</button>
+                            <button id="btnXTime" class="flex-1 py-2 px-4 bg-gray-800 text-gray-300 rounded-lg font-medium shadow-sm transition-colors hover:bg-gray-700 border border-gray-700">Tiempo</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 mt-2 pt-4 border-t border-gray-700/50">
+                        <label class="text-sm font-medium text-gray-400">Física y Origen (Potencia):</label>
+                        <div class="flex gap-2 mb-2">
+                            <div class="flex-1">
+                                <span class="text-xs text-gray-500 ml-1">Ciclista (kg)</span>
+                                <input type="number" id="inputRiderWeight" value="105" class="w-full px-3 py-2 border border-gray-600 rounded-lg text-sm bg-gray-800 text-gray-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none">
+                            </div>
+                            <div class="flex-1">
+                                <span class="text-xs text-gray-500 ml-1">Altura (cm)</span>
+                                <input type="number" id="inputRiderHeight" value="190" class="w-full px-3 py-2 border border-gray-600 rounded-lg text-sm bg-gray-800 text-gray-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none">
+                            </div>
+                            <div class="flex-1">
+                                <span class="text-xs text-gray-500 ml-1">Bicicleta (kg)</span>
+                                <input type="number" id="inputBikeWeight" value="15" class="w-full px-3 py-2 border border-gray-600 rounded-lg text-sm bg-gray-800 text-gray-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all outline-none">
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="flex-1">
+                                <span class="text-xs text-gray-500 ml-1">Terreno / Bici</span>
+                                <select id="inputBikeType" class="w-full px-3 py-2 border border-gray-600 rounded-lg text-sm bg-gray-800 text-gray-200 focus:border-teal-500 outline-none">
+                                    <option value="road">Carretera (Asfalto)</option>
+                                    <option value="gravel">Gravel (Mixto)</option>
+                                    <option value="mtb" selected>Montaña (Tierra)</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <span class="text-xs text-gray-500 ml-1">Origen de Datos</span>
+                                <select id="inputDeviceType" class="w-full px-3 py-2 border border-gray-600 rounded-lg text-sm bg-gray-800 text-gray-200 focus:border-teal-500 outline-none">
+                                    <option value="computer" selected>Ciclocomputador</option>
+                                    <option value="watch">Reloj GPS</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button id="btnRecalculate" class="w-full mt-3 py-2 bg-yellow-600/20 text-yellow-400 border border-yellow-600/50 rounded-lg font-bold text-sm hover:bg-yellow-600/30 transition-colors">Aplicar y Recalcular</button>
+                    </div>
+
+                    <div class="mt-4">
+                        <p class="text-sm font-medium text-gray-400 mb-2">Pistas cargadas:</p>
+                        <ul id="trackList" class="space-y-2 text-sm">
+                            <!-- Lista generada dinámicamente -->
+                        </ul>
+                        
+                        <!-- BOTÓN DE EXPORTACIÓN -->
+                        <button id="btnDownloadGPX" disabled title="Ajusta los datos físicos y pulsa 'Aplicar y Recalcular' para habilitar la descarga" class="w-full mt-6 py-2.5 bg-gray-800 text-gray-500 border border-gray-700 rounded-lg font-medium shadow-sm cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-300">
+                            <i data-lucide="calculator" class="w-4 h-4"></i> Descargar GPX (Requiere cálculo)
+                        </button>
+                        
+                        <!-- Reproductor Paseo Virtual -->
+                        <div id="virtualTourControls" class="hidden mt-6 pt-5 border-t border-gray-700/50">
+                            <div class="flex flex-col gap-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-bold text-gray-300 flex items-center gap-2">
+                                        <i data-lucide="navigation" class="w-4 h-4 text-teal-500"></i> Paseo Virtual
+                                    </span>
+                                    <div id="simTimeDisplay" class="text-sm font-mono text-teal-400 tracking-wider bg-gray-900 px-2 py-0.5 rounded border border-gray-700">00:00:00</div>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 bg-gray-900/80 rounded-lg p-2.5 border border-gray-700 shadow-inner">
+                                    <div class="flex items-center gap-1">
+                                        <button id="btnSimPlay" class="text-teal-400 hover:text-teal-300 hover:scale-110 transition-transform p-1.5 outline-none rounded-md hover:bg-gray-800" title="Reproducir">
+                                            <i data-lucide="play" class="w-6 h-6 fill-current"></i>
+                                        </button>
+                                        <button id="btnSimStop" class="text-gray-400 hover:text-rose-400 hover:scale-110 transition-transform p-1.5 outline-none rounded-md hover:bg-gray-800" title="Detener">
+                                            <i data-lucide="square" class="w-5 h-5 fill-current"></i>
+                                        </button>
+                                    </div>
+                                    <div class="h-6 w-px bg-gray-700"></div>
+                                    <div class="flex items-center gap-1.5 text-sm font-semibold text-gray-300">
+                                        <i data-lucide="fast-forward" class="w-4 h-4 text-sky-400"></i>
+                                        <select id="simSpeed" class="bg-transparent outline-none cursor-pointer hover:text-white text-sm">
+                                            <option value="1">1x</option>
+                                            <option value="5">5x</option>
+                                            <option value="10" selected>10x</option>
+                                            <option value="30">30x</option>
+                                            <option value="60">60x</option>
+                                            <option value="120">120x</option>
+                                        </select>
+                                    </div>
+                                    <div class="h-6 w-px bg-gray-700"></div>
+                                    <button id="btnSimFollow" class="text-teal-400 bg-gray-800 hover:bg-gray-700 transition-colors p-2 rounded-md outline-none border border-gray-700" title="Centrar cámara automáticamente">
+                                        <i data-lucide="crosshair" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gráficas -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-panel p-4 rounded-xl relative group">
+                    <button onclick="openModalChart('ele')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
+                    <canvas id="chartElevation"></canvas>
+                </div>
+                <div class="glass-panel p-4 rounded-xl relative group">
+                    <button onclick="openModalChart('speed')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
+                    <canvas id="chartSpeed"></canvas>
+                </div>
+                <div class="glass-panel p-4 rounded-xl relative group">
+                    <button onclick="openModalChart('hr')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
+                    <canvas id="chartHR"></canvas>
+                </div>
+                <div class="glass-panel p-4 rounded-xl relative group">
+                    <button onclick="openModalChart('cad')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
+                    <canvas id="chartCad"></canvas>
+                </div>
+                <div class="glass-panel p-4 rounded-xl md:col-span-2 relative group overflow-hidden" id="powerChartContainer">
+                    <div id="powerOverlay" class="absolute inset-0 z-30 bg-gray-900/80 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 transition-opacity duration-500">
+                        <i data-lucide="lock" class="w-10 h-10 text-gray-400 mb-3 bg-gray-800 border border-gray-700 rounded-full p-2 shadow-lg"></i>
+                        <p class="text-sm font-medium text-gray-200">Ajusta tu peso y bici, luego haz clic en <br><span class="font-bold text-yellow-500">"Aplicar y Recalcular"</span><br> para ver la gráfica de potencia.</p>
+                    </div>
+                    <button onclick="openModalChart('power')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
+                    <canvas id="chartPower"></canvas>
+                </div>
+                
+                <div class="glass-panel p-4 rounded-xl md:col-span-2 relative group">
+                    <button onclick="openModalChart('temp')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
+                    <canvas id="chartTemp"></canvas>
+                </div>
+            </section>
+
+            <!-- Estadísticas Detalladas -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Tabla Principal -->
+                <div class="glass-panel p-6 rounded-xl lg:col-span-2">
+                    <h3 class="text-lg font-bold flex items-center gap-2 mb-4 text-white"><i data-lucide="bar-chart-2" class="w-5 h-5 text-teal-500"></i> Estadísticas Detalladas</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-gray-700 text-sm text-gray-400 uppercase tracking-wider">
+                                    <th class="py-3 px-4">Métrica</th>
+                                    <th class="py-3 px-4">Total / Info</th>
+                                    <th class="py-3 px-4">Mínimo</th>
+                                    <th class="py-3 px-4">Media</th>
+                                    <th class="py-3 px-4">Máximo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailed-stats-body" class="text-sm divide-y divide-gray-700/50">
+                                <!-- Generado dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Power Curve Box -->
+                <div class="glass-panel p-6 rounded-xl flex flex-col relative" id="power-curve-container">
+                    <div id="curveOverlay" class="absolute inset-0 z-30 bg-gray-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4 transition-opacity duration-500 rounded-xl">
+                        <i data-lucide="lock" class="w-8 h-8 text-gray-400 mb-2 bg-gray-800 border border-gray-700 rounded-full p-1.5 shadow-lg"></i>
+                        <p class="text-xs font-medium text-gray-300">Recalcula la potencia para desbloquear.</p>
+                    </div>
+                    <h3 class="text-base font-bold flex items-center gap-2 mb-4 text-white border-b border-gray-700/50 pb-2"><i data-lucide="zap" class="w-5 h-5 text-yellow-500"></i> Curva de Potencia (Picos)</h3>
+                    
+                    <!-- Contenedor del Gráfico de Curva de Potencia -->
+                    <div class="flex-1 w-full relative min-h-[220px]">
+                        <canvas id="chartPowerCurve"></canvas>
+                    </div>
+                    
+                    <!-- Resumen rápido en la parte inferior -->
+                    <div class="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-gray-700/50">
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">5s (Sprint)</p>
+                            <p id="pc-5s" class="text-sm font-bold text-yellow-500">-- W</p>
+                            <p id="pc-5s-wkg" class="text-[10px] text-gray-500">-- W/kg</p>
+                        </div>
+                        <div class="text-center border-l border-gray-700/50">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">1m (Anaerób.)</p>
+                            <p id="pc-1m" class="text-sm font-bold text-yellow-500">-- W</p>
+                            <p id="pc-1m-wkg" class="text-[10px] text-gray-500">-- W/kg</p>
+                        </div>
+                        <div class="text-center border-l border-gray-700/50">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">5m (VO2Max)</p>
+                            <p id="pc-5m" class="text-sm font-bold text-yellow-500">-- W</p>
+                            <p id="pc-5m-wkg" class="text-[10px] text-gray-500">-- W/kg</p>
+                        </div>
+                        <div class="text-center border-l border-gray-700/50">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">20m (FTP)</p>
+                            <p id="pc-20m" class="text-sm font-bold text-yellow-500">-- W</p>
+                            <p id="pc-20m-wkg" class="text-[10px] text-gray-500">-- W/kg</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Modal para Gráficas Superpuestas -->
+        <div id="chartModal" class="hidden fixed inset-0 z-50 bg-gray-950/90 backdrop-blur-md flex items-center justify-center p-0 sm:p-4 opacity-0 transition-opacity duration-300">
+            <div class="bg-gray-900 border border-gray-700 w-full h-full sm:w-[98vw] sm:h-[98vh] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300 max-w-none" id="chartModalContent">
+                <div class="flex justify-between items-center p-4 border-b border-gray-700 bg-gray-800/50">
+                    <h2 class="text-xl font-bold flex items-center gap-2 text-white">
+                        <i data-lucide="activity" class="w-6 h-6 text-teal-500"></i> Análisis Comparativo
+                    </h2>
+                    <button onclick="closeModalChart()" class="text-gray-400 hover:text-rose-400 hover:bg-gray-800 p-2 rounded-lg transition-colors">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+                    <div class="w-full md:w-64 border-r border-gray-700 p-5 bg-gray-900 flex flex-col gap-4 overflow-y-auto shrink-0">
+                        <h3 class="font-semibold text-sm text-gray-400 uppercase tracking-wider mb-2">Superponer Métricas</h3>
+                        
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer border border-transparent hover:border-gray-700 transition-colors">
+                            <input type="checkbox" value="ele" class="modal-toggle w-4 h-4 text-teal-500 bg-gray-700 border-gray-600 rounded focus:ring-teal-500 focus:ring-offset-gray-900">
+                            <span class="text-sm font-medium flex items-center gap-2 text-gray-300"><div class="w-3 h-3 rounded-full bg-teal-500"></div> Elevación</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer border border-transparent hover:border-gray-700 transition-colors">
+                            <input type="checkbox" value="speed" class="modal-toggle w-4 h-4 text-sky-500 bg-gray-700 border-gray-600 rounded focus:ring-sky-500 focus:ring-offset-gray-900">
+                            <span class="text-sm font-medium flex items-center gap-2 text-gray-300"><div class="w-3 h-3 rounded-full bg-sky-500"></div> Velocidad</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer border border-transparent hover:border-gray-700 transition-colors">
+                            <input type="checkbox" value="power" class="modal-toggle w-4 h-4 text-yellow-500 bg-gray-700 border-gray-600 rounded focus:ring-yellow-500 focus:ring-offset-gray-900">
+                            <span class="text-sm font-medium flex items-center gap-2 text-gray-300"><div class="w-3 h-3 rounded-full bg-yellow-500"></div> Potencia</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer border border-transparent hover:border-gray-700 transition-colors">
+                            <input type="checkbox" value="hr" class="modal-toggle w-4 h-4 text-rose-500 bg-gray-700 border-gray-600 rounded focus:ring-rose-500 focus:ring-offset-gray-900">
+                            <span class="text-sm font-medium flex items-center gap-2 text-gray-300"><div class="w-3 h-3 rounded-full bg-rose-500"></div> FC</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer border border-transparent hover:border-gray-700 transition-colors">
+                            <input type="checkbox" value="cad" class="modal-toggle w-4 h-4 text-lime-500 bg-gray-700 border-gray-600 rounded focus:ring-lime-500 focus:ring-offset-gray-900">
+                            <span class="text-sm font-medium flex items-center gap-2 text-gray-300"><div class="w-3 h-3 rounded-full bg-lime-500"></div> Cadencia</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 cursor-pointer border border-transparent hover:border-gray-700 transition-colors">
+                            <input type="checkbox" value="temp" class="modal-toggle w-4 h-4 text-orange-500 bg-gray-700 border-gray-600 rounded focus:ring-orange-500 focus:ring-offset-gray-900">
+                            <span class="text-sm font-medium flex items-center gap-2 text-gray-300"><div class="w-3 h-3 rounded-full bg-orange-500"></div> Temperatura</span>
+                        </label>
+                    </div>
+                    <div class="flex-1 p-4 lg:p-6 bg-gray-900 relative h-full">
+                        <canvas id="modalCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        // Configuración Global Dark Mode de Chart.js
+        Chart.defaults.color = '#9ca3af'; // Gris claro para los textos de gráficas
+        Chart.defaults.scale.grid.color = '#374151'; // Gris oscuro para las líneas de la cuadrícula
+
+        let map;
+        let mapLayerGroup;
+        let hoverMarker = null;
+        let chartElevation, chartSpeed, chartHR, chartTemp, chartCad, chartPower;
+        let modalChartInstance = null; 
+        let chartPowerCurveInstance = null;
+        let xAxisMode = 'distance'; 
+        let mergedTrack = []; 
+        let rawTracks = [];
+        let currentChartData = {}; 
+        let hasRecalculated = false; 
+        
+        let trimStartIdx = 0;
+        let trimEndIdx = 0;
+
+        // Variables de Simulación (Paseo Virtual)
+        let simInterval = null;
+        let isSimulating = false;
+        let simCurrentIndex = 0;
+        let simFollowCamera = true;
+
+        // Paleta de Colores inspirada en el Logo MNMTB
+        const chartColors = {
+            ele: 'rgb(20, 184, 166)', // Teal 500 (Montaña frontal)
+            eleBg: 'rgba(20, 184, 166, 0.2)',
+            speed: 'rgb(56, 189, 248)', // Sky 400 (Cielo fresco)
+            speedBg: 'rgba(56, 189, 248, 0.2)',
+            hr: 'rgb(244, 63, 94)', // Rose 500 (Cielo atardecer)
+            hrBg: 'rgba(244, 63, 94, 0.2)',
+            temp: 'rgb(249, 115, 22)', // Orange 500
+            tempBg: 'rgba(249, 115, 22, 0.2)',
+            cad: 'rgb(163, 230, 53)', // Lime 400 (Tonos tierra/piedras)
+            cadBg: 'rgba(163, 230, 53, 0.2)',
+            power: 'rgb(234, 179, 8)', // Yellow 500 (Bicicleta)
+            powerBg: 'rgba(234, 179, 8, 0.2)'
+        };
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const dashboard = document.getElementById('dashboard');
+        const btnXDist = document.getElementById('btnXDist');
+        const btnXTime = document.getElementById('btnXTime');
+        const btnRecalculate = document.getElementById('btnRecalculate');
+        const btnDownloadGPX = document.getElementById('btnDownloadGPX');
+        const inputRiderWeight = document.getElementById('inputRiderWeight');
+        const inputRiderHeight = document.getElementById('inputRiderHeight');
+        const inputBikeWeight = document.getElementById('inputBikeWeight');
+        const inputBikeType = document.getElementById('inputBikeType');
+        const inputDeviceType = document.getElementById('inputDeviceType');
+
+        const rangeStart = document.getElementById('rangeStart');
+        const rangeEnd = document.getElementById('rangeEnd');
+        const mapColorMode = document.getElementById('mapColorMode');
+        const btnFullscreen = document.getElementById('btnFullscreen');
+
+        // Lógica de pantalla completa
+        if (btnFullscreen) {
+            btnFullscreen.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Error al activar pantalla completa: ${err.message}`);
+                    });
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            });
+
+            document.addEventListener('fullscreenchange', () => {
+                const icon = btnFullscreen.querySelector('i');
+                if (document.fullscreenElement) {
+                    icon.setAttribute('data-lucide', 'minimize');
+                    btnFullscreen.title = "Salir de pantalla completa";
+                } else {
+                    icon.setAttribute('data-lucide', 'maximize');
+                    btnFullscreen.title = "Pantalla completa";
+                }
+                lucide.createIcons();
+            });
+        }
+
+        // Lógica del Paseo Virtual
+        document.getElementById('btnSimPlay').addEventListener('click', () => {
+            if (isSimulating) pauseSimulation();
+            else startSimulation();
+        });
+
+        document.getElementById('btnSimStop').addEventListener('click', stopSimulation);
+
+        document.getElementById('btnSimFollow').addEventListener('click', (e) => {
+            simFollowCamera = !simFollowCamera;
+            const btn = e.currentTarget;
+            if (simFollowCamera) {
+                btn.classList.add('text-teal-400', 'bg-gray-800');
+                btn.classList.remove('text-gray-500', 'bg-transparent');
+            } else {
+                btn.classList.remove('text-teal-400', 'bg-gray-800');
+                btn.classList.add('text-gray-500', 'bg-transparent');
+            }
+        });
+
+        function startSimulation() {
+            let track = getWorkingTrack();
+            if (!track.length) return;
+
+            if (simCurrentIndex >= track.length - 1) simCurrentIndex = 0;
+
+            isSimulating = true;
+            document.getElementById('btnSimPlay').innerHTML = '<i data-lucide="pause" class="w-6 h-6 fill-current"></i>';
+            document.getElementById('btnSimPlay').classList.replace('text-teal-400', 'text-yellow-400');
+            lucide.createIcons();
+
+            let lastRealTime = performance.now();
+            let currentSimTime = track[simCurrentIndex].time;
+
+            // Actualizamos la simulación a 20 FPS (50ms)
+            simInterval = setInterval(() => {
+                let now = performance.now();
+                let dtReal = now - lastRealTime;
+                lastRealTime = now;
+                
+                let currentSpeed = parseInt(document.getElementById('simSpeed').value);
+                currentSimTime += dtReal * currentSpeed;
+
+                // Encontrar el siguiente índice que coincida con el tiempo de la simulación
+                while (simCurrentIndex < track.length - 1 && track[simCurrentIndex + 1].time <= currentSimTime) {
+                    simCurrentIndex++;
+                }
+
+                if (simCurrentIndex >= track.length - 1) {
+                    stopSimulation();
+                    simCurrentIndex = track.length - 1;
+                }
+
+                updateSimulationUI();
+            }, 50);
+        }
+
+        function pauseSimulation() {
+            isSimulating = false;
+            clearInterval(simInterval);
+            document.getElementById('btnSimPlay').innerHTML = '<i data-lucide="play" class="w-6 h-6 fill-current"></i>';
+            document.getElementById('btnSimPlay').classList.replace('text-yellow-400', 'text-teal-400');
+            lucide.createIcons();
+        }
+
+        function stopSimulation() {
+            pauseSimulation();
+            simCurrentIndex = 0;
+            updateSimulationUI();
+        }
+
+        function updateSimulationUI() {
+            let track = getWorkingTrack();
+            if (!track || !track[simCurrentIndex]) return;
+
+            // Sincronizar marcador y tooltips (forzando actualización sin animación para rendimiento)
+            syncHighlight(simCurrentIndex, 'sim', true);
+
+            // Centrar cámara si está activo
+            if (simFollowCamera && map && track[simCurrentIndex].lat) {
+                // Usamos animate:false para evitar acumulación en la cola de animaciones de Leaflet
+                map.panTo([track[simCurrentIndex].lat, track[simCurrentIndex].lon], { animate: false });
+            }
+
+            // Actualizar cronómetro
+            let activeSeconds = (track[simCurrentIndex].time - track[0].time) / 1000;
+            const h = Math.floor(activeSeconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((activeSeconds % 3600) / 60).toString().padStart(2, '0');
+            const s = Math.floor(activeSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('simTimeDisplay').innerText = `${h}:${m}:${s}`;
+        }
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFiles(e.target.files);
+        });
+
+        btnXDist.addEventListener('click', () => {
+            xAxisMode = 'distance';
+            btnXDist.classList.replace('bg-gray-800', 'bg-teal-600');
+            btnXDist.classList.replace('text-gray-300', 'text-white');
+            btnXDist.classList.replace('border-gray-700', 'border-teal-500');
+            btnXTime.classList.replace('bg-teal-600', 'bg-gray-800');
+            btnXTime.classList.replace('text-white', 'text-gray-300');
+            btnXTime.classList.replace('border-teal-500', 'border-gray-700');
+            renderCharts();
+        });
+        btnXTime.addEventListener('click', () => {
+            xAxisMode = 'time';
+            btnXTime.classList.replace('bg-gray-800', 'bg-teal-600');
+            btnXTime.classList.replace('text-gray-300', 'text-white');
+            btnXTime.classList.replace('border-gray-700', 'border-teal-500');
+            btnXDist.classList.replace('bg-teal-600', 'bg-gray-800');
+            btnXDist.classList.replace('text-white', 'text-gray-300');
+            btnXDist.classList.replace('border-teal-500', 'border-gray-700');
+            renderCharts();
+        });
+
+        rangeStart.addEventListener('input', (e) => {
+            let start = parseInt(e.target.value);
+            let end = parseInt(rangeEnd.value);
+            if (start >= end) { start = end - 1; e.target.value = start; }
+            trimStartIdx = start;
+            stopSimulation(); // Detener si movemos el slider
+            updateDashboardCore();
+        });
+        
+        rangeEnd.addEventListener('input', (e) => {
+            let end = parseInt(e.target.value);
+            let start = parseInt(rangeStart.value);
+            if (end <= start) { end = start + 1; e.target.value = end; }
+            trimEndIdx = end;
+            stopSimulation(); // Detener si movemos el slider
+            updateDashboardCore();
+        });
+
+        document.getElementById('btnResetSegment').addEventListener('click', () => {
+            if(mergedTrack.length > 0) {
+                trimStartIdx = 0;
+                trimEndIdx = mergedTrack.length - 1;
+                rangeStart.value = trimStartIdx;
+                rangeEnd.value = trimEndIdx;
+                stopSimulation();
+                updateDashboardCore();
+            }
+        });
+
+        mapColorMode.addEventListener('change', () => {
+            initOrUpdateMap();
+        });
+
+        btnRecalculate.addEventListener('click', () => {
+            hasRecalculated = true;
+            document.getElementById('powerOverlay').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('powerStatOverlay').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('powerStatContent').classList.remove('blur-sm', 'select-none');
+            document.getElementById('curveOverlay').classList.add('opacity-0', 'pointer-events-none');
+            
+            const btnDownload = document.getElementById('btnDownloadGPX');
+            btnDownload.disabled = false;
+            btnDownload.title = "Descarga tu entrenamiento con la potencia virtual calculada";
+            btnDownload.className = "w-full mt-6 py-2.5 bg-teal-600 text-white rounded-lg font-bold shadow-md transition-colors hover:bg-teal-500 flex items-center justify-center gap-2 border border-teal-500";
+            btnDownload.innerHTML = '<i data-lucide="download" class="w-4 h-4"></i> Descargar GPX (Potencia Virtual)';
+            lucide.createIcons();
+            
+            if (rawTracks.length > 0) {
+                fuseTracks();
+                trimStartIdx = 0;
+                trimEndIdx = mergedTrack.length - 1;
+                setupSegmentSliders();
+                stopSimulation();
+                updateDashboardCore();
+            }
+        });
+
+        btnDownloadGPX.addEventListener('click', downloadGPXFile);
+
+        async function handleFiles(files) {
+            rawTracks = [];
+            for (let file of files) {
+                const text = await file.text();
+                const track = parseGPX(text, file.name);
+                if (track.points.length > 0) {
+                    rawTracks.push(track);
+                }
+            }
+
+            if (rawTracks.length > 0) {
+                dashboard.classList.remove('hidden');
+                document.getElementById('welcome-screen').classList.add('hidden');
+                document.getElementById('segmentAnalyzer').classList.remove('hidden');
+                document.getElementById('virtualTourControls').classList.remove('hidden');
+                
+                fuseTracks();
+                
+                trimStartIdx = 0;
+                trimEndIdx = mergedTrack.length - 1;
+                setupSegmentSliders();
+                stopSimulation();
+                
+                const trackList = document.getElementById('trackList');
+                trackList.innerHTML = '';
+                rawTracks.forEach(track => {
+                    const isMaster = track.isMaster 
+                        ? '<span class="ml-auto text-xs font-bold bg-teal-900 text-teal-400 border border-teal-800 px-2 py-1 rounded-md">Pista Principal</span>' 
+                        : '<span class="ml-auto text-xs font-medium bg-gray-800 text-gray-400 border border-gray-700 px-2 py-1 rounded-md">Datos Extra</span>';
+                    
+                    trackList.innerHTML += `
+                        <li class="flex items-center gap-2 border-b border-gray-700/50 pb-2 mb-2 last:border-0 last:pb-0 last:mb-0">
+                            <i data-lucide="file-check" class="w-4 h-4 text-emerald-500 shrink-0"></i> 
+                            <span class="truncate max-w-[180px] font-medium text-gray-300" title="${track.name}">${track.name}</span> 
+                            <span class="text-xs text-gray-500">(${track.points.length} pts)</span>
+                            ${isMaster}
+                        </li>`;
+                });
+                lucide.createIcons();
+
+                updateDashboardCore();
+            } else {
+                alert("No se pudieron leer datos válidos de los archivos GPX.");
+            }
+        }
+
+        function setupSegmentSliders() {
+            if(!mergedTrack.length) return;
+            rangeStart.max = mergedTrack.length - 1;
+            rangeEnd.max = mergedTrack.length - 1;
+            rangeStart.value = trimStartIdx;
+            rangeEnd.value = trimEndIdx;
+        }
+
+        function getWorkingTrack() {
+            if(!mergedTrack.length) return [];
+            return mergedTrack.slice(trimStartIdx, trimEndIdx + 1);
+        }
+
+        function updateDashboardCore() {
+            updateStats();
+            initOrUpdateMap();
+            renderCharts();
+        }
+
+        function parseGPX(gpxText, filename) {
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(gpxText, "text/xml");
+            const trkpts = xml.getElementsByTagName("trkpt");
+            const points = [];
+
+            let nativeAscent = null;
+            let nativeDescent = null;
+            const climbNode = xml.getElementsByTagNameNS("*", "cumulativeClimb")[0] || xml.getElementsByTagName("cumulativeClimb")[0];
+            if (climbNode) nativeAscent = parseFloat(climbNode.textContent);
+            const descNode = xml.getElementsByTagNameNS("*", "cumulativeDecrease")[0] || xml.getElementsByTagName("cumulativeDecrease")[0];
+            if (descNode) nativeDescent = parseFloat(descNode.textContent);
+
+            for (let pt of trkpts) {
+                const lat = parseFloat(pt.getAttribute("lat"));
+                const lon = parseFloat(pt.getAttribute("lon"));
+                
+                const eleNode = pt.getElementsByTagName("ele")[0];
+                const ele = eleNode ? parseFloat(eleNode.textContent) : null;
+                
+                const timeNode = pt.getElementsByTagName("time")[0];
+                const time = timeNode ? new Date(timeNode.textContent).getTime() : null;
+
+                let hr = null;
+                const hrNode = pt.getElementsByTagNameNS("*", "hr")[0];
+                if (hrNode) hr = parseInt(hrNode.textContent);
+
+                let temp = null;
+                const tempNode = pt.getElementsByTagNameNS("*", "atemp")[0];
+                if (tempNode) temp = parseFloat(tempNode.textContent);
+
+                let cad = null;
+                const cadNode = pt.getElementsByTagNameNS("*", "cad")[0];
+                if (cadNode) cad = parseInt(cadNode.textContent);
+
+                if (lat && lon && time) {
+                    points.push({ lat, lon, ele, time, hr, temp, cad });
+                }
+            }
+            return { name: filename, points: points.sort((a,b) => a.time - b.time), nativeAscent, nativeDescent };
+        }
+
+        function fuseTracks() {
+            let tempTrack = [];
+            let startTime = 0;
+
+            if (rawTracks.length > 0) {
+                let masterTrack = rawTracks[0];
+                for (let i = 1; i < rawTracks.length; i++) {
+                    if (rawTracks[i].points.filter(p => p.lat).length > masterTrack.points.filter(p => p.lat).length) {
+                        masterTrack = rawTracks[i];
+                    }
+                }
+                
+                rawTracks.forEach(t => t.isMaster = (t === masterTrack));
+                
+                startTime = masterTrack.points.length > 0 ? masterTrack.points[0].time : 0;
+                rawTracks.forEach(t => t._lastIndex = 0);
+
+                masterTrack.points.forEach(pt => {
+                    let newPt = {
+                        time: pt.time,
+                        relativeTimeMin: (pt.time - startTime) / 60000,
+                        lat: pt.lat,
+                        lon: pt.lon,
+                        ele: pt.ele,
+                        hr: pt.hr,
+                        temp: pt.temp,
+                        cad: pt.cad
+                    };
+
+                    if (rawTracks.length > 1) {
+                        rawTracks.forEach(track => {
+                            if (track !== masterTrack) {
+                                while (track._lastIndex < track.points.length && 
+                                       track.points[track._lastIndex].time < pt.time - 2000) {
+                                    track._lastIndex++;
+                                }
+                                
+                                let searchIdx = track._lastIndex;
+                                let match = null;
+                                while (searchIdx < track.points.length && track.points[searchIdx].time <= pt.time + 2000) {
+                                    if (Math.abs(track.points[searchIdx].time - pt.time) <= 2000) {
+                                        match = track.points[searchIdx];
+                                        break; 
+                                    }
+                                    searchIdx++;
+                                }
+
+                                if (match) {
+                                    if (newPt.hr === null && match.hr !== null) newPt.hr = match.hr;
+                                    if (newPt.cad === null && match.cad !== null) newPt.cad = match.cad;
+                                    if (newPt.temp === null && match.temp !== null) newPt.temp = match.temp;
+                                    if (newPt.lat === null && match.lat !== null) {
+                                        newPt.lat = match.lat;
+                                        newPt.lon = match.lon;
+                                        newPt.ele = match.ele;
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    const lastSaved = tempTrack[tempTrack.length - 1];
+                    if (!lastSaved || (newPt.time - lastSaved.time) >= 1000) {
+                        tempTrack.push(newPt);
+                    }
+                });
+            }
+
+            for (let i = 0; i < tempTrack.length; i++) {
+                let pt = tempTrack[i];
+                let latSum = 0, lonSum = 0, eleSumExtremo = 0, eleSumBase = 0;
+                let count = 0, eleCountExtremo = 0, eleCountBase = 0;
+                
+                for (let j = Math.max(0, i - 3); j <= Math.min(tempTrack.length - 1, i + 3); j++) {
+                    if (tempTrack[j].lat && tempTrack[j].lon) {
+                        latSum += tempTrack[j].lat;
+                        lonSum += tempTrack[j].lon;
+                        count++;
+                    }
+                }
+                
+                for (let j = Math.max(0, i - 8); j <= Math.min(tempTrack.length - 1, i + 8); j++) {
+                    if (tempTrack[j].ele !== null) {
+                        eleSumExtremo += tempTrack[j].ele;
+                        eleCountExtremo++;
+                    }
+                }
+
+                for (let j = Math.max(0, i - 2); j <= Math.min(tempTrack.length - 1, i + 2); j++) {
+                    if (tempTrack[j].ele !== null) {
+                        eleSumBase += tempTrack[j].ele;
+                        eleCountBase++;
+                    }
+                }
+                
+                pt.smoothLat = count > 0 ? latSum / count : pt.lat;
+                pt.smoothLon = count > 0 ? lonSum / count : pt.lon;
+                pt.smoothEle = eleCountExtremo > 0 ? eleSumExtremo / eleCountExtremo : pt.ele;
+                pt.baseEle = eleCountBase > 0 ? eleSumBase / eleCountBase : pt.ele; 
+            }
+
+            let mRider = parseFloat(inputRiderWeight.value) || 105;
+            let hRider = parseFloat(inputRiderHeight.value) || 190;
+            let mBike = parseFloat(inputBikeWeight.value) || 15;
+            let totalMass = mRider + mBike;
+            let rho = 1.225; 
+            let gravity = 9.81;
+
+            let bikeType = inputBikeType ? inputBikeType.value : 'mtb';
+            let deviceType = inputDeviceType ? inputDeviceType.value : 'computer';
+
+            let cda = 0.32; 
+            let crr = 0.004; 
+
+            if (bikeType === 'mtb') {
+                cda = 0.36;   
+                crr = 0.009;  
+            } else if (bikeType === 'gravel') {
+                cda = 0.34;  
+                crr = 0.0065; 
+            } else { 
+                cda = 0.32;  
+                crr = 0.004; 
+            }
+
+            let maxAcceleration = deviceType === 'watch' ? 0.35 : 0.70;
+
+            mergedTrack = [];
+            let totalDist = 0;
+            
+            if (tempTrack.length > 0) {
+                let firstPt = tempTrack[0];
+                firstPt.dist = 0;
+                firstPt.speed = 0;
+                firstPt.power = 0;
+                firstPt.isMoving = false;
+                firstPt.deltaT = 0;
+                mergedTrack.push(firstPt);
+            }
+
+            let rawPowers = []; 
+
+            for (let i = 1; i < tempTrack.length; i++) {
+                let pt = tempTrack[i];
+                let prevPt = tempTrack[i-1];
+                let deltaT = (pt.time - prevPt.time) / 1000;
+                
+                if (deltaT <= 0) continue;
+
+                let distDelta = 0;
+                if (pt.smoothLat && pt.smoothLon && prevPt.smoothLat && prevPt.smoothLon) {
+                    distDelta = haversine(prevPt.smoothLat, prevPt.smoothLon, pt.smoothLat, pt.smoothLon);
+                }
+                
+                let instSpeedKmh = distDelta / (deltaT / 3600);
+                let isMoving = true;
+
+                if (deltaT > 5) {
+                    if (instSpeedKmh < 4.0) isMoving = false; 
+                } else {
+                    let lookBackIndex = i;
+                    while (lookBackIndex > 0 && ((pt.time - tempTrack[lookBackIndex].time) / 1000) < 15) {
+                        lookBackIndex--;
+                    }
+                    let realTimeWindow = (pt.time - tempTrack[lookBackIndex].time) / 1000;
+                    if (realTimeWindow > 3) {
+                        let pt1 = tempTrack[lookBackIndex];
+                        let netDist = haversine(pt1.smoothLat, pt1.smoothLon, pt.smoothLat, pt.smoothLon);
+                        let netSpeedKmh = netDist / (realTimeWindow / 3600);
+                        if (netSpeedKmh < 2.5) isMoving = false; 
+                    } else {
+                        if (instSpeedKmh < 2.5) isMoving = false;
+                    }
+                }
+
+                let finalSpeed = 0;
+                let instPower = 0;
+
+                if (isMoving) {
+                    totalDist += distDelta; 
+                    
+                    let currentRawSpeed = Math.min(instSpeedKmh, 80); 
+                    let prevSpeed = mergedTrack[i-1].speed || 0;
+                    finalSpeed = (currentRawSpeed * 0.3) + (prevSpeed * 0.7); 
+
+                    let ptA = tempTrack[Math.max(0, i - 5)];
+                    let ptB = tempTrack[Math.min(tempTrack.length - 1, i + 5)];
+                    let distForGrade = haversine(ptA.smoothLat, ptA.smoothLon, ptB.smoothLat, ptB.smoothLon);
+                    let grade = 0;
+                    if (distForGrade > 0.005 && ptB.smoothEle !== null && ptA.smoothEle !== null) {
+                        grade = (ptB.smoothEle - ptA.smoothEle) / (distForGrade * 1000); 
+                    }
+                    
+                    let maxGrade = deviceType === 'watch' ? 0.12 : 0.15;
+                    grade = Math.max(-maxGrade, Math.min(maxGrade, grade)); 
+
+                    let v_ms = (finalSpeed / 3.6); 
+                    
+                    let a_ms2 = 0;
+                    if (i > 4) {
+                        let pastPt = mergedTrack[i - 4];
+                        let dtAcc = (pt.time - pastPt.time) / 1000;
+                        if (dtAcc > 0) {
+                            a_ms2 = (v_ms - (pastPt.speed / 3.6)) / dtAcc;
+                        }
+                    } else {
+                        a_ms2 = (v_ms - (prevSpeed / 3.6)) / deltaT;
+                    }
+                    
+                    a_ms2 = Math.max(-maxAcceleration, Math.min(maxAcceleration, a_ms2)); 
+                    
+                    let P_rodadura = v_ms > 0 ? crr * totalMass * gravity * v_ms : 0;
+                    let P_aero = 0.5 * rho * cda * Math.pow(v_ms, 3);
+                    let P_gravedad = totalMass * gravity * v_ms * grade;
+                    let P_aceleracion = totalMass * v_ms * a_ms2; 
+
+                    let rawTotalPower = (P_rodadura + P_aero + P_gravedad + P_aceleracion) / 0.96; 
+
+                    instPower = rawTotalPower > 0 ? Math.min(rawTotalPower, 1100) : 0; 
+                }
+
+                pt.dist = totalDist;
+                pt.speed = finalSpeed;
+                pt.isMoving = isMoving; 
+                pt.deltaT = deltaT;
+                rawPowers.push(instPower);
+                
+                mergedTrack.push(pt);
+            }
+
+            for (let i = 1; i < mergedTrack.length; i++) {
+                let powSum = 0, count = 0;
+                let smoothWindow = deviceType === 'watch' ? 6 : 3;
+                for (let j = Math.max(0, i - smoothWindow); j <= Math.min(mergedTrack.length - 2, i + smoothWindow); j++) {
+                    powSum += rawPowers[j];
+                    count++;
+                }
+                mergedTrack[i].power = count > 0 ? powSum / count : rawPowers[i-1];
+            }
+        }
+
+        function getPeakPower(track, seconds) {
+            if (!hasRecalculated || track.length === 0) return '--';
+            let maxAvg = 0;
+            let windowSum = 0;
+            let startIdx = 0;
+            
+            for (let endIdx = 0; endIdx < track.length; endIdx++) {
+                windowSum += track[endIdx].power || 0;
+                while (startIdx <= endIdx && ((track[endIdx].time - track[startIdx].time) / 1000) > seconds) {
+                    windowSum -= track[startIdx].power || 0;
+                    startIdx++;
+                }
+                let windowDur = (track[endIdx].time - track[startIdx].time) / 1000;
+                if (windowDur >= seconds * 0.85) { 
+                    let count = endIdx - startIdx + 1;
+                    let avg = windowSum / count;
+                    if (avg > maxAvg) maxAvg = avg;
+                }
+            }
+            return maxAvg > 0 ? Math.round(maxAvg) : '--';
+        }
+
+        function downloadGPXFile() {
+            if (!mergedTrack || mergedTrack.length === 0) return;
+
+            let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx creator="GPX Sync &amp; Merge" version="1.1"
+  xmlns="http://www.topografix.com/GPX/1/1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd"
+  xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1">
+  <metadata>
+    <name>Entrenamiento Fusionado (Potencia Virtual)</name>
+    <desc>Generado por GPX Sync &amp; Merge. Los datos de potencia son virtuales/estimados basándose en la física del ciclista y el perfil del terreno.</desc>
+  </metadata>
+  <trk>
+    <name>Track Sincronizado</name>
+    <desc>Contiene datos sincronizados y potencia virtual estimada.</desc>
+    <type>cycling</type>
+    <trkseg>\n`;
+
+            mergedTrack.forEach(pt => {
+                if (pt.lat === null || pt.lon === null) return; 
+
+                gpx += `      <trkpt lat="${pt.lat}" lon="${pt.lon}">\n`;
+                
+                if (pt.baseEle !== null && !isNaN(pt.baseEle)) {
+                    gpx += `        <ele>${pt.baseEle.toFixed(1)}</ele>\n`;
+                }
+                
+                if (pt.time) {
+                    gpx += `        <time>${new Date(pt.time).toISOString()}</time>\n`;
+                }
+
+                let hasExtensions = false;
+                let extStr = `        <extensions>\n`;
+                
+                if (pt.power !== null && !isNaN(pt.power) && pt.power >= 0) {
+                    extStr += `          <power>${Math.round(pt.power)}</power>\n`;
+                    hasExtensions = true;
+                }
+
+                if ((pt.hr !== null && !isNaN(pt.hr)) || 
+                    (pt.cad !== null && !isNaN(pt.cad)) || 
+                    (pt.temp !== null && !isNaN(pt.temp))) {
+                    
+                    hasExtensions = true;
+                    extStr += `          <gpxtpx:TrackPointExtension>\n`;
+                    if (pt.hr !== null && !isNaN(pt.hr)) {
+                        extStr += `            <gpxtpx:hr>${Math.round(pt.hr)}</gpxtpx:hr>\n`;
+                    }
+                    if (pt.cad !== null && !isNaN(pt.cad)) {
+                        extStr += `            <gpxtpx:cad>${Math.round(pt.cad)}</gpxtpx:cad>\n`;
+                    }
+                    if (pt.temp !== null && !isNaN(pt.temp)) {
+                        extStr += `            <gpxtpx:atemp>${pt.temp.toFixed(1)}</gpxtpx:atemp>\n`;
+                    }
+                    extStr += `          </gpxtpx:TrackPointExtension>\n`;
+                }
+
+                extStr += `        </extensions>\n`;
+
+                if (hasExtensions) {
+                    gpx += extStr;
+                }
+
+                gpx += `      </trkpt>\n`;
+            });
+
+            gpx += `    </trkseg>
+  </trk>
+</gpx>`;
+
+            const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'track_fusionado_potencia_virtual.gpx';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function haversine(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function updateStats() {
+            let track = getWorkingTrack();
+            if(!track.length) return;
+            
+            const firstPoint = track[0];
+            const lastPoint = track[track.length - 1];
+            
+            let segmentDistance = lastPoint.dist - firstPoint.dist;
+            
+            document.getElementById('lblStartKm').innerText = firstPoint.dist.toFixed(1) + ' km';
+            document.getElementById('lblEndKm').innerText = lastPoint.dist.toFixed(1) + ' km';
+            document.getElementById('lblSegmentDist').innerText = segmentDistance.toFixed(1) + ' km';
+            
+            document.getElementById('stat-dist').innerText = segmentDistance.toFixed(2) + ' km';
+            
+            const totalSeconds = (lastPoint.time - firstPoint.time) / 1000;
+            let activeSeconds = 0;
+            for (let i = 1; i < track.length; i++) {
+                if (track[i].isMoving) {
+                    activeSeconds += track[i].deltaT;
+                }
+            }
+            if (activeSeconds <= 0) activeSeconds = totalSeconds; 
+
+            const formatTime = (secs) => {
+                const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+                const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+                const s = Math.floor(secs % 60).toString().padStart(2, '0');
+                return `${h}:${m}:${s}`;
+            };
+
+            document.getElementById('stat-time-active').innerText = formatTime(activeSeconds);
+
+            const avgSpeed = activeSeconds > 0 ? segmentDistance / (activeSeconds / 3600) : 0;
+            document.getElementById('stat-speed').innerText = avgSpeed.toFixed(1) + ' km/h';
+
+            const hrs = track.map(p => p.hr).filter(hr => hr !== null && !isNaN(hr));
+            const maxHr = hrs.length > 0 ? Math.max(...hrs) : '--';
+            const avgHr = hrs.length > 0 ? Math.round(hrs.reduce((a,b)=>a+b,0) / hrs.length) : null;
+            document.getElementById('stat-hr-max').innerText = maxHr;
+            document.getElementById('stat-hr-avg').innerText = avgHr !== null ? avgHr : '--';
+
+            const temps = track.map(p => p.temp).filter(t => t !== null && !isNaN(t));
+            const minTemp = temps.length > 0 ? Math.min(...temps).toFixed(1) : '--';
+            const maxTemp = temps.length > 0 ? Math.max(...temps).toFixed(1) : '--';
+            document.getElementById('stat-temp-min').innerText = minTemp;
+            document.getElementById('stat-temp-max').innerText = maxTemp;
+
+            const cads = track.map(p => p.cad).filter(c => c !== null && !isNaN(c));
+            const avgCad = cads.length > 0 ? Math.round(cads.reduce((a,b)=>a+b,0) / cads.length) : '--';
+            document.getElementById('stat-cad-avg').innerText = avgCad !== '--' ? avgCad + ' rpm' : '-- rpm';
+
+            const powers = track.filter(p => p.isMoving).map(p => p.power);
+            const avgPower = powers.length > 0 ? (powers.reduce((a,b)=>a+b,0) / powers.length) : null;
+            
+            let mRider = parseFloat(inputRiderWeight.value) || 105;
+            let kcal = 0;
+            if (hasRecalculated && avgPower) {
+                document.getElementById('stat-power').innerText = Math.round(avgPower) + ' W';
+                document.getElementById('stat-wkg').innerText = '(' + (avgPower/mRider).toFixed(1) + ' W/kg)';
+                kcal = (avgPower * activeSeconds) / 1000;
+            } else {
+                document.getElementById('stat-power').innerText = '-- W';
+                document.getElementById('stat-wkg').innerText = '(-- W/kg)';
+            }
+
+            let totalAscent = 0;
+            let totalDescent = 0;
+            
+            const validEles = track.filter(p => p.baseEle !== null && !isNaN(p.baseEle)).map(p => p.baseEle);
+
+            if (validEles.length > 0) {
+                let localMin = validEles[0];
+                let localMax = validEles[0];
+                let trend = 0; 
+                const ELE_THRESHOLD = 0.3; 
+
+                for (let i = 1; i < validEles.length; i++) {
+                    let ele = validEles[i];
+                    if (trend >= 0 && ele < localMax - ELE_THRESHOLD) {
+                        if (localMax > localMin) totalAscent += (localMax - localMin);
+                        trend = -1;
+                        localMin = ele;
+                        localMax = ele;
+                    } else if (trend <= 0 && ele > localMin + ELE_THRESHOLD) {
+                        if (localMax > localMin) totalDescent += (localMax - localMin);
+                        trend = 1;
+                        localMax = ele;
+                        localMin = ele;
+                    } else {
+                        if (ele > localMax) localMax = ele;
+                        if (ele < localMin) localMin = ele;
+                    }
+                }
+                if (trend === 1 && localMax > localMin) {
+                    totalAscent += (localMax - localMin);
+                } else if (trend === -1 && localMax > localMin) {
+                    totalDescent += (localMax - localMin);
+                }
+            }
+
+            if (track.length === mergedTrack.length) {
+                let nativeA = null, nativeD = null;
+                rawTracks.forEach(t => {
+                    if (t.nativeAscent !== null) {
+                        nativeA = t.nativeAscent;
+                        nativeD = t.nativeDescent;
+                    }
+                });
+                if (nativeA !== null) {
+                    totalAscent = nativeA;
+                    if (nativeD !== null) totalDescent = nativeD;
+                }
+            }
+            
+            document.getElementById('stat-ascent').innerText = '+' + Math.round(totalAscent) + ' m';
+            
+            let vam = activeSeconds > 0 ? (totalAscent / activeSeconds) * 3600 : 0;
+            document.getElementById('stat-vam').innerText = Math.round(vam) + ' m/h';
+
+            let hardnessScore = 0;
+            let currentSegDist = 0;
+            let segmentEleStart = track.length > 0 ? track[0].baseEle : null;
+            
+            let timeZ1 = 0, timeZ2 = 0, timeZ3 = 0, timeZ4 = 0, timeZ5 = 0;
+            let assumedMaxHr = maxHr !== '--' && maxHr > 140 ? maxHr : 185;
+            
+            for (let i = 1; i < track.length; i++) {
+                let pt = track[i];
+                let prevPt = track[i-1];
+                let distKm = pt.dist - prevPt.dist;
+                currentSegDist += distKm;
+
+                if (pt.isMoving && pt.hr) {
+                    let pct = pt.hr / assumedMaxHr;
+                    if (pct >= 0.9) timeZ5 += pt.deltaT;
+                    else if (pct >= 0.8) timeZ4 += pt.deltaT;
+                    else if (pct >= 0.7) timeZ3 += pt.deltaT;
+                    else if (pct >= 0.6) timeZ2 += pt.deltaT;
+                    else if (pct >= 0.5) timeZ1 += pt.deltaT;
+                }
+
+                if (currentSegDist >= 0.05 || i === track.length - 1) {
+                    let grade = 0;
+                    if (pt.baseEle !== null && !isNaN(pt.baseEle) && segmentEleStart !== null && !isNaN(segmentEleStart)) {
+                        let eleDiff = pt.baseEle - segmentEleStart;
+                        grade = (eleDiff / (currentSegDist * 1000)) * 100;
+                    }
+
+                    if (grade >= 15) hardnessScore += currentSegDist * 15;
+                    else if (grade >= 10) hardnessScore += currentSegDist * 10;
+                    else if (grade >= 5) hardnessScore += currentSegDist * 4.5;
+                    else if (grade >= 1) hardnessScore += currentSegDist * 1.5;
+                    else hardnessScore += currentSegDist * 0.6;
+
+                    currentSegDist = 0;
+                    segmentEleStart = pt.baseEle;
+                }
+            }
+            
+            hardnessScore += (totalAscent / 100);
+            document.getElementById('stat-hardness').innerText = Math.round(hardnessScore) + ' pts';
+
+            let aerobicTE = 0;
+            let anaerobicTE = 0;
+            
+            if (maxHr !== '--') {
+                document.getElementById('zones-panel').classList.replace('hidden', 'grid');
+                
+                let totalZTime = timeZ1 + timeZ2 + timeZ3 + timeZ4 + timeZ5;
+                if(totalZTime === 0) totalZTime = 1; 
+                
+                const zonesHtml = `
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z5</div><div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden"><div class="bg-rose-500 h-full zone-bar" style="width: ${(timeZ5/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ5/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z4</div><div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden"><div class="bg-orange-500 h-full zone-bar" style="width: ${(timeZ4/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ4/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z3</div><div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden"><div class="bg-emerald-500 h-full zone-bar" style="width: ${(timeZ3/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ3/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z2</div><div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden"><div class="bg-sky-400 h-full zone-bar" style="width: ${(timeZ2/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ2/60))}m</div></div>
+                    <div class="flex items-center text-xs gap-3"><div class="w-8 font-semibold text-gray-500">Z1</div><div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden"><div class="bg-gray-500 h-full zone-bar" style="width: ${(timeZ1/totalZTime)*100}%"></div></div><div class="w-10 text-right text-gray-400 font-medium">${Math.round((timeZ1/60))}m</div></div>
+                `;
+                document.getElementById('hr-zones-container').innerHTML = zonesHtml;
+                
+                aerobicTE = ((timeZ1*0.3 + timeZ2*1.0 + timeZ3*2.0 + timeZ4*2.5 + timeZ5*1.0) / 3600) * 1.8;
+                anaerobicTE = ((timeZ4*1.0 + timeZ5*2.5) / 1800) * 1.5;
+                
+            } else {
+                document.getElementById('zones-panel').classList.replace('grid', 'hidden');
+                aerobicTE = (activeSeconds / 3600) * (avgSpeed / 20) * 2;
+                anaerobicTE = (hardnessScore / 100);
+            }
+            
+            aerobicTE = Math.min(5.0, Math.max(0.0, aerobicTE));
+            anaerobicTE = Math.min(5.0, Math.max(0.0, anaerobicTE));
+            
+            document.getElementById('te-aerobic-val').innerText = aerobicTE.toFixed(1);
+            document.getElementById('te-aerobic-bar').style.width = `${(aerobicTE/5)*100}%`;
+            document.getElementById('te-aerobic-desc').innerText = aerobicTE >= 4 ? "Altamente Productivo" : aerobicTE >= 3 ? "Mejora Aeróbica" : "Mantenimiento Base";
+            
+            document.getElementById('te-anaerobic-val').innerText = anaerobicTE.toFixed(1);
+            document.getElementById('te-anaerobic-bar').style.width = `${(anaerobicTE/5)*100}%`;
+            document.getElementById('te-anaerobic-desc').innerText = anaerobicTE >= 4 ? "Capacidad Láctica Severa" : anaerobicTE >= 3 ? "Mejora Anaeróbica" : anaerobicTE >= 2 ? "Estímulo Ligero" : "Sin Estímulo Directo";
+
+            let effortText = "Moderado";
+            let effortColor = "bg-emerald-900/60 text-emerald-400 border border-emerald-800";
+            
+            if (avgHr && avgHr > 50) {
+                if (avgHr < 120) { effortText = "Recuperación"; effortColor = "bg-sky-900/60 text-sky-400 border border-sky-800"; }
+                else if (avgHr < 140) { effortText = "Moderado"; effortColor = "bg-emerald-900/60 text-emerald-400 border border-emerald-800"; }
+                else if (avgHr < 160) { effortText = "Duro"; effortColor = "bg-orange-900/60 text-orange-400 border border-orange-800"; }
+                else { effortText = "Muy Duro"; effortColor = "bg-rose-900/60 text-rose-400 border border-rose-800"; }
+            } else {
+                let hours = activeSeconds / 3600;
+                let intensity = hours > 0 ? hardnessScore / hours : 0;
+                if (intensity < 30) { effortText = "Paseo"; effortColor = "bg-sky-900/60 text-sky-400 border border-sky-800"; }
+                else if (intensity < 60) { effortText = "Moderado"; effortColor = "bg-emerald-900/60 text-emerald-400 border border-emerald-800"; }
+                else if (intensity < 100) { effortText = "Duro"; effortColor = "bg-orange-900/60 text-orange-400 border border-orange-800"; }
+                else { effortText = "Muy Duro"; effortColor = "bg-rose-900/60 text-rose-400 border border-rose-800"; }
+            }
+            
+            const effortBadge = document.getElementById('stat-effort');
+            const effortContainer = document.getElementById('effort-container');
+            
+            effortBadge.innerText = effortText;
+            effortBadge.className = `text-sm font-bold px-3 py-1 rounded-md inline-block leading-none ${effortColor}`;
+            
+            if (avgHr && avgHr > 50) {
+                effortContainer.title = "Esfuerzo estimado en base a la medición real de tus pulsaciones medias (FC).";
+            } else {
+                effortContainer.title = "Esfuerzo estimado evaluando algorítmicamente la dureza del terreno (pendientes), la velocidad y la duración (sin datos de pulso).";
+            }
+
+            let p5 = getPeakPower(track, 5);
+            let p60 = getPeakPower(track, 60);
+            let p300 = getPeakPower(track, 300);
+            let p1200 = getPeakPower(track, 1200);
+
+            document.getElementById('pc-5s').innerText = p5 !== '--' ? p5 + ' W' : '-- W';
+            document.getElementById('pc-1m').innerText = p60 !== '--' ? p60 + ' W' : '-- W';
+            document.getElementById('pc-5m').innerText = p300 !== '--' ? p300 + ' W' : '-- W';
+            document.getElementById('pc-20m').innerText = p1200 !== '--' ? p1200 + ' W' : '-- W';
+            
+            document.getElementById('pc-5s-wkg').innerText = p5 !== '--' ? (p5/mRider).toFixed(1) + ' W/kg' : '-- W/kg';
+            document.getElementById('pc-1m-wkg').innerText = p60 !== '--' ? (p60/mRider).toFixed(1) + ' W/kg' : '-- W/kg';
+            document.getElementById('pc-5m-wkg').innerText = p300 !== '--' ? (p300/mRider).toFixed(1) + ' W/kg' : '-- W/kg';
+            document.getElementById('pc-20m-wkg').innerText = p1200 !== '--' ? (p1200/mRider).toFixed(1) + ' W/kg' : '-- W/kg';
+
+            const tbody = document.getElementById('detailed-stats-body');
+            tbody.innerHTML = '';
+
+            const getMetrics = (arr) => {
+                const valid = arr.filter(v => v !== null && !isNaN(v));
+                if (!valid.length) return { min: '--', avg: '--', max: '--' };
+                const min = Math.min(...valid);
+                const max = Math.max(...valid);
+                const avg = valid.reduce((a,b)=>a+b,0) / valid.length;
+                return { min, avg, max };
+            };
+
+            const formatVal = (val, dec) => val === '--' ? val : val.toFixed(dec);
+
+            const eleMetrics = getMetrics(track.map(p => p.baseEle));
+            const speedMetrics = getMetrics(track.map(p => p.speed));
+            const hrMetrics = getMetrics(track.map(p => p.hr));
+            const cadMetrics = getMetrics(track.map(p => p.cad));
+            const tempMetrics = getMetrics(track.map(p => p.temp));
+            const powerMetrics = hasRecalculated ? getMetrics(track.filter(p => p.isMoving).map(p => p.power)) : { min: '--', avg: '--', max: '--' }; 
+
+            speedMetrics.avg = avgSpeed;
+
+            const rows = [
+                { name: 'Distancia (km)', m: {min:'--', avg:'--', max:'--'}, dec: 2, total: segmentDistance.toFixed(2) },
+                { name: 'Tiempo en Movimiento', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: formatTime(activeSeconds) },
+                { name: 'Elevación (m)', m: eleMetrics, dec: 0, total: '--' },
+                { name: 'Desnivel Acumulado (m)', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: `+${Math.round(totalAscent)} / -${Math.round(totalDescent)}` },
+                { name: 'VAM (Vel. Ascenso Media)', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: `${Math.round(vam)} m/h` },
+                { name: 'Velocidad (km/h)', m: speedMetrics, dec: 1, total: '--' },
+                { name: 'Potencia Estimada (W)', m: powerMetrics, dec: 0, total: hasRecalculated ? '--' : 'Pendiente' },
+                { name: 'Calorías Estimadas', m: {min:'--', avg:'--', max:'--'}, dec: 0, total: hasRecalculated ? `${Math.round(kcal)} kcal` : 'Pendiente' },
+                { name: 'Frec. Cardíaca (bpm)', m: hrMetrics, dec: 0, total: '--' },
+                { name: 'Cadencia (rpm)', m: cadMetrics, dec: 0, total: '--' },
+                { name: 'Temperatura (°C)', m: tempMetrics, dec: 1, total: '--' }
+            ];
+
+            rows.forEach(r => {
+                const blurClass = (!hasRecalculated && (r.name === 'Potencia Estimada (W)' || r.name === 'Calorías Estimadas')) ? 'blur-[2px] opacity-50 select-none' : '';
+                tbody.innerHTML += `
+                    <tr class="transition-colors hover:bg-gray-800 ${blurClass}">
+                        <td class="py-3 px-4 font-medium text-gray-300">${r.name}</td>
+                        <td class="py-3 px-4 text-teal-400 font-bold">${r.total}</td>
+                        <td class="py-3 px-4 text-gray-400">${formatVal(r.m.min, r.dec)}</td>
+                        <td class="py-3 px-4 text-gray-200 font-semibold">${formatVal(r.m.avg, r.dec)}</td>
+                        <td class="py-3 px-4 text-gray-400">${formatVal(r.m.max, r.dec)}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function syncHighlight(globalIndex, source, isAnimation = false) {
+            let track = getWorkingTrack();
+            if (!track || !track[globalIndex]) return;
+            const pt = track[globalIndex];
+
+            if (pt.lat && pt.lon && map) {
+                if (!hoverMarker) {
+                    hoverMarker = L.circleMarker([pt.lat, pt.lon], {
+                        radius: 6,
+                        color: '#fff',
+                        fillColor: source === 'sim' ? '#eab308' : '#14b8a6',
+                        fillOpacity: 1,
+                        weight: 2,
+                        zIndexOffset: 1000
+                    }).addTo(map);
+                } else {
+                    hoverMarker.setLatLng([pt.lat, pt.lon]);
+                    hoverMarker.setStyle({
+                        fillColor: source === 'sim' ? '#eab308' : '#14b8a6',
+                        radius: source === 'sim' ? 8 : 6
+                    });
+                    if(!map.hasLayer(hoverMarker)) hoverMarker.addTo(map);
+                }
+            }
+
+            const charts = [
+                {id: 'chartElevation', chart: chartElevation},
+                {id: 'chartSpeed', chart: chartSpeed},
+                {id: 'chartHR', chart: chartHR},
+                {id: 'chartCad', chart: chartCad},
+                {id: 'chartPower', chart: chartPower},
+                {id: 'chartTemp', chart: chartTemp},
+                {id: 'modalCanvas', chart: modalChartInstance} 
+            ];
+
+            charts.forEach(c => {
+                if (c.chart && c.id !== source) {
+                    const meta = c.chart.getDatasetMeta(0);
+                    if (meta.data[globalIndex]) {
+                        c.chart.setActiveElements([{ datasetIndex: 0, index: globalIndex }]);
+                        c.chart.tooltip.setActiveElements([{ datasetIndex: 0, index: globalIndex }], {
+                            x: meta.data[globalIndex].x,
+                            y: meta.data[globalIndex].y
+                        });
+                        // Si viene de la animación (simulador), forzamos update('none') para no perder rendimiento
+                        if (isAnimation) {
+                            c.chart.update('none');
+                        } else {
+                            c.chart.update();
+                        }
+                    }
+                }
+            });
+        }
+
+        function clearHighlight() {
+            if (isSimulating) return; // No limpiar si estamos en el tour virtual
+            
+            if (hoverMarker && map && map.hasLayer(hoverMarker)) {
+                map.removeLayer(hoverMarker);
+            }
+            const charts = [chartElevation, chartSpeed, chartHR, chartCad, chartPower, chartTemp, modalChartInstance];
+            charts.forEach(c => {
+                if (c) {
+                    c.setActiveElements([]);
+                    c.tooltip.setActiveElements([], {x:0, y:0});
+                    c.update();
+                }
+            });
+        }
+
+        function initOrUpdateMap() {
+            if (!map) {
+                const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' });
+                const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenTopoMap' });
+                const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Esri' });
+
+                map = L.map('map', { layers: [osm] });
+                
+                L.control.layers({
+                    "Mapa Normal": osm,
+                    "Topográfico": topo,
+                    "Satélite": sat
+                }).addTo(map);
+
+                map.on('mousemove', function(e) {
+                    if (isSimulating) return; // Evitar conflictos con el ratón al reproducir
+                    
+                    let track = getWorkingTrack();
+                    if (!track.length) return;
+                    let minSqDist = Infinity;
+                    let closestIndex = -1;
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
+                    
+                    for(let i=0; i<track.length; i++) {
+                        const pt = track[i];
+                        if(pt.lat && pt.lon) {
+                            const sqDist = (pt.lat - lat)**2 + (pt.lon - lng)**2;
+                            if(sqDist < minSqDist) {
+                                minSqDist = sqDist;
+                                closestIndex = i;
+                            }
+                        }
+                    }
+
+                    if(closestIndex !== -1 && minSqDist < 0.0005) { 
+                        syncHighlight(closestIndex, 'map');
+                    } else {
+                        clearHighlight();
+                    }
+                });
+
+                map.on('mouseout', clearHighlight);
+            }
+
+            if (mapLayerGroup) map.removeLayer(mapLayerGroup);
+            mapLayerGroup = L.layerGroup().addTo(map);
+
+            let track = getWorkingTrack();
+            if(track.length === 0) return;
+
+            let colorMode = document.getElementById('mapColorMode').value;
+            let bounds = L.latLngBounds();
+            let assumedMaxHr = 185;
+            
+            let currentLine = [];
+            let currentColor = null;
+
+            for(let i=0; i<track.length; i++) {
+                let pt = track[i];
+                if (!pt.lat || !pt.lon) continue;
+                
+                bounds.extend([pt.lat, pt.lon]);
+
+                let targetColor = '#14b8a6'; // Base Teal
+
+                if (colorMode === 'speed') {
+                    let speed = pt.speed || 0;
+                    if (speed < 15) targetColor = '#14b8a6'; // Teal (Lento)
+                    else if (speed < 25) targetColor = '#10b981'; // Emerald (Moderado)
+                    else if (speed < 35) targetColor = '#eab308'; // Yellow (Rápido)
+                    else if (speed < 45) targetColor = '#f97316'; // Orange (Muy rápido)
+                    else targetColor = '#f43f5e'; // Rose (Sprint/Bajada rápida)
+                } 
+                else if (colorMode === 'hr' && pt.hr) {
+                    let pct = pt.hr / assumedMaxHr;
+                    if (pct < 0.6) targetColor = '#6b7280'; // Gray Z1
+                    else if (pct < 0.7) targetColor = '#38bdf8'; // Sky Z2
+                    else if (pct < 0.8) targetColor = '#10b981'; // Emerald Z3
+                    else if (pct < 0.9) targetColor = '#f97316'; // Orange Z4
+                    else targetColor = '#f43f5e'; // Rose Z5
+                }
+
+                if (targetColor !== currentColor && currentLine.length > 0) {
+                    currentLine.push([pt.lat, pt.lon]);
+                    L.polyline(currentLine, {color: currentColor, weight: 4}).addTo(mapLayerGroup);
+                    currentLine = [[pt.lat, pt.lon]];
+                    currentColor = targetColor;
+                } else {
+                    currentLine.push([pt.lat, pt.lon]);
+                    if (currentColor === null) currentColor = targetColor;
+                }
+            }
+            
+            if (currentLine.length > 1) {
+                L.polyline(currentLine, {color: currentColor, weight: 4}).addTo(mapLayerGroup);
+            }
+
+            if(bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [20, 20] });
+            }
+        }
+
+        function renderCharts() {
+            let track = getWorkingTrack();
+            if(!track.length) return;
+
+            let firstPtTime = track[0].time;
+            let firstPtDist = track[0].dist;
+
+            const labels = track.map(p => xAxisMode === 'distance' 
+                ? (p.dist - firstPtDist).toFixed(2) 
+                : ((p.time - firstPtTime) / 60000).toFixed(1));
+            
+            const eleData = track.map(p => p.baseEle);
+            const speedData = track.map(p => p.speed);
+            const hrData = track.map(p => p.hr);
+            const tempData = track.map(p => p.temp);
+            const cadData = track.map(p => p.cad);
+            const powerData = hasRecalculated ? track.map(p => p.power) : track.map(p => null);
+
+            currentChartData = {
+                labels,
+                ele: eleData,
+                speed: speedData,
+                hr: hrData,
+                cad: cadData,
+                power: powerData,
+                temp: tempData
+            };
+
+            const xTitle = xAxisMode === 'distance' ? 'Distancia (km)' : 'Tiempo (minutos)';
+
+            createChart('chartElevation', chartElevation, 'Elevación (m)', labels, eleData, chartColors.ele, chartColors.eleBg, xTitle, (c) => chartElevation = c);
+            createChart('chartSpeed', chartSpeed, 'Velocidad (km/h)', labels, speedData, chartColors.speed, chartColors.speedBg, xTitle, (c) => chartSpeed = c);
+            createChart('chartPower', chartPower, 'Potencia virtual (W)', labels, powerData, chartColors.power, chartColors.powerBg, xTitle, (c) => chartPower = c);
+            createChart('chartHR', chartHR, 'Frecuencia Cardíaca (bpm)', labels, hrData, chartColors.hr, chartColors.hrBg, xTitle, (c) => chartHR = c);
+            createChart('chartCad', chartCad, 'Cadencia (rpm)', labels, cadData, chartColors.cad, chartColors.cadBg, xTitle, (c) => chartCad = c);
+            createChart('chartTemp', chartTemp, 'Temperatura (°C)', labels, tempData, chartColors.temp, chartColors.tempBg, xTitle, (c) => chartTemp = c);
+            
+            const curveDurations = [1, 5, 10, 30, 60, 120, 300, 600, 1200, 3600];
+            const curveLabels = ['1s', '5s', '10s', '30s', '1m', '2m', '5m', '10m', '20m', '1h'];
+            let curveData = [];
+            if (hasRecalculated) {
+                curveDurations.forEach(sec => {
+                    let peak = getPeakPower(track, sec);
+                    curveData.push(peak !== '--' ? peak : null);
+                });
+            } else {
+                curveData = curveDurations.map(() => null);
+            }
+            renderPowerCurveChart(curveLabels, curveData);
+
+            if(document.getElementById('chartModal').classList.contains('hidden') === false) {
+                updateModalChart();
+            }
+        }
+
+        function renderPowerCurveChart(labels, data) {
+            const canvas = document.getElementById('chartPowerCurve');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            if (chartPowerCurveInstance) chartPowerCurveInstance.destroy();
+
+            chartPowerCurveInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Potencia Pico (W)',
+                        data: data,
+                        borderColor: chartColors.power,
+                        backgroundColor: chartColors.powerBg,
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#1f2937',
+                        pointBorderColor: chartColors.power,
+                        tension: 0.4,
+                        spanGaps: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let mRider = parseFloat(document.getElementById('inputRiderWeight').value) || 105;
+                                    let w = context.raw;
+                                    if(w === null) return 'Datos insuficientes';
+                                    let wkg = (w / mRider).toFixed(1);
+                                    return `${w} W  (${wkg} W/kg)`;
+                                },
+                                title: function(tooltipItems) {
+                                    return `Pico de ${tooltipItems[0].label}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            grid: { display: false } 
+                        },
+                        y: { 
+                            beginAtZero: true,
+                            title: { display: true, text: 'Vatios (W)', font: { size: 10 } },
+                            ticks: { maxTicksLimit: 6 }
+                        }
+                    }
+                }
+            });
+        }
+
+        const metricDetails = {
+            ele: { label: 'Elevación (m)', color: chartColors.ele, bgColor: chartColors.eleBg },
+            speed: { label: 'Velocidad (km/h)', color: chartColors.speed, bgColor: chartColors.speedBg },
+            hr: { label: 'Frecuencia Cardíaca (bpm)', color: chartColors.hr, bgColor: chartColors.hrBg },
+            cad: { label: 'Cadencia (rpm)', color: chartColors.cad, bgColor: chartColors.cadBg },
+            power: { label: 'Potencia (W)', color: chartColors.power, bgColor: chartColors.powerBg },
+            temp: { label: 'Temperatura (°C)', color: chartColors.temp, bgColor: chartColors.tempBg }
+        };
+
+        function openModalChart(baseMetric) {
+            const modal = document.getElementById('chartModal');
+            const modalContent = document.getElementById('chartModalContent');
+            
+            document.querySelectorAll('.modal-toggle').forEach(cb => {
+                cb.checked = (cb.value === baseMetric);
+            });
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => console.log("Fullscreen error:", err));
+                } else if (elem.webkitRequestFullscreen) { 
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) { 
+                    elem.msRequestFullscreen();
+                }
+            }, 10);
+            
+            updateModalChart();
+        }
+
+        function closeModalChart() {
+            const modal = document.getElementById('chartModal');
+            const modalContent = document.getElementById('chartModalContent');
+            
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            
+            if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { 
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { 
+                    document.msExitFullscreen();
+                }
+            }
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (modalChartInstance) {
+                    modalChartInstance.destroy();
+                    modalChartInstance = null;
+                }
+            }, 300); 
+        }
+
+        document.querySelectorAll('.modal-toggle').forEach(cb => {
+            cb.addEventListener('change', updateModalChart);
+        });
+
+        function updateModalChart() {
+            const activeMetrics = Array.from(document.querySelectorAll('.modal-toggle'))
+                                       .filter(cb => cb.checked)
+                                       .map(cb => cb.value);
+            
+            if (activeMetrics.length === 0) return; 
+
+            const ctx = document.getElementById('modalCanvas').getContext('2d');
+            if (modalChartInstance) modalChartInstance.destroy();
+
+            const datasets = activeMetrics.map((metric, index) => {
+                const conf = metricDetails[metric];
+                return {
+                    label: conf.label,
+                    data: currentChartData[metric],
+                    borderColor: conf.color,
+                    backgroundColor: conf.bgColor,
+                    borderWidth: 2,
+                    fill: activeMetrics.length === 1, 
+                    pointRadius: 0,
+                    tension: 0.3,
+                    spanGaps: true,
+                    yAxisID: `y-${metric}`
+                };
+            });
+
+            const scales = {
+                x: { 
+                    title: { display: true, text: xAxisMode === 'distance' ? 'Distancia (km)' : 'Tiempo (minutos)' },
+                    ticks: { maxTicksLimit: 15 }
+                }
+            };
+
+            activeMetrics.forEach((metric, index) => {
+                scales[`y-${metric}`] = {
+                    type: 'linear',
+                    display: true,
+                    position: index % 2 === 0 ? 'left' : 'right', 
+                    title: { display: true, text: metricDetails[metric].label },
+                    grid: { drawOnChartArea: index === 0 } 
+                };
+            });
+
+            modalChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: currentChartData.labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    onHover: (event, elements) => {
+                        if (isSimulating) return; // Desactivar hover en tooltips durante la simulación
+                        if (elements && elements.length) {
+                            syncHighlight(elements[0].index, 'modalCanvas');
+                        } else {
+                            clearHighlight();
+                        }
+                    },
+                    plugins: {
+                        legend: { display: true, position: 'top', labels: { usePointStyle: true, boxWidth: 8, color: '#e5e7eb' } },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: scales
+                }
+            });
+        }
+
+        function createChart(canvasId, chartInstance, title, labels, data, color, bgColor, xTitle, saveInstance) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            const hasData = data.some(d => d !== null && !isNaN(d));
+
+            const newChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: title,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: bgColor,
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 0,
+                        tension: 0.3,
+                        spanGaps: true 
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    onHover: (event, elements) => {
+                        if (isSimulating) return; // Desactivar hover manual durante la simulación
+                        if (elements && elements.length) {
+                            syncHighlight(elements[0].index, canvasId);
+                        } else {
+                            clearHighlight();
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: hasData ? title : `${title} (Sin Datos)`, font: { size: 16 } }
+                    },
+                    scales: {
+                        x: { 
+                            title: { display: true, text: xTitle },
+                            ticks: { maxTicksLimit: 10 }
+                        },
+                        y: { 
+                            title: { display: false } 
+                        }
+                    }
+                }
+            });
+            saveInstance(newChart);
+        }
+    </script>
+</body>
+</html>
