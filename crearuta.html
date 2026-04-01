@@ -1543,6 +1543,7 @@
                 let routeName = rawRouteName ? rawRouteName : "Aventura MNMTB";
                 let fileName = rawRouteName ? rawRouteName.replace(/[^a-z0-9]/gi, '_').toLowerCase() : `ruta_mnmtb_${new Date().toISOString().slice(0,10).replace(/-/g, '')}`;
 
+                // NUEVO: Generación de GPX unificada y limpia.
                 let gpx = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx creator="MNMTB Route Planner &amp; Editor" version="1.1"
   xmlns="http://www.topografix.com/GPX/1/1"
@@ -1553,28 +1554,34 @@
     <desc>Generado con MNMTB. Distancia: ${totalDistanceTxt}, Desnivel: +${ascentTxt}, POIs: ${pois.length}.</desc>
   </metadata>\n`;
 
+                // Agregar Puntos de Interés
                 pois.forEach(p => {
                     gpx += `  <wpt lat="${p.latlng.lat.toFixed(6)}" lon="${p.latlng.lng.toFixed(6)}">\n    <name>${p.name}</name>\n  </wpt>\n`;
                 });
 
-                if (waypoints.length > 0) {
-                    gpx += `  <rte>\n    <name>Puntos de Control Editable</name>\n`;
-                    waypoints.forEach(wp => {
-                        const ll = wp.getLatLng();
-                        gpx += `    <rtept lat="${ll.lat.toFixed(6)}" lon="${ll.lng.toFixed(6)}"></rtept>\n`;
-                    });
-                    gpx += `  </rte>\n`;
-                }
+                // Ya no exportamos <rte> porque causa conflicto con el track en apps de terceros.
+                // Todo el trazado se mete en un solo <trk> con un único <trkseg>.
 
                 if (routeSegments.length > 0) {
                     gpx += `  <trk>\n    <name>${routeName}</name>\n`;
+                    gpx += `    <trkseg>\n`;
+
+                    let lastLat = null;
+                    let lastLng = null;
 
                     routeSegments.forEach(seg => {
-                        gpx += `    <trkseg>\n`;
                         const latlngs = seg.polyline.getLatLngs();
                         const eleData = seg.elevationData || [];
                         
                         for (let i = 0; i < latlngs.length; i++) {
+                            let currentLat = latlngs[i].lat.toFixed(6);
+                            let currentLng = latlngs[i].lng.toFixed(6);
+
+                            // Evitamos escribir el punto de unión entre dos segmentos dos veces seguidas
+                            if (currentLat === lastLat && currentLng === lastLng) {
+                                continue; 
+                            }
+
                             let bestEle = 0;
                             if (eleData.length === latlngs.length) {
                                 bestEle = eleData[i].ele !== null ? eleData[i].ele : 0;
@@ -1588,11 +1595,15 @@
                                     }
                                 }
                             }
-                            gpx += `      <trkpt lat="${latlngs[i].lat.toFixed(6)}" lon="${latlngs[i].lng.toFixed(6)}">\n        <ele>${Number(bestEle).toFixed(1)}</ele>\n      </trkpt>\n`;
+                            
+                            gpx += `      <trkpt lat="${currentLat}" lon="${currentLng}">\n        <ele>${Number(bestEle).toFixed(1)}</ele>\n      </trkpt>\n`;
+                            
+                            lastLat = currentLat;
+                            lastLng = currentLng;
                         }
-                        gpx += `    </trkseg>\n`;
                     });
 
+                    gpx += `    </trkseg>\n`;
                     gpx += `  </trk>\n`;
                 }
 
