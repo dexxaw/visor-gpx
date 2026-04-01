@@ -2079,12 +2079,12 @@
 
             const xTitle = xAxisMode === 'distance' ? 'Distancia (km)' : 'Tiempo (minutos)';
 
-            createChart('chartElevation', chartElevation, 'Elevación (m)', labels, eleData, chartColors.ele, chartColors.eleBg, xTitle, (c) => chartElevation = c);
-            createChart('chartSpeed', chartSpeed, 'Velocidad (km/h)', labels, speedData, chartColors.speed, chartColors.speedBg, xTitle, (c) => chartSpeed = c);
-            createChart('chartPower', chartPower, 'Potencia virtual (W)', labels, powerData, chartColors.power, chartColors.powerBg, xTitle, (c) => chartPower = c);
-            createChart('chartHR', chartHR, 'Frecuencia Cardíaca (bpm)', labels, hrData, chartColors.hr, chartColors.hrBg, xTitle, (c) => chartHR = c);
-            createChart('chartCad', chartCad, 'Cadencia (rpm)', labels, cadData, chartColors.cad, chartColors.cadBg, xTitle, (c) => chartCad = c);
-            createChart('chartTemp', chartTemp, 'Temperatura (°C)', labels, tempData, chartColors.temp, chartColors.tempBg, xTitle, (c) => chartTemp = c);
+            createChart('chartElevation', chartElevation, 'Elevación (m)', labels, eleData, chartColors.ele, chartColors.eleBg, xTitle, (c) => chartElevation = c, 1);
+            createChart('chartSpeed', chartSpeed, 'Velocidad (km/h)', labels, speedData, chartColors.speed, chartColors.speedBg, xTitle, (c) => chartSpeed = c, 1);
+            createChart('chartPower', chartPower, 'Potencia virtual (W)', labels, powerData, chartColors.power, chartColors.powerBg, xTitle, (c) => chartPower = c, 0);
+            createChart('chartHR', chartHR, 'Frecuencia Cardíaca (bpm)', labels, hrData, chartColors.hr, chartColors.hrBg, xTitle, (c) => chartHR = c, 0);
+            createChart('chartCad', chartCad, 'Cadencia (rpm)', labels, cadData, chartColors.cad, chartColors.cadBg, xTitle, (c) => chartCad = c, 0);
+            createChart('chartTemp', chartTemp, 'Temperatura (°C)', labels, tempData, chartColors.temp, chartColors.tempBg, xTitle, (c) => chartTemp = c, 1);
             
             const curveDurations = [1, 5, 10, 30, 60, 120, 300, 600, 1200, 3600];
             const curveLabels = ['1s', '5s', '10s', '30s', '1m', '2m', '5m', '10m', '20m', '1h'];
@@ -2149,7 +2149,7 @@
                                     let w = context.raw;
                                     if(w === null) return 'Datos insuficientes';
                                     let wkg = (w / mRider).toFixed(1);
-                                    return `${w} W  (${wkg} W/kg)`;
+                                    return `${Math.round(w)} W  (${wkg} W/kg)`;
                                 },
                                 title: function(tooltipItems) {
                                     return `Pico de ${tooltipItems[0].label}`;
@@ -2173,12 +2173,12 @@
         }
 
         const metricDetails = {
-            ele: { label: 'Elevación (m)', color: chartColors.ele, bgColor: chartColors.eleBg },
-            speed: { label: 'Velocidad (km/h)', color: chartColors.speed, bgColor: chartColors.speedBg },
-            hr: { label: 'Frecuencia Cardíaca (bpm)', color: chartColors.hr, bgColor: chartColors.hrBg },
-            cad: { label: 'Cadencia (rpm)', color: chartColors.cad, bgColor: chartColors.cadBg },
-            power: { label: 'Potencia (W)', color: chartColors.power, bgColor: chartColors.powerBg },
-            temp: { label: 'Temperatura (°C)', color: chartColors.temp, bgColor: chartColors.tempBg }
+            ele: { label: 'Elevación (m)', color: chartColors.ele, bgColor: chartColors.eleBg, decimals: 1 },
+            speed: { label: 'Velocidad (km/h)', color: chartColors.speed, bgColor: chartColors.speedBg, decimals: 1 },
+            hr: { label: 'Frecuencia Cardíaca (bpm)', color: chartColors.hr, bgColor: chartColors.hrBg, decimals: 0 },
+            cad: { label: 'Cadencia (rpm)', color: chartColors.cad, bgColor: chartColors.cadBg, decimals: 0 },
+            power: { label: 'Potencia (W)', color: chartColors.power, bgColor: chartColors.powerBg, decimals: 0 },
+            temp: { label: 'Temperatura (°C)', color: chartColors.temp, bgColor: chartColors.tempBg, decimals: 1 }
         };
 
         function openModalChart(baseMetric) {
@@ -2307,7 +2307,17 @@
                             position: 'topAlign',
                             caretSize: 0,
                             yAlign: 'bottom',
-                            xAlign: 'left'
+                            xAlign: 'left',
+                            callbacks: {
+                                label: function(context) {
+                                    let val = context.raw;
+                                    if (val === null || isNaN(val)) return `${context.dataset.label}: --`;
+                                    
+                                    let metric = context.dataset.yAxisID.replace('y-', '');
+                                    let decimals = metricDetails[metric] ? metricDetails[metric].decimals : 0;
+                                    return `${context.dataset.label}: ${val.toFixed(decimals)}`;
+                                }
+                            }
                         }
                     },
                     scales: scales
@@ -2316,7 +2326,7 @@
             });
         }
 
-        function createChart(canvasId, chartInstance, title, labels, data, color, bgColor, xTitle, saveInstance) {
+        function createChart(canvasId, chartInstance, title, labels, data, color, bgColor, xTitle, saveInstance, decimals = 0) {
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
             
@@ -2365,7 +2375,14 @@
                             yAlign: 'bottom', // Hace que la caja se dibuje HACIA ARRIBA desde la coordenada Y
                             xAlign: 'left',   // Hace que se respete el comportamiento calculador de empuje
                             intersect: false,
-                            mode: 'index'
+                            mode: 'index',
+                            callbacks: {
+                                label: function(context) {
+                                    let val = context.raw;
+                                    if (val === null || isNaN(val)) return `${context.dataset.label}: --`;
+                                    return `${context.dataset.label}: ${val.toFixed(decimals)}`;
+                                }
+                            }
                         }
                     },
                     scales: {
