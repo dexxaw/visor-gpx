@@ -33,6 +33,18 @@
             transform: translateY(-4px);
         }
 
+        /* Modificador de hover específico para la tarjeta de Clima */
+        .hover-sky:hover {
+            border-color: rgba(56, 189, 248, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 20px -5px rgba(56, 189, 248, 0.2);
+        }
+
+        /* Modificador de hover específico para la tarjeta de Creador de Rutas */
+        .hover-yellow:hover {
+            border-color: rgba(234, 179, 8, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 20px -5px rgba(234, 179, 8, 0.2);
+        }
+
         .gradient-mask {
             mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);
             -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);
@@ -61,13 +73,13 @@
                 Potencia tu <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-500">experiencia ciclista</span>
             </h1>
             <p class="text-lg text-gray-400 mb-8 leading-relaxed">
-                Bienvenido a la suite de herramientas avanzadas de Miguel Navas MTB. Planifica tus próximas rutas de montaña, analiza tus entrenamientos al detalle y fusiona tus datos GPX en un entorno diseñado por y para ciclistas.
+                Bienvenido a la suite de herramientas avanzadas de Miguel Navas MTB. Planifica tus próximas rutas de montaña, analiza tus entrenamientos al detalle, prevé el clima y fusiona tus datos GPX en un entorno diseñado por y para ciclistas.
             </p>
             <div class="h-1 w-24 bg-gradient-to-r from-teal-500 to-transparent rounded-full mx-auto"></div>
         </header>
 
-        <!-- Grid de Herramientas -->
-        <section id="herramientas" class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 w-full relative z-10">
+        <!-- Grid de Herramientas (Ahora en 3 columnas en pantallas grandes) -->
+        <section id="herramientas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 w-full relative z-10">
             
             <!-- TARJETA 1: Analiza / Sync -->
             <a href="analiza.html" class="glass-panel group rounded-2xl overflow-hidden flex flex-col relative">
@@ -100,7 +112,7 @@
             </a>
 
             <!-- TARJETA 2: Creador de Rutas -->
-            <a href="crearuta.html" class="glass-panel group rounded-2xl overflow-hidden flex flex-col relative">
+            <a href="crearuta.html" class="glass-panel hover-yellow group rounded-2xl overflow-hidden flex flex-col relative">
                 <!-- Imagen con el fundido a negro (Gradient) -->
                 <div class="w-full relative h-64 sm:h-72 overflow-hidden bg-gray-900">
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10"></div>
@@ -124,6 +136,36 @@
                         Crea, edita y diseña tus próximas aventuras. Traza recorridos automáticamente por los mejores senderos, añade Puntos de Interés (POIs) y observa el perfil de elevación en tiempo real.
                     </p>
                     <div class="flex items-center text-yellow-500 font-semibold text-sm group-hover:translate-x-2 transition-transform">
+                        Abrir herramienta <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                    </div>
+                </div>
+            </a>
+
+            <!-- TARJETA 3: Previsión Clima en Ruta -->
+            <a href="clima.html" class="glass-panel hover-sky group rounded-2xl overflow-hidden flex flex-col relative">
+                <!-- Imagen con el fundido a negro (Gradient) -->
+                <div class="w-full relative h-64 sm:h-72 overflow-hidden bg-gray-900">
+                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10"></div>
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiR9rW6EiVXtKKm5h0d_GWsX6TiDu_W5hG1WO3HJ5A3Xupsj6emzBQdblEcxUCIIbkodhY7Xga9AzM0TBKlOG6iOnlhUVd6Npo4M-U3KTdlMO4-UMOd2KhejcDCLEudQvsDSwEFepaoYDiDshvFFqu4iO5-f0wrITRdGhfmsUrEerYNB2sYKrF713kCTPhG/w640-h634/clima.png" 
+                         alt="Previsualización Clima en Ruta" 
+                         class="w-full h-full object-cover object-top opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700">
+                    
+                    <!-- Badge superpuesto en la imagen -->
+                    <div class="absolute top-4 left-4 z-20 bg-sky-500/90 text-gray-950 text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
+                        <i data-lucide="cloud-sun" class="w-3.5 h-3.5"></i> Meteorología
+                    </div>
+                </div>
+                
+                <!-- Contenido -->
+                <div class="p-8 flex flex-col flex-1 relative z-20 -mt-12">
+                    <div class="bg-gray-800 p-3 rounded-xl inline-block w-fit mb-4 border border-gray-700 shadow-lg group-hover:border-sky-500/50 transition-colors">
+                        <i data-lucide="cloud-lightning" class="w-6 h-6 text-sky-400"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-3 group-hover:text-sky-400 transition-colors">Previsión Clima en Ruta</h2>
+                    <p class="text-gray-400 text-sm mb-6 flex-1 leading-relaxed">
+                        Sube tu track GPX. Calcularemos tu posición estimada en cada tramo de la ruta basándonos en tu velocidad o historial, y te mostraremos la previsión meteorológica exacta al paso.
+                    </p>
+                    <div class="flex items-center text-sky-500 font-semibold text-sm group-hover:translate-x-2 transition-transform">
                         Abrir herramienta <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
                     </div>
                 </div>
