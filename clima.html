@@ -14,7 +14,7 @@
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
+	
 	<!-- Lógica clima -->
 	<script src="clima.js" defer></script>
 
@@ -39,7 +39,6 @@
 
         .custom-div-icon { background: transparent; border: none; }
 
-        /* Estilo del marcador de clima en el mapa */
         .weather-marker-container {
             display: flex;
             flex-direction: column;
@@ -99,15 +98,16 @@
     <nav class="bg-gray-950 text-white shadow-xl border-b border-sky-900/50 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo MNMTB" class="w-10 h-10 object-contain bg-gray-900 rounded-full p-0.5 shadow-sm border border-gray-800">
+                <div class="w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center shadow-sm border border-gray-800">
+                    <i data-lucide="mountain-snow" class="w-6 h-6 text-sky-400"></i>
+                </div>
                 <h1 class="text-xl font-bold tracking-tight text-sky-400 hidden lg:block">Previsión Clima en Ruta</h1>
             </div>
 
             <div class="flex items-center gap-2 sm:gap-4">
-                <a href="index.html" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-teal-400 hover:bg-gray-900 hover:border-teal-900/50 transition-all group">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-gray-500 group-hover:text-teal-500"></i> <span class="hidden sm:inline">Miguel Navas MTB</span>
+                <a href="index.html" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-sky-400 hover:bg-gray-900 hover:border-sky-900/50 transition-all group">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-gray-500 group-hover:text-sky-500"></i> <span class="hidden sm:inline">Miguel Navas MTB</span>
                 </a>
-                
             </div>
         </div>
     </nav>
@@ -118,7 +118,7 @@
         <div id="welcome-screen" class="flex flex-col gap-8 mt-4 mb-10">
             <div class="text-center space-y-3">
                 <h2 class="text-3xl font-bold text-white">Meteorología Precisa para tu Aventura</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">Sube tu track GPX. Calcularemos tu posición estimada en cada tramo de la ruta basándonos en tu velocidad o historial, y te mostraremos la previsión meteorológica exacta justo en el momento en que pases por allí.</p>
+                <p class="text-gray-400 max-w-2xl mx-auto">Sube tu track GPX. Calcularemos tu posición estimada en cada tramo de la ruta basándonos en tu velocidad, y te mostraremos la previsión de lluvia, viento, UV y polen en el punto exacto.</p>
             </div>
 
             <section id="dropzone" class="border-2 border-dashed border-gray-700 rounded-xl p-12 text-center transition-colors bg-gray-800/40 shadow-sm cursor-pointer hover:bg-gray-800 relative z-20 max-w-3xl mx-auto w-full">
@@ -131,7 +131,6 @@
                         <p class="text-xl font-bold text-gray-200">Selecciona o arrastra tu GPX aquí</p>
                         <p class="text-sm text-gray-400 mt-2">Compatible con rutas planificadas o entrenamientos grabados</p>
                     </div>
-													
                 </div>
             </section>
         </div>
@@ -140,10 +139,9 @@
         <div id="dashboard" class="hidden flex-col gap-6 flex-1">
             
             <!-- Panel Superior de Configuración -->
-            <div class="glass-panel p-5 rounded-xl flex flex-col md:flex-row gap-6 items-center justify-between z-20 relative">
+            <div class="glass-panel p-5 rounded-xl flex flex-col xl:flex-row gap-6 items-center justify-between z-20 relative">
                 
-                <div class="flex items-center gap-4 flex-1">
-                    <!-- Icono interactivo para cambiar ruta -->
+                <div class="flex items-center gap-4 w-full xl:w-auto flex-1">
                     <div id="btnChangeRouteIcon" class="bg-sky-900/40 hover:bg-sky-800/60 transition-colors cursor-pointer p-3 rounded-lg text-sky-400 shrink-0" title="Cargar una nueva ruta">
                         <i data-lucide="folder-open" class="w-6 h-6"></i>
                     </div>
@@ -152,48 +150,56 @@
                         <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-1">
                             <span id="routeDist" class="text-sm font-medium text-sky-300">-- km</span>
                             <span id="routeType" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-gray-800 border border-gray-700">--</span>
-                            <!-- Botón de texto para cambiar ruta -->
                             <button id="btnChangeRouteText" class="text-xs font-semibold text-gray-400 hover:text-sky-400 underline decoration-gray-600 hover:decoration-sky-400 underline-offset-2 transition-colors flex items-center gap-1 ml-1">
-                                <i data-lucide="refresh-cw" class="w-3 h-3"></i> Cambiar archivo
+                                <i data-lucide="refresh-cw" class="w-3 h-3"></i> Cambiar
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto bg-gray-800/50 p-2 rounded-lg border border-gray-700/50">
+                <div class="flex flex-col sm:flex-row flex-wrap items-center gap-4 w-full xl:w-auto bg-gray-800/50 p-2 rounded-lg border border-gray-700/50">
                     <div class="flex flex-col px-2 w-full sm:w-auto">
-                        <label class="text-[10px] uppercase font-bold text-gray-400 mb-1">Día y Hora de Salida</label>
-                        <input type="datetime-local" id="inputStartTime" class="bg-gray-900 border border-gray-600 text-gray-200 text-sm rounded-md px-3 py-1.5 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none">
+                        <label class="text-[10px] uppercase font-bold text-gray-400 mb-1">Día y Hora</label>
+                        <input type="datetime-local" id="inputStartTime" class="bg-gray-900 border border-gray-600 text-gray-200 text-sm rounded-md px-3 py-1.5 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none w-full sm:w-48">
                     </div>
                     
                     <div id="pacingSelectorContainer" class="flex flex-col px-2 border-l border-gray-700 w-full sm:w-auto hidden">
                         <label class="text-[10px] uppercase font-bold text-gray-400 mb-1" title="Elige usar tus tiempos reales o una media">Ritmo a seguir</label>
                         <select id="inputPacingMode" class="bg-gray-900 border border-gray-600 text-gray-200 text-sm rounded-md px-2 py-1.5 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none w-full sm:w-28 cursor-pointer">
-                            <option value="original">Original</option>
-                            <option value="custom">Vel. Media</option>
+                            <option value="original">Original (GPX)</option>
+                            <option value="custom">Calculado</option>
                         </select>
                     </div>
 
-                    <div id="speedContainer" class="flex flex-col px-2 border-l border-gray-700 w-full sm:w-auto hidden">
-                        <label class="text-[10px] uppercase font-bold text-gray-400 mb-1" title="Velocidad media estimada para la ruta completa">Vel. Media (km/h)</label>
-                        <input type="number" id="inputAvgSpeed" value="15" min="1" max="100" class="bg-gray-900 border border-gray-600 text-gray-200 text-sm rounded-md px-3 py-1.5 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none w-20 sm:w-24">
+                    <!-- Selector de Actividad -->
+                    <div id="activityContainer" class="flex flex-col px-2 border-l border-gray-700 w-full sm:w-auto">
+                        <label class="text-[10px] uppercase font-bold text-gray-400 mb-1">Actividad</label>
+                        <select id="inputActivity" class="bg-gray-900 border border-gray-600 text-gray-200 text-sm rounded-md px-2 py-1.5 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none w-full sm:w-28 cursor-pointer">
+                            <option value="cycling">Bicicleta</option>
+                            <option value="hiking">A pie</option>
+                        </select>
                     </div>
 
-                    <button id="btnCalcWeather" class="w-full sm:w-auto px-5 py-2.5 bg-sky-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-sky-500 transition-colors flex items-center justify-center gap-2 border border-sky-500">
+                    <div id="speedContainer" class="flex flex-col px-2 border-l border-gray-700 w-full sm:w-auto">
+                        <label class="text-[10px] uppercase font-bold text-gray-400 mb-1">Vel. Media (km/h)</label>
+                        <input type="number" id="inputAvgSpeed" value="15" min="1" max="100" class="bg-gray-900 border border-gray-600 text-gray-200 text-sm rounded-md px-3 py-1.5 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none w-full sm:w-24">
+                    </div>
+
+                    <button id="btnCalcWeather" class="w-full sm:w-auto mt-2 sm:mt-0 px-5 py-2.5 bg-sky-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-sky-500 transition-colors flex items-center justify-center gap-2 border border-sky-500">
                         <i data-lucide="cloud-lightning" class="w-4 h-4"></i> Consultar
                     </button>
                 </div>
             </div>
 
-            <!-- Alerta UV -->
-            <div id="uvWarningBanner" class="hidden bg-yellow-900/30 border border-yellow-700/50 text-yellow-400 p-3 rounded-xl flex items-center justify-center gap-3 text-sm font-bold shadow-md">
-                <!-- Se inyecta por JS -->
+            <!-- Contenedor Dinámico de Alertas (Viento, Lluvia, UV, Polen) -->
+            <div id="alertsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 hidden">
+                <!-- Se inyectan por JS -->
             </div>
 
             <!-- Contenedor Mapa y Tabla (Layout 60/40) -->
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 h-full flex-1 min-h-[70vh]">
                 
-                <!-- MAPA (Ocupa 3 de 5 columnas en monitores grandes) -->
+                <!-- MAPA -->
                 <div class="lg:col-span-3 relative rounded-xl overflow-hidden glass-panel border border-gray-700/50 shadow-lg flex flex-col h-full min-h-[500px]">
                     <div id="loader" class="absolute inset-0 z-[1000] bg-gray-900/80 backdrop-blur-sm flex flex-col items-center justify-center hidden">
                         <div class="loader mb-4"></div>
@@ -203,7 +209,7 @@
                     <div id="map" class="absolute inset-0 w-full h-full"></div>
                 </div>
 
-                <!-- TABLA (Ocupa 2 de 5 columnas en monitores grandes) -->
+                <!-- TABLA -->
                 <div class="lg:col-span-2 glass-panel p-1 rounded-xl flex flex-col h-full border border-gray-700/50 shadow-lg overflow-hidden">
                     <div class="bg-gray-800/80 px-4 py-3 border-b border-gray-700 flex justify-between items-center">
                         <h3 class="text-sm font-bold text-white flex items-center gap-2">
@@ -213,19 +219,20 @@
                     <div class="flex-1 overflow-auto bg-gray-900/50">
                         <table class="w-full text-left border-collapse text-sm">
                             <thead class="sticky top-0 bg-gray-950 z-20 shadow-sm">
-                                <tr class="text-[11px] sm:text-xs text-gray-400 uppercase tracking-wider">
-                                    <th class="py-3 px-2 sm:px-3 font-semibold border-b border-gray-700">Km</th>
-                                    <th class="py-3 px-2 sm:px-3 font-semibold border-b border-gray-700">Hora</th>
-                                    <th class="py-3 px-2 sm:px-3 font-semibold border-b border-gray-700 text-center">Clima</th>
-                                    <th class="py-3 px-2 sm:px-3 font-semibold border-b border-gray-700 text-center">Temp.</th>
-                                    <th class="py-3 px-2 sm:px-3 font-semibold border-b border-gray-700 text-center">Viento</th>
-                                    <th class="py-3 px-2 sm:px-3 font-semibold border-b border-gray-700 text-center">Prec.</th>
-                                    <th class="py-3 px-2 sm:px-3 font-semibold border-b border-gray-700 text-center" title="Índice UV">UV</th>
+                                <tr class="text-[11px] sm:text-[12px] text-gray-400 uppercase tracking-wider">
+                                    <th class="py-3 px-2 font-semibold border-b border-gray-700">Km</th>
+                                    <th class="py-3 px-2 font-semibold border-b border-gray-700">Hora</th>
+                                    <th class="py-3 px-2 font-semibold border-b border-gray-700 text-center">Clima</th>
+                                    <th class="py-3 px-2 font-semibold border-b border-gray-700 text-center">Temp.</th>
+                                    <th class="py-3 px-2 font-semibold border-b border-gray-700 text-center">Viento</th>
+                                    <th class="py-3 px-2 font-semibold border-b border-gray-700 text-center">Prec.</th>
+                                    <th class="py-3 px-2 font-semibold border-b border-gray-700 text-center" title="Índice UV">UV</th>
+                                    <th class="py-3 px-2 font-semibold border-b border-gray-700 text-center" title="Nivel de Polen (Granos/m³)">Polen</th>
                                 </tr>
                             </thead>
                             <tbody id="weatherTableBody" class="divide-y divide-gray-800/50 text-[13px]">
                                 <tr>
-                                    <td colspan="7" class="py-12 text-center text-gray-500 font-medium">
+                                    <td colspan="8" class="py-12 text-center text-gray-500 font-medium">
                                         <div class="flex flex-col items-center justify-center gap-2">
                                             <i data-lucide="info" class="w-8 h-8 text-gray-600"></i>
                                             Ajusta la hora y pulsa "Consultar" para generar el informe.

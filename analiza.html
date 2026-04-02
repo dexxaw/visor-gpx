@@ -20,6 +20,7 @@
 	
 	<!-- Lógica de analíticas -->
 	<script src="analiza.js" defer></script>
+	
     <style>
         #map { height: 400px; z-index: 10; }
         .drag-over { border-color: #14b8a6 !important; background-color: rgba(20, 184, 166, 0.1) !important; }
@@ -438,6 +439,20 @@
                     <canvas id="chartSpeed"></canvas>
                 </div>
                 <div class="glass-panel p-4 rounded-xl relative group">
+                    <!-- Controles para la gráfica HR (Zonas Cardíacas) -->
+                    <div class="absolute top-3 left-3 z-20 flex gap-2">
+                        <div class="bg-gray-800/90 backdrop-blur-sm rounded-md shadow-lg px-2 py-1 text-xs font-semibold flex items-center gap-1 border border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i data-lucide="palette" class="w-3.5 h-3.5 text-gray-400"></i>
+                            <select id="hrColorMode" class="bg-transparent outline-none cursor-pointer text-gray-200">
+                                <option value="solid">Color Único</option>
+                                <option value="zones">Por Zonas</option>
+                            </select>
+                        </div>
+                        <button id="btnOpenHrSettings" class="p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-rose-400 hover:border-rose-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity" title="Configurar Zonas Cardíacas">
+                            <i data-lucide="settings" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
                     <button onclick="openModalChart('hr')" class="absolute top-3 right-3 p-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 hover:text-teal-400 hover:border-teal-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-20" title="Ampliar y comparar">
                         <i data-lucide="maximize-2" class="w-4 h-4"></i>
                     </button>
@@ -577,7 +592,64 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal para Configuración de Zonas Cardíacas -->
+        <div id="hrSettingsModal" class="hidden fixed inset-0 z-[60] bg-gray-950/90 backdrop-blur-md flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+            <div class="bg-gray-900 border border-gray-700 w-full max-w-xs rounded-xl flex flex-col shadow-2xl transform scale-95 transition-transform duration-300" id="hrSettingsModalContent">
+                <div class="flex justify-between items-center p-4 border-b border-gray-700 bg-gray-800/50 rounded-t-xl">
+                    <h2 class="text-lg font-bold flex items-center gap-2 text-white">
+                        <i data-lucide="heart-pulse" class="w-5 h-5 text-rose-500"></i> Zonas Cardíacas
+                    </h2>
+                    <button id="btnCloseHrSettings" class="text-gray-400 hover:text-rose-400 hover:bg-gray-800 p-1.5 rounded-lg transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <p class="text-xs text-gray-400">Define los límites inferiores (ppm) para cada zona de entrenamiento.</p>
+                    
+                    <!-- Calculadora por edad -->
+                    <div class="flex items-center justify-between bg-gray-800/80 p-3 rounded-lg border border-gray-700">
+                        <label class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                            <i data-lucide="user" class="w-4 h-4 text-teal-500"></i> Tu Edad
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="inputAge" placeholder="Ej: 35" class="w-16 px-2 py-1 bg-gray-900 border border-gray-600 rounded text-center text-white focus:border-teal-500 outline-none transition-colors">
+                            <button id="btnCalcAge" class="bg-teal-600 hover:bg-teal-500 text-white p-1.5 rounded transition-colors" title="Autocalcular zonas">
+                                <i data-lucide="calculator" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="relative flex items-center py-1">
+                        <div class="flex-grow border-t border-gray-700"></div>
+                        <span class="flex-shrink-0 mx-4 text-gray-500 text-[10px] uppercase font-semibold tracking-wider">Límites Manuales</span>
+                        <div class="flex-grow border-t border-gray-700"></div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm font-semibold text-gray-300 flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-sky-400"></div> Zona 2 (Aeróbico)</label>
+                            <input type="number" id="inputZ2" class="w-20 px-2 py-1 bg-gray-800 border border-gray-600 rounded text-right text-white focus:border-rose-500 outline-none">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm font-semibold text-gray-300 flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-emerald-500"></div> Zona 3 (Tempo)</label>
+                            <input type="number" id="inputZ3" class="w-20 px-2 py-1 bg-gray-800 border border-gray-600 rounded text-right text-white focus:border-rose-500 outline-none">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm font-semibold text-gray-300 flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-orange-500"></div> Zona 4 (Umbral)</label>
+                            <input type="number" id="inputZ4" class="w-20 px-2 py-1 bg-gray-800 border border-gray-600 rounded text-right text-white focus:border-rose-500 outline-none">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm font-semibold text-gray-300 flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-rose-500"></div> Zona 5 (Anaerób.)</label>
+                            <input type="number" id="inputZ5" class="w-20 px-2 py-1 bg-gray-800 border border-gray-600 rounded text-right text-white focus:border-rose-500 outline-none">
+                        </div>
+                    </div>
+                    <button id="btnSaveHrSettings" class="w-full mt-2 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg transition-colors">Guardar y Aplicar</button>
+                </div>
+            </div>
+        </div>
     </main>
 
+   
 </body>
 </html>
