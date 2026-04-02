@@ -45,6 +45,12 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 20px -5px rgba(234, 179, 8, 0.2);
         }
 
+        /* Modificador de hover específico para la tarjeta de Conversor */
+        .hover-indigo:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 20px -5px rgba(99, 102, 241, 0.2);
+        }
+
         .gradient-mask {
             mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);
             -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);
@@ -63,7 +69,7 @@
         </div>
     </nav>
 
-    <main class="flex-1 flex flex-col items-center justify-center w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+    <main class="flex-1 flex flex-col items-center justify-center w-full max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
         
         <!-- Sección Hero -->
         <header class="text-center mb-16 flex flex-col items-center max-w-3xl mx-auto relative z-10">
@@ -78,8 +84,8 @@
             <div class="h-1 w-24 bg-gradient-to-r from-teal-500 to-transparent rounded-full mx-auto"></div>
         </header>
 
-        <!-- Grid de Herramientas (Ahora en 3 columnas en pantallas grandes) -->
-        <section id="herramientas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 w-full relative z-10">
+        <!-- Grid de Herramientas -->
+        <section id="herramientas" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 lg:gap-10 w-full relative z-10">
             
             <!-- TARJETA 1: Analiza / Sync -->
             <a href="analiza.html" class="glass-panel group rounded-2xl overflow-hidden flex flex-col relative">
@@ -166,6 +172,36 @@
                         Sube tu track GPX. Calcularemos tu posición estimada en cada tramo de la ruta basándonos en tu velocidad o historial, y te mostraremos la previsión meteorológica exacta al paso.
                     </p>
                     <div class="flex items-center text-sky-500 font-semibold text-sm group-hover:translate-x-2 transition-transform">
+                        Abrir herramienta <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                    </div>
+                </div>
+            </a>
+
+            <!-- TARJETA 4: Saneador / Conversor -->
+            <a href="conversor.html" class="glass-panel hover-indigo group rounded-2xl overflow-hidden flex flex-col relative">
+                <!-- Imagen con el fundido a negro (Gradient) -->
+                <div class="w-full relative h-64 sm:h-72 overflow-hidden bg-gray-900">
+                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10"></div>
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdckmWzMa9OBtd3Apv6m-z6_1tYB_kakC8C94u5Fh4CnFJmGcG9ZJjyyby4kT2Rpau5BgvDV6lMw5PecQlPwuzn41XdTyWLhqNhfP8cwsdZ8RZL8PKH-4e3ZidmkakSfO1P8K6dhJO2U1PjgVLIzsVQnaeap9yxg-JL8gvzpTeUjXA5aO6fXkrJThoshIh/w568-h640/conversor.png" 
+                         alt="Previsualización Saneador Conversor" 
+                         class="w-full h-full object-cover object-top opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700">
+                    
+                    <!-- Badge superpuesto en la imagen -->
+                    <div class="absolute top-4 left-4 z-20 bg-indigo-500/90 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Conversión
+                    </div>
+                </div>
+                
+                <!-- Contenido -->
+                <div class="p-8 flex flex-col flex-1 relative z-20 -mt-12">
+                    <div class="bg-gray-800 p-3 rounded-xl inline-block w-fit mb-4 border border-gray-700 shadow-lg group-hover:border-indigo-500/50 transition-colors">
+                        <i data-lucide="file-symlink" class="w-6 h-6 text-indigo-400"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-3 group-hover:text-indigo-400 transition-colors">Conversor de Archivos</h2>
+                    <p class="text-gray-400 text-sm mb-6 flex-1 leading-relaxed">
+                        Convierte y repara tus archivos entre formatos GPX, TCX y KML. Asegura la compatibilidad universal de sensores y reconstruye tiempos faltantes para Garmin Connect o Strava.
+                    </p>
+                    <div class="flex items-center text-indigo-500 font-semibold text-sm group-hover:translate-x-2 transition-transform">
                         Abrir herramienta <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
                     </div>
                 </div>

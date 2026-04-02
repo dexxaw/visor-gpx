@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor y Saneador GPX / TCX / KML</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+	<!-- Lógica conversor -->
+	<script src="conversor.js" defer></script>
+    <style>
+        /* Trama sutil de motivos de ciclismo (Relieve MTB - Stickerbomb) de la app original */
+        .bg-cycling-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='350' height='350' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%2314b8a6' stroke-width='2' stroke-opacity='0.07' stroke-linecap='round' stroke-linejoin='round'%3E%3C!-- Bicicleta --%3E%3Ccircle cx='80' cy='100' r='25'/%3E%3Ccircle cx='160' cy='100' r='25'/%3E%3Cpath d='M80 100 L110 60 L150 60 L120 100 Z'/%3E%3Cpath d='M150 60 L160 100'/%3E%3Cpath d='M160 100 L145 40 L155 35'/%3E%3Cpath d='M110 60 L105 45 L95 45 M105 45 L115 45'/%3E%3C!-- Montañas --%3E%3Cpath d='M250 120 l40 -60 l30 40 l20 -20 l40 60'/%3E%3Cpath d='M290 60 l-10 15 l10 -5 l10 10 l10 -15'/%3E%3C!-- Pedal plataforma --%3E%3Crect x='40' y='250' width='30' height='15' rx='3'/%3E%3Cpath d='M45 250 v-5 M65 250 v-5 M45 265 v5 M65 265 v5 M30 257 h10 M70 257 h10'/%3E%3C!-- Plato / Corona --%3E%3Ccircle cx='320' cy='280' r='30'/%3E%3Ccircle cx='320' cy='280' r='10'/%3E%3Cpath d='M320 245 v5 M320 315 v-5 M285 280 h5 M355 280 h-5 M295 255 l4 4 M345 305 l-4 -4 M345 255 l-4 4 M295 305 l4 -4'/%3E%3C!-- Casco --%3E%3Cpath d='M120 320 q30 -30 60 0 c5 5 -5 10 -10 10 z'/%3E%3Cpath d='M140 320 v-15 M160 320 v-10'/%3E%3C!-- GPS / Ciclocomputador --%3E%3Crect x='220' y='180' width='30' height='40' rx='4'/%3E%3Crect x='225' y='185' width='20' height='20' rx='2'/%3E%3Ccircle cx='230' cy='212' r='2'/%3E%3Ccircle cx='240' cy='212' r='2'/%3E%3C!-- Amortiguador --%3E%3Cpath d='M40 360 v-30 m-5 0 h10 m-5 0 v-10 m-8 -5 h16 m-16 -5 h16 m-16 -5 h16 m-8 0 v-15'/%3E%3C!-- Bidón de agua --%3E%3Cpath d='M230 350 v-20 c0 -5 5 -10 10 -10 h10 c5 0 10 5 10 10 v20 z'/%3E%3Cpath d='M240 320 v-5 h10 v5'/%3E%3C!-- Biela y pedal secundario --%3E%3Ccircle cx='120' cy='200' r='20'/%3E%3Cpath d='M120 200 l-20 20'/%3E%3Crect x='95' y='215' width='10' height='10'/%3E%3C!-- Eslabón cadena --%3E%3Crect x='280' y='30' width='40' height='16' rx='8'/%3E%3Ccircle cx='288' cy='38' r='4'/%3E%3Ccircle cx='312' cy='38' r='4'/%3E%3C!-- Huellas de taco --%3E%3Cpath d='M350 160l10-10l10 10l10-10l10 10m-40 10l10-10l10 10l10-10l10 10'/%3E%3C/g%3E%3C/svg%3E");
+            background-attachment: fixed;
+        }
+
+        /* Estilo Dark Glass Premium */
+        .glass-panel { 
+            background: rgba(31, 41, 55, 0.6); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .drag-over { 
+            border-color: #14b8a6 !important; 
+            background-color: rgba(20, 184, 166, 0.1) !important; 
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(20, 184, 166, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(20, 184, 166, 0.8); }
+    </style>
+</head>
+<body class="bg-gray-900 bg-cycling-pattern text-gray-200 font-sans min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-gray-950 text-white shadow-xl border-b border-teal-900/50 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo MNMTB" class="w-10 h-10 object-contain bg-gray-900 rounded-full p-0.5 shadow-sm border border-gray-800">
+                <h1 class="text-xl font-bold tracking-tight text-teal-400 hidden md:block">GPX/TCX Converter</h1>
+            </div>
+
+            <!-- Navegación central -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                <a href="index.html" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-teal-400 hover:bg-gray-900 hover:border-teal-900/50 transition-all group">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-gray-500 group-hover:text-teal-500"></i> <span class="hidden sm:inline">Miguel Navas MTB</span>
+                </a>
+                
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        
+        <div class="text-center space-y-2 mb-8">
+            <h2 class="text-3xl font-bold text-white">Conversor de Actividades</h2>
+            <p class="text-gray-400 max-w-2xl mx-auto">Convierte tus archivos entre formatos GPX, TCX y KML asegurando la compatibilidad de datos de frecuencia cardíaca, cadencia, potencia y temperatura. Inyecta tiempos válidos en rutas punto a punto para que sean aceptadas por cualquier ecosistema (Garmin, Strava, etc).</p>
+        </div>
+
+        <!-- Zona de subida de archivos -->
+        <section id="dropzone" class="border-2 border-dashed border-gray-600 rounded-2xl p-12 text-center transition-all bg-gray-800/40 shadow-sm cursor-pointer hover:bg-gray-800/60 hover:border-teal-500 relative z-20 group">
+            <input type="file" id="fileInput" multiple accept=".gpx,.tcx,.kml" class="hidden" />
+            <div class="flex flex-col items-center justify-center gap-4 pointer-events-none">
+                <div class="p-4 bg-gray-900 rounded-full border border-gray-700 group-hover:border-teal-500 transition-colors">
+                    <i data-lucide="file-up" class="w-12 h-12 text-teal-500"></i>
+                </div>
+                <div>
+                    <p class="text-xl font-semibold text-gray-200">Arrastra tus archivos GPX, TCX o KML aquí</p>
+                    <p class="text-sm text-gray-400 mt-1">Soporta rutas puras y actividades con sensores.</p>
+                </div>
+                <div class="flex gap-3 mt-4">
+                    <span class="px-3 py-1 bg-gray-900 border border-gray-700 rounded-md text-xs font-bold text-gray-300">.GPX</span>
+                    <span class="px-3 py-1 bg-gray-900 border border-gray-700 rounded-md text-xs font-bold text-gray-300">.TCX</span>
+                    <span class="px-3 py-1 bg-gray-900 border border-gray-700 rounded-md text-xs font-bold text-gray-300">.KML</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contenedor de Archivos Procesados -->
+        <div id="resultsContainer" class="hidden space-y-6">
+            <div class="flex items-center justify-between border-b border-gray-700 pb-2">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i data-lucide="list-checks" class="w-5 h-5 text-teal-400"></i> Archivos Listos
+                </h3>
+                <button id="btnClearAll" class="text-sm text-gray-400 hover:text-rose-400 transition-colors flex items-center gap-1">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Limpiar todo
+                </button>
+            </div>
+            
+            <div id="fileList" class="space-y-4">
+                <!-- Los archivos se renderizarán aquí -->
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="border-t border-gray-800 bg-gray-950 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
+            <p>Herramienta diseñada para sanear etiquetas de extensiones y reconstruir timestamps ausentes mejorando la compatibilidad universal.</p>
+        </div>
+    </footer>
+
+    <!-- Templates e Interfaz Dinámica (Oculta) -->
+    <template id="file-card-template">
+        <div class="glass-panel rounded-xl overflow-hidden shadow-lg border border-gray-700/50 flex flex-col md:flex-row transition-all hover:border-teal-500/50">
+            <!-- Info lateral -->
+            <div class="p-5 flex-1 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-start justify-between mb-2">
+                        <div class="flex flex-col">
+                            <h4 class="font-bold text-lg text-white truncate pr-4 file-name">Actividad.gpx</h4>
+                            <span class="text-xs text-yellow-500 font-medium hidden file-sim-time"><i data-lucide="clock-4" class="w-3 h-3 inline mr-1"></i>Tiempos Reconstruidos (Ruta)</span>
+                        </div>
+                        <span class="px-2.5 py-1 rounded bg-gray-800 border border-gray-600 text-xs font-bold text-gray-300 uppercase file-ext">GPX</span>
+                    </div>
+                    
+                    <!-- Stats extraídas -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+                        <div class="bg-gray-900/50 p-2.5 rounded-lg border border-gray-800">
+                            <p class="text-xs text-gray-500 mb-0.5"><i data-lucide="map-pin" class="w-3 h-3 inline mr-1"></i>Puntos</p>
+                            <p class="font-semibold text-gray-200 file-pts">--</p>
+                        </div>
+                        <div class="bg-gray-900/50 p-2.5 rounded-lg border border-gray-800">
+                            <p class="text-xs text-gray-500 mb-0.5"><i data-lucide="clock" class="w-3 h-3 inline mr-1"></i>Duración</p>
+                            <p class="font-semibold text-gray-200 file-time">--:--:--</p>
+                        </div>
+                        <div class="bg-gray-900/50 p-2.5 rounded-lg border border-gray-800">
+                            <p class="text-xs text-gray-500 mb-0.5"><i data-lucide="ruler" class="w-3 h-3 inline mr-1"></i>Distancia</p>
+                            <p class="font-semibold text-gray-200 file-dist">-- km</p>
+                        </div>
+                        <div class="bg-gray-900/50 p-2.5 rounded-lg border border-gray-800 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-gray-500 mb-0.5">Sensores</p>
+                                <div class="flex gap-1.5 mt-1 text-gray-600 file-sensors">
+                                    <i data-lucide="heart" class="w-4 h-4 sensor-hr" title="Frecuencia Cardíaca"></i>
+                                    <i data-lucide="activity-square" class="w-4 h-4 sensor-cad" title="Cadencia"></i>
+                                    <i data-lucide="zap" class="w-4 h-4 sensor-pow" title="Potencia"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botonera de Exportación -->
+            <div class="bg-gray-800/80 p-5 md:w-64 border-t md:border-t-0 md:border-l border-gray-700 flex flex-col justify-center gap-3">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider text-center mb-1">Convertir a</p>
+                <button class="btn-export-gpx w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-500 text-white rounded-lg font-medium shadow-md transition-colors flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="download" class="w-4 h-4"></i> Formato GPX
+                </button>
+                <button class="btn-export-tcx w-full py-2.5 px-4 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-medium shadow-md transition-colors flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="download" class="w-4 h-4"></i> Formato TCX
+                </button>
+                <button class="btn-export-kml w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium shadow-md transition-colors flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="download" class="w-4 h-4"></i> Formato KML
+                </button>
+            </div>
+        </div>
+    </template>
+
+</body>
+</html>

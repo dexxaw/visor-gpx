@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ofuscador de Código JS - MNMTB</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- JavaScript Obfuscator (Browser Build) -->
+    <script src="https://cdn.jsdelivr.net/npm/javascript-obfuscator/dist/index.browser.js"></script>
+
+    <style>
+        /* Trama sutil de motivos de ciclismo */
+        .bg-cycling-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='350' height='350' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%2314b8a6' stroke-width='2' stroke-opacity='0.07' stroke-linecap='round' stroke-linejoin='round'%3E%3C!-- Bicicleta --%3E%3Ccircle cx='80' cy='100' r='25'/%3E%3Ccircle cx='160' cy='100' r='25'/%3E%3Cpath d='M80 100 L110 60 L150 60 L120 100 Z'/%3E%3Cpath d='M150 60 L160 100'/%3E%3Cpath d='M160 100 L145 40 L155 35'/%3E%3Cpath d='M110 60 L105 45 L95 45 M105 45 L115 45'/%3E%3C!-- Montañas --%3E%3Cpath d='M250 120 l40 -60 l30 40 l20 -20 l40 60'/%3E%3Cpath d='M290 60 l-10 15 l10 -5 l10 10 l10 -15'/%3E%3C!-- Pedal plataforma --%3E%3Crect x='40' y='250' width='30' height='15' rx='3'/%3E%3Cpath d='M45 250 v-5 M65 250 v-5 M45 265 v5 M65 265 v5 M30 257 h10 M70 257 h10'/%3E%3C!-- Plato / Corona --%3E%3Ccircle cx='320' cy='280' r='30'/%3E%3Ccircle cx='320' cy='280' r='10'/%3E%3Cpath d='M320 245 v5 M320 315 v-5 M285 280 h5 M355 280 h-5 M295 255 l4 4 M345 305 l-4 -4 M345 255 l-4 4 M295 305 l4 -4'/%3E%3C!-- Casco --%3E%3Cpath d='M120 320 q30 -30 60 0 c5 5 -5 10 -10 10 z'/%3E%3Cpath d='M140 320 v-15 M160 320 v-10'/%3E%3C!-- GPS / Ciclocomputador --%3E%3Crect x='220' y='180' width='30' height='40' rx='4'/%3E%3Crect x='225' y='185' width='20' height='20' rx='2'/%3E%3Ccircle cx='230' cy='212' r='2'/%3E%3Ccircle cx='240' cy='212' r='2'/%3E%3C!-- Amortiguador --%3E%3Cpath d='M40 360 v-30 m-5 0 h10 m-5 0 v-10 m-8 -5 h16 m-16 -5 h16 m-16 -5 h16 m-8 0 v-15'/%3E%3C!-- Bidón de agua --%3E%3Cpath d='M230 350 v-20 c0 -5 5 -10 10 -10 h10 c5 0 10 5 10 10 v20 z'/%3E%3Cpath d='M240 320 v-5 h10 v5'/%3E%3C!-- Biela y pedal secundario --%3E%3Ccircle cx='120' cy='200' r='20'/%3E%3Cpath d='M120 200 l-20 20'/%3E%3Crect x='95' y='215' width='10' height='10'/%3E%3C!-- Eslabón cadena --%3E%3Crect x='280' y='30' width='40' height='16' rx='8'/%3E%3Ccircle cx='288' cy='38' r='4'/%3E%3Ccircle cx='312' cy='38' r='4'/%3E%3C/g%3E%3C/svg%3E");
+            background-attachment: fixed;
+        }
+
+        /* Estilo Dark Glass Premium */
+        .glass-panel { 
+            background: rgba(31, 41, 55, 0.6); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(20, 184, 166, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(20, 184, 166, 0.8); }
+
+        textarea {
+            font-family: 'Courier New', Courier, monospace;
+            resize: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 bg-cycling-pattern text-gray-200 font-sans min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-gray-950 text-white shadow-xl border-b border-teal-900/50 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo MNMTB" class="w-10 h-10 object-contain bg-gray-900 rounded-full p-0.5 shadow-sm border border-gray-800">
+                <h1 class="text-xl font-bold tracking-tight text-teal-400 hidden md:block">Ofuscador JS</h1>
+            </div>
+
+            <!-- Navegación central -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                <a href="index.html" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-teal-400 hover:bg-gray-900 hover:border-teal-900/50 transition-all group">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-gray-500 group-hover:text-teal-500"></i> <span class="hidden sm:inline">Suite Principal</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        
+        <div class="text-center space-y-2 mb-6">
+            <h2 class="text-3xl font-bold text-white">Protector de Algoritmos JS</h2>
+            <p class="text-gray-400 max-w-2xl mx-auto">Ofusca tu código JavaScript para proteger las fórmulas, lógicas y algoritmos de tus herramientas. Configurado específicamente para mantener la compatibilidad con el HTML de la suite.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[600px]">
+            
+            <!-- Panel Izquierdo: Entrada -->
+            <div class="glass-panel rounded-2xl flex flex-col overflow-hidden border border-gray-700">
+                <div class="bg-gray-800/80 p-3 border-b border-gray-700 flex justify-between items-center">
+                    <span class="text-sm font-bold text-gray-300 flex items-center gap-2">
+                        <i data-lucide="code-2" class="w-4 h-4 text-teal-500"></i> Código Original (Claro)
+                    </span>
+                    <button id="btnClear" class="text-xs text-gray-400 hover:text-rose-400 transition-colors flex items-center gap-1">
+                        <i data-lucide="trash-2" class="w-3 h-3"></i> Limpiar
+                    </button>
+                </div>
+                <textarea id="inputCode" class="flex-1 w-full bg-gray-900/50 text-gray-300 p-4 focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm" placeholder="// Pega aquí el contenido de tu archivo -logic.js..."></textarea>
+            </div>
+
+            <!-- Panel Derecho: Salida -->
+            <div class="glass-panel rounded-2xl flex flex-col overflow-hidden border border-gray-700 relative">
+                <div class="bg-gray-800/80 p-3 border-b border-gray-700 flex justify-between items-center">
+                    <span class="text-sm font-bold text-gray-300 flex items-center gap-2">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i> Código Ofuscado (Protegido)
+                    </span>
+                    <button id="btnCopy" class="text-xs font-bold bg-teal-600 hover:bg-teal-500 text-white px-3 py-1.5 rounded flex items-center gap-1.5 transition-colors shadow-lg">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar Código
+                    </button>
+                </div>
+                <textarea id="outputCode" class="flex-1 w-full bg-gray-950/80 text-emerald-400/80 p-4 focus:outline-none text-sm" readonly placeholder="El código ofuscado aparecerá aquí..."></textarea>
+                
+                <!-- Overlay de carga -->
+                <div id="loadingOverlay" class="absolute inset-0 bg-gray-900/80 backdrop-blur-sm hidden flex-col items-center justify-center z-10">
+                    <i data-lucide="loader-2" class="w-10 h-10 text-teal-500 animate-spin mb-3"></i>
+                    <p class="text-teal-400 font-bold tracking-widest text-sm">OFUSCANDO...</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Controles Centrales -->
+        <div class="flex justify-center mt-4 relative">
+            <button id="btnObfuscate" class="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold py-4 px-10 rounded-full shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:shadow-[0_0_30px_rgba(20,184,166,0.5)] transition-all flex items-center gap-2 text-lg transform hover:-translate-y-1">
+                <i data-lucide="lock" class="w-5 h-5"></i> Ofuscar Código
+            </button>
+            
+            <!-- Mensaje de error temporal -->
+            <div id="errorMsg" class="absolute -top-12 bg-rose-600 text-white text-sm font-bold py-2 px-4 rounded shadow-lg opacity-0 pointer-events-none transition-opacity duration-300">
+                Asegúrate de pegar código JS válido.
+            </div>
+        </div>
+
+        <!-- Panel de Ajustes (Solo info) -->
+        <div class="glass-panel p-5 rounded-xl border border-gray-700/50 mt-8">
+            <h4 class="text-sm font-bold text-gray-300 mb-3 flex items-center gap-2"><i data-lucide="settings-2" class="w-4 h-4"></i> Configuración Aplicada Automáticamente</h4>
+            <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-500">
+                <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-3 h-3 text-teal-500"></i> Rename Globals: FALSE (Mantiene compatibilidad con HTML)</li>
+                <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-3 h-3 text-teal-500"></i> String Array Encoding: Base64 (Oculta textos y variables)</li>
+                <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-3 h-3 text-teal-500"></i> Control Flow Flattening: TRUE (Dificulta la lectura estructural)</li>
+                <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-3 h-3 text-teal-500"></i> Dead Code Injection: TRUE (Añade código basura para despistar)</li>
+            </ul>
+        </div>
+
+    </main>
+
+    <script>
+        // Inicializar iconos
+        lucide.createIcons();
+
+        // Referencias DOM
+        const inputCode = document.getElementById('inputCode');
+        const outputCode = document.getElementById('outputCode');
+        const btnObfuscate = document.getElementById('btnObfuscate');
+        const btnClear = document.getElementById('btnClear');
+        const btnCopy = document.getElementById('btnCopy');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const errorMsg = document.getElementById('errorMsg');
+
+        // Configuración óptima para tu Suite (Protección alta, pero sin romper el DOM)
+        const obfuscatorOptions = {
+            compact: true,
+            controlFlowFlattening: true,
+            controlFlowFlatteningThreshold: 0.75,
+            deadCodeInjection: true,
+            deadCodeInjectionThreshold: 0.4,
+            debugProtection: false,
+            disableConsoleOutput: false,
+            identifierNamesGenerator: 'hexadecimal',
+            log: false,
+            numbersToExpressions: true,
+            renameGlobals: false, // CRÍTICO: Debe ser false para que tu app HTML lo encuentre
+            selfDefending: true,
+            simplify: true,
+            splitStrings: true,
+            splitStringsChunkLength: 10,
+            stringArray: true,
+            stringArrayCallsTransform: true,
+            stringArrayCallsTransformThreshold: 0.5,
+            stringArrayEncoding: ['base64'],
+            stringArrayIndexShift: true,
+            stringArrayRotate: true,
+            stringArrayShuffle: true,
+            stringArrayWrappersCount: 1,
+            stringArrayWrappersChainedCalls: true,
+            stringArrayWrappersParametersMaxCount: 2,
+            stringArrayWrappersType: 'variable',
+            stringArrayThreshold: 0.75,
+            unicodeEscapeSequence: false
+        };
+
+        // Función principal: Ofuscar
+        btnObfuscate.addEventListener('click', () => {
+            const rawCode = inputCode.value.trim();
+            
+            if (!rawCode) {
+                showError("Por favor, pega el código original primero.");
+                return;
+            }
+
+            // Mostrar spinner (añadimos un pequeño retraso para que la UI tenga tiempo de actualizarse)
+            loadingOverlay.classList.remove('hidden');
+            loadingOverlay.classList.add('flex');
+            
+            setTimeout(() => {
+                try {
+                    // Ejecutar el ofuscador de la librería importada
+                    const obfuscationResult = JavaScriptObfuscator.obfuscate(rawCode, obfuscatorOptions);
+                    
+                    // Mostrar resultado
+                    outputCode.value = obfuscationResult.getObfuscatedCode();
+                    outputCode.classList.remove('text-rose-400');
+                    outputCode.classList.add('text-emerald-400/80');
+
+                } catch (error) {
+                    console.error("Error al ofuscar:", error);
+                    // Mostrar error de sintaxis de forma amigable
+                    outputCode.value = `// ERROR DE SINTAXIS EN EL CÓDIGO ORIGINAL:\n\n${error.message}\n\n// Revisa tu archivo .js y asegúrate de que funciona antes de intentar ofuscarlo.`;
+                    outputCode.classList.remove('text-emerald-400/80');
+                    outputCode.classList.add('text-rose-400');
+                } finally {
+                    // Ocultar spinner
+                    loadingOverlay.classList.remove('flex');
+                    loadingOverlay.classList.add('hidden');
+                }
+            }, 150);
+        });
+
+        // Función Limpiar
+        btnClear.addEventListener('click', () => {
+            inputCode.value = '';
+            outputCode.value = '';
+            outputCode.classList.remove('text-rose-400');
+            outputCode.classList.add('text-emerald-400/80');
+        });
+
+        // Función Copiar al Portapapeles
+        btnCopy.addEventListener('click', () => {
+            const textToCopy = outputCode.value.trim();
+            
+            if (!textToCopy) return;
+
+            // Intentar copiar usando la API moderna del portapapeles o execCommand
+            try {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    successCopyAnim();
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(textToCopy);
+                });
+            } catch (err) {
+                fallbackCopyTextToClipboard(textToCopy);
+            }
+        });
+
+        function fallbackCopyTextToClipboard(text) {
+            outputCode.select();
+            outputCode.setSelectionRange(0, 99999); // Para móviles
+            try {
+                document.execCommand('copy');
+                successCopyAnim();
+            } catch (err) {
+                console.error('No se pudo copiar', err);
+            }
+        }
+
+        // Animación visual del botón de copiar
+        function successCopyAnim() {
+            const originalContent = btnCopy.innerHTML;
+            btnCopy.innerHTML = '<i data-lucide="check-circle" class="w-3.5 h-3.5"></i> ¡Copiado!';
+            btnCopy.classList.replace('bg-teal-600', 'bg-emerald-600');
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                btnCopy.innerHTML = originalContent;
+                btnCopy.classList.replace('bg-emerald-600', 'bg-teal-600');
+                lucide.createIcons();
+            }, 2000);
+        }
+
+        // Muestra un mensaje de error rápido (Toast)
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.classList.remove('opacity-0');
+            setTimeout(() => {
+                errorMsg.classList.add('opacity-0');
+            }, 3000);
+        }
+
+    </script>
+</body>
+</html>
