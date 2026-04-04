@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -85,13 +86,20 @@
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
-                
+			
+				<!-- Botón compartir -->
+				
+                <button id="btn-share-track" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-teal-400 hover:bg-gray-900 hover:border-teal-900/50 transition-all group">
+				<i data-lucide="share-2" class="w-5 h-5"></i> Compartir Resumen
+				</button>	
+				
+				
                 <!-- Botón YouTube -->
                 <a href="https://www.youtube.com/@MiguelNavasMTB?sub_confirmation=1" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-gray-900 hover:border-red-900/50 transition-all group">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-500 group-hover:text-red-500"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2.41 2.41 0 0 1 2.2-1.94 15.76 15.76 0 0 1 14.6 0 2.41 2.41 0 0 1 2.2 1.94 24.12 24.12 0 0 1 0 10 2.41 2.41 0 0 1-2.2 1.94 15.76 15.76 0 0 1-14.6 0 2.41 2.41 0 0 1-2.2-1.94Z"/><path d="m10 15 5-3-5-3v6Z"/></svg>
                     <span class="hidden sm:inline">YouTube</span>
                 </a>
-
+				
                 <!-- Botón Blogger -->
                 <a href="https://miguelnavasmtb.blogspot.com/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-orange-500 hover:bg-gray-900 hover:border-orange-900/50 transition-all group">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-500 group-hover:text-orange-500"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
@@ -662,6 +670,190 @@
             </div>
         </div>
     </main>
+
+<!-- ========================================== -->
+<!--  MÓDULO DE COMPARTIR (NUEVA FUNCIONALIDAD) -->
+<!-- ========================================== -->
+ <!-- MODAL PERSONALIZADO PARA EL TÍTULO -->
+    <div id="share-modal" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
+        <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 shadow-2xl max-w-md w-full mx-4 transform transition-all scale-95 opacity-0" id="share-modal-content">
+            <h3 class="text-xl font-bold text-gray-200 mb-2 flex items-center gap-2">
+                <i data-lucide="image" class="w-5 h-5 text-teal-500"></i> Generar Imagen
+            </h3>
+            <p class="text-sm text-gray-400 mb-4">Escribe un nombre para este track. Aparecerá como título en la imagen compartida.</p>
+            
+            <input type="text" id="share-modal-input" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-colors mb-6" value="Resumen del Track">
+            
+            <div class="flex justify-end gap-3">
+                <button id="btn-cancel-share" class="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition-colors font-medium">
+                    Cancelar
+                </button>
+                <button id="btn-confirm-share" class="bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all flex items-center gap-2">
+                    <i data-lucide="download" class="w-4 h-4"></i> Generar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // 1. Elementos del DOM
+            const btnShare = document.getElementById('btn-share-track');
+            const mapContainer = document.getElementById('map');
+            const modal = document.getElementById('share-modal');
+            const modalContent = document.getElementById('share-modal-content');
+            const inputTitle = document.getElementById('share-modal-input');
+            const btnCancel = document.getElementById('btn-cancel-share');
+            const btnConfirm = document.getElementById('btn-confirm-share');
+            
+            if (!btnShare || !mapContainer || !modal) return;
+
+            // 2. Funciones para abrir y cerrar el modal
+            const openModal = () => {
+                modal.classList.remove('hidden');
+                // Pequeño timeout para que la transición de CSS funcione
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                    inputTitle.focus();
+                    inputTitle.select(); // Selecciona el texto por defecto para sobreescribirlo rápido
+                }, 10);
+            };
+
+            const closeModal = () => {
+                modalContent.classList.remove('scale-100', 'opacity-100');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 200); // Coincide con la duración de la transición
+            };
+
+            // 3. Event Listeners del Modal
+            btnShare.addEventListener('click', openModal);
+            
+            btnCancel.addEventListener('click', closeModal);
+            
+            // Cerrar si hace clic fuera de la caja
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            // Permitir usar "Enter" en el input
+            inputTitle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') btnConfirm.click();
+                if (e.key === 'Escape') closeModal();
+            });
+
+            // 4. Lógica principal para generar la imagen (Se ejecuta al Confirmar)
+            btnConfirm.addEventListener('click', async () => {
+                
+                let customTitle = inputTitle.value.trim();
+                if (customTitle === '') customTitle = 'Resumen del Track';
+
+                // Efecto de carga en el botón del modal
+                const originalBtnText = btnConfirm.innerHTML;
+                btnConfirm.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Procesando...';
+                btnConfirm.disabled = true;
+                btnCancel.disabled = true;
+                lucide.createIcons();
+
+                try {
+                    // --- PASO A: RECUPERAR DATOS ---
+                    const valDistancia = document.getElementById('stat-dist')?.innerText || '-- km';
+                    const valTiempo = document.getElementById('stat-time-active')?.innerText || '--:--';
+                    const valDesnivel = document.getElementById('stat-ascent')?.innerText || '-- m';
+                    const valVelocidad = document.getElementById('stat-speed')?.innerText || '-- km/h';
+
+                    // --- PASO B: CAPTURAR EL MAPA ---
+                    const mapCanvas = await html2canvas(mapContainer, {
+                        useCORS: true, 
+                        allowTaint: false,
+                        backgroundColor: '#1f2937'
+                    });
+
+                    // --- PASO C: CREAR TARJETA INVISIBLE ---
+                    const card = document.createElement('div');
+                    card.style.cssText = 'position: fixed; left: -9999px; width: 800px; background: linear-gradient(to bottom right, #111827, #1f2937); color: white; border-radius: 16px; font-family: sans-serif; display: flex; flex-direction: column; padding: 24px; box-sizing: border-box; z-index: -1;';
+                    
+                    card.innerHTML = `<h2 style="text-align: center; font-size: 32px; font-weight: 800; margin: 0 0 24px 0; color: #f3f4f6;">${customTitle}</h2>`;
+
+                    const imgWrapper = document.createElement('div');
+                    imgWrapper.style.cssText = 'width: 100%; height: 450px; border-radius: 12px; overflow: hidden; border: 2px solid #374151; margin-bottom: 24px; display: flex; background: #000; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);';
+                    mapCanvas.style.width = '100%';
+                    mapCanvas.style.height = '100%';
+                    mapCanvas.style.objectFit = 'cover';
+                    imgWrapper.appendChild(mapCanvas);
+                    card.appendChild(imgWrapper);
+
+                    const statsGrid = document.createElement('div');
+                    statsGrid.style.cssText = 'display: flex; justify-content: space-around; text-align: center;';
+
+                    const createStat = (label, value, colorHex = '#ffffff') => {
+                        const col = document.createElement('div');
+                        col.innerHTML = `
+                            <div style="color: #9ca3af; font-size: 16px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">${label}</div>
+                            <div style="font-size: 32px; font-weight: 800; color: ${colorHex};">${value}</div>
+                        `;
+                        return col;
+                    };
+
+                    statsGrid.appendChild(createStat('Distancia', valDistancia));
+                    statsGrid.appendChild(createStat('Tiempo', valTiempo));
+                    statsGrid.appendChild(createStat('Desnivel', valDesnivel, '#10b981')); 
+                    statsGrid.appendChild(createStat('Vel. Media', valVelocidad));
+                    
+                    card.appendChild(statsGrid);
+                    document.body.appendChild(card);
+
+                    // --- PASO D: RENDERIZAR LA TARJETA ---
+                    const finalCanvas = await html2canvas(card, {
+                        useCORS: true,
+                        scale: 2, 
+                        backgroundColor: null
+                    });
+
+                    document.body.removeChild(card);
+
+                    // --- PASO E: DESCARGAR O COMPARTIR ---
+                    finalCanvas.toBlob(async (blob) => {
+                        const file = new File([blob], 'resumen-track.png', { type: 'image/png' });
+                        
+                        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({
+                                    title: customTitle,
+                                    files: [file]
+                                });
+                            } catch (err) {
+                                console.log('Diálogo de compartir cancelado.');
+                            }
+                        } else {
+                            const link = document.createElement('a');
+                            link.download = `${customTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`; // Nombre de archivo más seguro
+                            link.href = URL.createObjectURL(blob);
+                            link.click();
+                            URL.revokeObjectURL(link.href);
+                        }
+                        
+                        // Cerramos el modal cuando termine con éxito
+                        closeModal();
+
+                    }, 'image/png');
+
+                } catch (error) {
+                    console.error("Error al generar la imagen: ", error);
+                    alert("Hubo un error al generar la imagen. Revisa la consola.");
+                } finally {
+                    // Restauramos los botones del modal por si falló algo
+                    btnConfirm.innerHTML = originalBtnText;
+                    btnConfirm.disabled = false;
+                    btnCancel.disabled = false;
+                    lucide.createIcons();
+                }
+            });
+        });
+    </script>
 
    
 </body>
