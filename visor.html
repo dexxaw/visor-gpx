@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>Visor y Comparador GPX - MNMTB</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS y JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Chart.js para el Perfil de Elevación -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Trama sutil de motivos de ciclismo adaptada a Naranja */
+        .bg-cycling-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='350' height='350' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23f97316' stroke-width='2' stroke-opacity='0.05' stroke-linecap='round' stroke-linejoin='round'%3E%3C!-- Bicicleta --%3E%3Ccircle cx='80' cy='100' r='25'/%3E%3Ccircle cx='160' cy='100' r='25'/%3E%3Cpath d='M80 100 L110 60 L150 60 L120 100 Z'/%3E%3Cpath d='M150 60 L160 100'/%3E%3Cpath d='M160 100 L145 40 L155 35'/%3E%3Cpath d='M110 60 L105 45 L95 45 M105 45 L115 45'/%3E%3C!-- Montañas --%3E%3Cpath d='M250 120 l40 -60 l30 40 l20 -20 l40 60'/%3E%3Cpath d='M290 60 l-10 15 l10 -5 l10 10 l10 -15'/%3E%3C!-- Pedal --%3E%3Crect x='40' y='250' width='30' height='15' rx='3'/%3E%3Cpath d='M45 250 v-5 M65 250 v-5 M45 265 v5 M65 265 v5 M30 257 h10 M70 257 h10'/%3E%3C!-- Plato --%3E%3Ccircle cx='320' cy='280' r='30'/%3E%3Ccircle cx='320' cy='280' r='10'/%3E%3Cpath d='M320 245 v5 M320 315 v-5 M285 280 h5 M355 280 h-5 M295 255 l4 4 M345 305 l-4 -4 M345 255 l-4 4 M295 305 l4 -4'/%3E%3C!-- Casco --%3E%3Cpath d='M120 320 q30 -30 60 0 c5 5 -5 10 -10 10 z'/%3E%3Cpath d='M140 320 v-15 M160 320 v-10'/%3E%3C!-- GPS --%3E%3Crect x='220' y='180' width='30' height='40' rx='4'/%3E%3Crect x='225' y='185' width='20' height='20' rx='2'/%3E%3Ccircle cx='230' cy='212' r='2'/%3E%3Ccircle cx='240' cy='212' r='2'/%3E%3C!-- Amortiguador --%3E%3Cpath d='M40 360 v-30 m-5 0 h10 m-5 0 v-10 m-8 -5 h16 m-16 -5 h16 m-16 -5 h16 m-8 0 v-15'/%3E%3C!-- Bidón --%3E%3Cpath d='M230 350 v-20 c0 -5 5 -10 10 -10 h10 c5 0 10 5 10 10 v20 z'/%3E%3Cpath d='M240 320 v-5 h10 v5'/%3E%3C!-- Biela --%3E%3Ccircle cx='120' cy='200' r='20'/%3E%3Cpath d='M120 200 l-20 20'/%3E%3Crect x='95' y='215' width='10' height='10'/%3E%3C!-- Cadena --%3E%3Crect x='280' y='30' width='40' height='16' rx='8'/%3E%3Ccircle cx='288' cy='38' r='4'/%3E%3Ccircle cx='312' cy='38' r='4'/%3E%3C!-- Tacos --%3E%3Cpath d='M350 160l10-10l10 10l10-10l10 10m-40 10l10-10l10 10l10-10l10 10'/%3E%3C/g%3E%3C/svg%3E");
+            background-attachment: fixed;
+        }
+
+        /* Estilo base para paneles y modales (Glassmorphism unificado a Naranja) */
+        .glass-panel { 
+            background: rgba(17, 24, 39, 0.92); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(249, 115, 22, 0.3); 
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.8);
+        }
+
+        /* Estilo muy transparente específico para la gráfica */
+        .glass-panel-chart {
+            background: rgba(17, 24, 39, 0.4); 
+            backdrop-filter: blur(8px); 
+            border-top: 1px solid rgba(249, 115, 22, 0.2); 
+        }
+        
+        #map { background-color: #1f2937; z-index: 10; }
+        .cursor-add-poi { cursor: crosshair !important; }
+        .leaflet-interactive { transition: stroke-width 0.2s ease, stroke-opacity 0.2s ease; }
+        .leaflet-interactive:hover { stroke-opacity: 1 !important; }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f97316; }
+
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
+        
+        .route-item.active {
+            background-color: rgba(249, 115, 22, 0.15);
+            border-color: rgba(249, 115, 22, 0.5);
+        }
+        
+        /* Ocultar Chart cuando no hay ruta seleccionada */
+        #chart-container.hidden-chart { transform: translateY(120%); opacity: 0; pointer-events: none; }
+        #chart-container { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .poi-tooltip {
+            background-color: rgba(31, 41, 55, 0.9);
+            color: #fff;
+            border: 1px solid #eab308;
+            border-radius: 6px;
+            font-weight: bold;
+            padding: 4px 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .leaflet-tooltip-top.poi-tooltip::before { border-top-color: #eab308; }
+
+        /* Estilo unificado para Modales */
+        .custom-dialog {
+            background-color: transparent;
+            padding: 0;
+            margin: auto;
+            border: none;
+        }
+        .custom-dialog::backdrop {
+            background-color: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(4px);
+        }
+        .dialog-content {
+            background: rgba(17, 24, 39, 0.95); 
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(249, 115, 22, 0.4); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            border-radius: 0.75rem; 
+            color: #e5e7eb; 
+        }
+
+        /* Estilo para el punto de seguimiento de gráfica en el mapa */
+        .chart-hover-marker {
+            box-shadow: 0 0 5px rgba(0,0,0,0.8);
+            transition: all 0.05s linear;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 bg-cycling-pattern text-gray-200 font-sans min-h-screen flex flex-col">
+
+    <!-- Navbar con Iconos Originales -->
+    <nav class="bg-gray-950 text-white shadow-xl border-b border-orange-900/50 sticky top-0 z-[100]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo MNMTB" class="w-10 h-10 object-contain bg-gray-900 rounded-full p-0.5 shadow-sm border border-gray-800">
+                <h1 class="text-xl font-bold tracking-tight text-orange-400 hidden sm:block">Visor y Comparador GPX</h1>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <a href="https://www.youtube.com/@MiguelNavasMTB?sub_confirmation=1" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-gray-900 hover:border-red-900/50 transition-all group">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-500 group-hover:text-red-500"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2.41 2.41 0 0 1 2.2-1.94 15.76 15.76 0 0 1 14.6 0 2.41 2.41 0 0 1 2.2 1.94 24.12 24.12 0 0 1 0 10 2.41 2.41 0 0 1-2.2 1.94 15.76 15.76 0 0 1-14.6 0 2.41 2.41 0 0 1-2.2-1.94Z"/><path d="m10 15 5-3-5-3v6Z"/></svg>
+                    <span class="hidden md:inline">YouTube</span>
+                </a>
+                <a href="https://miguelnavasmtb.blogspot.com/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-orange-500 hover:bg-gray-900 hover:border-orange-900/50 transition-all group">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-500 group-hover:text-orange-500"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+                    <span class="hidden md:inline">Blog</span>
+                </a>
+                
+                <!-- Desplegable Suite MNMTB -->
+                <div class="relative" id="suiteDropdownContainer">
+                    <button id="btnToggleSuite" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-700 transition-all group shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-500 group-hover:text-gray-300"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                        <span class="hidden md:inline">Miguel Navas MTB</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 ml-0.5 text-gray-500 group-hover:text-gray-300 transition-transform duration-200" id="suiteDropdownIcon"></i>
+                    </button>
+
+                    <!-- Menú Desplegable -->
+                    <div id="suiteDropdownMenu" class="absolute top-[120%] right-0 w-64 glass-panel rounded-xl hidden overflow-hidden shadow-2xl z-[1000] border border-gray-700">
+                        <div class="flex flex-col">
+                            <div class="px-4 py-2 border-b border-gray-800 bg-gray-900/50">
+                                <span class="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Herramientas</span>
+                            </div>
+							<a href="analiza.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-teal-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="activity" class="w-4 h-4 text-gray-500 group-hover:text-teal-400 transition-colors"></i> GPX Sync & Merge
+                            </a>
+                            <a href="crearuta.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-yellow-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="map" class="w-4 h-4 text-gray-500 group-hover:text-yellow-400 transition-colors"></i> Creador de Rutas
+                            </a>
+                          
+                            <a href="clima.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-sky-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="cloud-sun" class="w-4 h-4 text-gray-500 group-hover:text-sky-400 transition-colors"></i> Previsión Clima en Ruta
+                            </a>
+                            <a href="conversor.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-indigo-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="file-symlink" class="w-4 h-4 text-gray-500 group-hover:text-indigo-400 transition-colors"></i> GPX/TCX Converter
+                            </a>
+                            <a href="visor.html" class="flex items-center gap-3 px-4 py-3 bg-orange-900/20 text-sm font-bold text-orange-400 border-l-2 border-orange-500 cursor-default pointer-events-none">
+                                <i data-lucide="layers" class="w-4 h-4 text-orange-500"></i> Visor y Comparador GPX
+                            </a>
+
+                            <div class="bg-gray-950/80 p-2 border-t border-gray-800 mt-1">
+                                <a href="index.html" class="flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs font-bold text-gray-300 hover:text-white transition-colors border border-gray-700">
+                                    <i data-lucide="home" class="w-3.5 h-3.5"></i> Miguel Navas MTB
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenedor Centralizado -->
+    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col gap-4">
+        
+        <!-- Toolbar de Herramientas Estructurada en 2 Filas -->
+        <div class="glass-panel rounded-xl px-4 py-3 flex flex-col gap-3 shadow-md relative z-50">
+            
+            <!-- Primera Fila: Carga de Archivos y Desplegable -->
+            <div class="flex flex-wrap items-center gap-4 justify-between w-full relative z-50">
+                
+                <!-- Botón Cargar Rutas -->
+                <div class="flex items-center">
+                    <input type="file" id="fileInput" multiple accept=".gpx" class="hidden">
+                    <button onclick="document.getElementById('fileInput').click()" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-orange-400 hover:bg-gray-900 hover:border-orange-900/50 transition-all group shadow-sm">
+                        <i data-lucide="folder-plus" class="w-4 h-4 text-gray-500 group-hover:text-orange-400 transition-colors"></i>
+                        <span class="hidden sm:inline">Cargar Rutas</span>
+                    </button>
+                </div>
+
+                <!-- Desplegable de Rutas -->
+                <div class="relative flex-1 max-w-sm ml-auto z-[100]" id="routesDropdownContainer">
+                    <button id="btnToggleRoutes" class="w-full flex items-center justify-between px-3 py-1.5 bg-gray-900/50 border border-gray-800 hover:border-orange-900/50 rounded-lg text-xs font-bold text-gray-400 hover:text-gray-200 hover:bg-gray-900 transition-all group shadow-sm">
+                        <div class="flex items-center gap-2 truncate">
+                            <i data-lucide="layers" class="w-4 h-4 text-gray-500 group-hover:text-orange-400 transition-colors"></i>
+                            <span id="dropdownBtnText" class="truncate font-normal group-hover:text-gray-200">Ninguna ruta cargada</span>
+                        </div>
+                        <div class="flex items-center gap-2 ml-2">
+                            <span id="routeCountBadge" class="bg-orange-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold hidden">0</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 group-hover:text-gray-300 transition-transform duration-200" id="dropdownIcon"></i>
+                        </div>
+                    </button>
+
+                    <!-- Menú Desplegable -->
+                    <div id="routesDropdownMenu" class="absolute top-[110%] right-0 w-[320px] lg:w-[450px] glass-panel rounded-xl hidden flex-col overflow-hidden shadow-2xl z-[500] transition-opacity">
+                        
+                        <!-- Contenedor con scroll garantizado para múltiples rutas -->
+                        <div class="flex-1 overflow-y-auto p-2 flex flex-col gap-2 max-h-[50vh] min-h-[100px]" id="routesList">
+                            <div id="emptyRoutesMsg" class="text-center p-4 text-gray-500 text-xs flex flex-col items-center justify-center h-full gap-2">
+                                <i data-lucide="map" class="w-8 h-8 opacity-50"></i>
+                                <p>Aún no hay rutas en memoria. Usa el botón "Cargar Rutas".</p>
+                            </div>
+                            <!-- Items de ruta inyectados aquí -->
+                        </div>
+                        
+                        <div class="p-2 border-t border-gray-800/50 bg-gray-900/80 flex gap-2 shrink-0">
+                            <button id="btnFitAll" class="flex-1 py-1.5 bg-gray-800 hover:bg-orange-900/50 text-orange-400 text-xs font-semibold rounded-md border border-gray-700 hover:border-orange-500 transition-colors flex items-center justify-center gap-1 opacity-50 pointer-events-none">
+                                <i data-lucide="maximize" class="w-3.5 h-3.5"></i> Ver Todas
+                            </button>
+                            <button id="btnClearAll" class="flex-1 py-1.5 bg-gray-800 hover:bg-rose-900/50 text-rose-400 text-xs font-semibold rounded-md border border-gray-700 hover:border-rose-500 transition-colors flex items-center justify-center gap-1 opacity-50 pointer-events-none">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Limpiar Mapa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Segunda Fila: Herramientas para la ruta seleccionada -->
+            <!-- Tooltip para advertir si hay varias seleccionadas -->
+            <div id="toolsPanel" class="flex flex-wrap items-center gap-2 opacity-50 pointer-events-none transition-opacity duration-300 relative z-50 border-t border-gray-800/50 pt-2" title="Selecciona solo UNA ruta para activar estas herramientas">
+                <button id="btnProperties" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-sky-400 hover:bg-gray-900 hover:border-sky-900/50 transition-all group shadow-sm">
+                    <i data-lucide="file-bar-chart-2" class="w-4 h-4 text-gray-500 group-hover:text-sky-400 transition-colors"></i>
+                    <span class="hidden sm:inline">Propiedades</span>
+                </button>
+
+                <button id="btnYoutube" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-gray-900 hover:border-red-900/50 transition-all group shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-500 group-hover:text-red-500 transition-colors"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2.41 2.41 0 0 1 2.2-1.94 15.76 15.76 0 0 1 14.6 0 2.41 2.41 0 0 1 2.2 1.94 24.12 24.12 0 0 1 0 10 2.41 2.41 0 0 1-2.2 1.94 15.76 15.76 0 0 1-14.6 0 2.41 2.41 0 0 1-2.2-1.94Z"/><path d="m10 15 5-3-5-3v6Z"/></svg>
+                    <span class="hidden sm:inline">Enlazar Vídeo</span>
+                </button>
+
+                <button id="btnPOI" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-yellow-400 hover:bg-gray-900 hover:border-yellow-900/50 transition-all group shadow-sm">
+                    <i data-lucide="map-pin" class="w-4 h-4 text-gray-500 group-hover:text-yellow-400 transition-colors"></i>
+                    <span class="hidden sm:inline">Añadir POI</span>
+                </button>
+
+                <button id="btnInvert" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-orange-400 hover:bg-gray-900 hover:border-orange-900/50 transition-all group shadow-sm">
+                    <i data-lucide="arrow-right-left" class="w-4 h-4 text-gray-500 group-hover:text-orange-400 transition-colors"></i>
+                    <span class="hidden sm:inline">Invertir Ruta</span>
+                </button>
+
+                <div class="h-4 w-px bg-gray-700 mx-1 hidden sm:block"></div>
+
+                <button id="btnDownload" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-teal-400 hover:bg-gray-900 hover:border-teal-900/50 transition-all group shadow-sm">
+                    <i data-lucide="download" class="w-4 h-4 text-gray-500 group-hover:text-teal-400 transition-colors"></i>
+                    <span class="hidden sm:inline">Exportar Activa</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenedor del Mapa y Perfil de Elevación -->
+        <div class="relative flex-1 rounded-xl overflow-hidden glass-panel border border-gray-700/50 shadow-lg flex flex-col min-h-[600px] z-10">
+            
+            <!-- Mapa -->
+            <div id="map" class="absolute inset-0 z-10 w-full h-full"></div>
+
+            <!-- Panel Flotante Inferior: Perfil de Elevación muy transparente -->
+            <div id="chart-container" class="absolute bottom-0 left-0 w-full h-44 glass-panel-chart z-[1000] hidden-chart flex flex-col p-3 pt-2 transition-transform duration-500 ease-in-out">
+                <div class="flex justify-between items-center mb-0.5 px-2 relative z-20">
+                    <h4 id="chartTitle" class="text-xs font-bold text-gray-200 flex items-center gap-1.5 drop-shadow-md"><i data-lucide="mountain" class="w-4 h-4 text-orange-400"></i> Perfil de Elevación</h4>
+                    <div class="flex items-center gap-4 text-[10px] font-semibold text-gray-300 drop-shadow-md">
+                        <span id="chartDist"></span>
+                        <span id="chartAscent" class="text-emerald-400"></span>
+                        <button id="btnCloseChart" class="hover:text-white transition-colors bg-gray-900/60 p-1 rounded-md border border-gray-700"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                </div>
+                <div class="flex-1 w-full relative z-10">
+                    <canvas id="elevationChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- MODAL ALERTA GENÉRICA -->
+    <dialog id="modalAlert" class="custom-dialog open:animate-in fade-in zoom-in duration-200 z-[3000]">
+        <div class="dialog-content w-[90vw] max-w-sm p-6 flex flex-col gap-4 text-center items-center">
+            <i data-lucide="check-circle" id="modalAlertIcon" class="w-12 h-12 text-emerald-500 mx-auto mb-1"></i>
+            <h3 id="modalAlertTitle" class="text-lg font-bold text-white">Éxito</h3>
+            <p id="modalAlertMessage" class="text-sm text-gray-400 leading-relaxed px-2">Acción completada con éxito.</p>
+            <div class="mt-4 w-full">
+                <button onclick="document.getElementById('modalAlert').close()" class="w-full px-5 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg text-sm font-bold shadow-md transition-colors border border-orange-500">Aceptar</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- MODAL CONFIRMACIÓN LIMPIAR MAPA -->
+    <dialog id="modalConfirmClear" class="custom-dialog open:animate-in fade-in zoom-in duration-200 z-[2000]">
+        <div class="dialog-content w-[90vw] max-w-sm p-6 flex flex-col gap-4 text-center">
+            <i data-lucide="alert-triangle" class="w-12 h-12 text-rose-500 mx-auto mb-1"></i>
+            <h3 class="text-lg font-bold text-white">¿Borrar todas las rutas?</h3>
+            <p class="text-xs text-gray-400 leading-relaxed px-2">Esta acción eliminará todas las rutas y puntos del mapa actual. Tendrás que volver a cargarlas si quieres visualizarlas. No se puede deshacer.</p>
+            <div class="flex gap-3 justify-center mt-4">
+                <button onclick="document.getElementById('modalConfirmClear').close()" class="px-5 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-lg text-sm font-semibold transition-colors shadow-sm">Cancelar</button>
+                <button id="btnConfirmClearAction" class="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-sm font-bold shadow-md transition-colors border border-rose-500">Sí, Borrar Todo</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- MODAL: Propiedades de la Ruta -->
+    <dialog id="modalProperties" class="custom-dialog open:animate-in fade-in zoom-in duration-200 z-[2000]">
+        <div class="dialog-content w-[90vw] max-w-md p-6 flex flex-col gap-4">
+            <div class="flex justify-between items-center border-b border-gray-700/80 pb-2">
+                <h3 class="text-lg font-bold text-sky-400 flex items-center gap-2"><i data-lucide="info" class="w-5 h-5"></i> Detalles de la Ruta</h3>
+                <button onclick="document.getElementById('modalProperties').close()" class="text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 p-1.5 rounded-lg transition-colors"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-800/80 p-3 rounded-lg border border-gray-700/50">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Nombre GPX</p>
+                    <p id="propName" class="text-sm font-semibold truncate text-white" title="-">-</p>
+                </div>
+                <div class="bg-gray-800/80 p-3 rounded-lg border border-gray-700/50">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Dispositivo / Creador</p>
+                    <p id="propCreator" class="text-sm font-semibold truncate text-white" title="-">-</p>
+                </div>
+                <div class="bg-gray-800/80 p-3 rounded-lg border border-gray-700/50">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Distancia Total</p>
+                    <p id="propDistance" class="text-lg font-bold text-orange-400">0.0 <span class="text-xs text-gray-500">km</span></p>
+                </div>
+                <div class="bg-gray-800/80 p-3 rounded-lg border border-gray-700/50">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Desnivel Acumulado</p>
+                    <p id="propAscent" class="text-lg font-bold text-emerald-400">+0 <span class="text-xs text-gray-500">m</span></p>
+                </div>
+                <div class="bg-gray-800/80 p-3 rounded-lg border border-gray-700/50">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Tiempo en Movimiento</p>
+                    <p id="propMovingTime" class="text-lg font-bold text-amber-400">00:00:00</p>
+                </div>
+                <div class="bg-gray-800/80 p-3 rounded-lg border border-gray-700/50">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Tiempo Total</p>
+                    <p id="propTotalTime" class="text-lg font-bold text-gray-300">00:00:00</p>
+                </div>
+            </div>
+
+            <div id="propYoutubeContainer" class="hidden mt-2 bg-red-950/30 p-3 rounded-lg border border-red-900/50 flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-red-500 shrink-0"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2.41 2.41 0 0 1 2.2-1.94 15.76 15.76 0 0 1 14.6 0 2.41 2.41 0 0 1 2.2 1.94 24.12 24.12 0 0 1 0 10 2.41 2.41 0 0 1-2.2 1.94 15.76 15.76 0 0 1-14.6 0 2.41 2.41 0 0 1-2.2-1.94Z"/><path d="m10 15 5-3-5-3v6Z"/></svg>
+                <div class="flex-1 truncate">
+                    <p class="text-xs text-gray-400 mb-0.5">Vídeo Enlazado:</p>
+                    <a id="propYoutubeLink" href="#" target="_blank" class="text-sm text-red-400 hover:text-red-300 hover:underline truncate block">Enlace a YouTube</a>
+                </div>
+            </div>
+
+            <div class="mt-2 flex justify-end">
+                <button onclick="document.getElementById('modalProperties').close()" class="px-5 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-semibold border border-gray-600 transition-colors shadow-sm">Cerrar</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- MODAL: Enlazar YouTube -->
+    <dialog id="modalYoutube" class="custom-dialog open:animate-in fade-in zoom-in duration-200 z-[2000]">
+        <div class="dialog-content w-[90vw] max-w-sm p-6 flex flex-col gap-4">
+            <h3 class="text-lg font-bold text-red-500 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2.41 2.41 0 0 1 2.2-1.94 15.76 15.76 0 0 1 14.6 0 2.41 2.41 0 0 1 2.2 1.94 24.12 24.12 0 0 1 0 10 2.41 2.41 0 0 1-2.2 1.94 15.76 15.76 0 0 1-14.6 0 2.41 2.41 0 0 1-2.2-1.94Z"/><path d="m10 15 5-3-5-3v6Z"/></svg>
+                Enlazar Vídeo
+            </h3>
+            <p class="text-xs text-gray-400 leading-relaxed">Pega la URL de tu vídeo de YouTube para guardarla dentro de los metadatos del archivo GPX seleccionado.</p>
+            <input type="text" id="inputYoutubeUrl" placeholder="https://youtube.com/watch?v=..." class="w-full px-3 py-2 bg-gray-800 border border-gray-600 focus:border-red-500 rounded-lg outline-none text-sm text-white placeholder-gray-500 transition-colors shadow-inner">
+            <div class="flex gap-3 justify-end mt-2">
+                <button onclick="document.getElementById('modalYoutube').close()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-lg text-sm font-semibold transition-colors">Cancelar</button>
+                <button id="btnSaveYoutube" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-bold shadow-md transition-colors">Guardar Enlace</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- MODAL: Añadir POI -->
+    <dialog id="modalPOI" class="custom-dialog open:animate-in fade-in zoom-in duration-200 z-[2000]">
+        <div class="dialog-content w-[90vw] max-w-sm p-6 flex flex-col gap-4">
+            <h3 class="text-lg font-bold text-yellow-500 flex items-center gap-2"><i data-lucide="map-pin" class="w-5 h-5"></i> Añadir Punto de Interés</h3>
+            <p class="text-xs text-gray-400 leading-relaxed">Introduce el nombre para el nuevo Waypoint (PDI) en las coordenadas seleccionadas.</p>
+            <input type="text" id="inputPOIName" placeholder="Ej: Fuente, Cima, Cruce peligroso..." class="w-full px-3 py-2 bg-gray-800 border border-gray-600 focus:border-yellow-500 rounded-lg outline-none text-sm text-white placeholder-gray-500 transition-colors shadow-inner" autocomplete="off">
+            <div class="flex gap-3 justify-end mt-2">
+                <button onclick="document.getElementById('modalPOI').close(); resetPoiMode();" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 rounded-lg text-sm font-semibold transition-colors">Cancelar</button>
+                <button id="btnSavePOI" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-500 text-gray-900 rounded-lg text-sm font-bold shadow-md transition-colors">Añadir al GPX</button>
+            </div>
+        </div>
+    </dialog>
+
+    <script>
+        // --- INICIALIZACIÓN DE LUCIDE ICONS ---
+        lucide.createIcons();
+
+        // --- PALETA DE COLORES AUTOMÁTICOS ---
+        const colors = ['#f97316', '#14b8a6', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6', '#10b981', '#3b82f6'];
+        let colorIndex = 0;
+
+        // --- VARIABLES GLOBALES ---
+        let map;
+        let elevationChartObj = null;
+        let loadedRoutes = []; // Array de objetos ruta
+        
+        let activeRouteIds = []; 
+        
+        let isPoiMode = false;
+        let tempPoiCoords = null;
+        let chartHoverMarker = null; 
+        const chartHeightOffset = 180; 
+
+        // --- LÓGICA DEL DESPLEGABLE DE CABECERA (SUITE) ---
+        const btnToggleSuite = document.getElementById('btnToggleSuite');
+        const suiteDropdownMenu = document.getElementById('suiteDropdownMenu');
+        const suiteDropdownIcon = document.getElementById('suiteDropdownIcon');
+
+        btnToggleSuite.addEventListener('click', (e) => {
+            e.stopPropagation();
+            suiteDropdownMenu.classList.toggle('hidden');
+            suiteDropdownIcon.classList.toggle('rotate-180');
+        });
+
+        // --- LÓGICA DEL DESPLEGABLE DE RUTAS ---
+        const dropdownBtn = document.getElementById('btnToggleRoutes');
+        const dropdownMenu = document.getElementById('routesDropdownMenu');
+        const dropdownIcon = document.getElementById('dropdownIcon');
+
+        dropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('hidden');
+            dropdownIcon.classList.toggle('rotate-180');
+        });
+
+        document.addEventListener('click', (e) => {
+            // Cerrar menú de rutas
+            if (!e.target.closest('#routesDropdownContainer')) {
+                dropdownMenu.classList.add('hidden');
+                dropdownIcon.classList.remove('rotate-180');
+            }
+            // Cerrar menú de suite
+            if (!e.target.closest('#suiteDropdownContainer')) {
+                suiteDropdownMenu.classList.add('hidden');
+                suiteDropdownIcon.classList.remove('rotate-180');
+            }
+        });
+
+        // --- FUNCIONES UTILIDAD ---
+        function showCustomAlert(title, message, iconClass = "text-emerald-500", lucideIcon = "check-circle") {
+            document.getElementById('modalAlertTitle').textContent = title;
+            document.getElementById('modalAlertMessage').textContent = message;
+            
+            const iconEl = document.getElementById('modalAlertIcon');
+            iconEl.className = `w-12 h-12 mx-auto mb-1 ${iconClass}`;
+            iconEl.setAttribute('data-lucide', lucideIcon);
+            lucide.createIcons({ root: document.getElementById('modalAlert') });
+            
+            document.getElementById('modalAlert').showModal();
+        }
+
+        // --- INICIALIZAR MAPA ---
+        function initMap() {
+            map = L.map('map', {
+                center: [40.4168, -3.7038], 
+                zoom: 6,
+                zoomControl: false 
+            });
+
+            L.control.zoom({ position: 'topleft' }).addTo(map);
+
+            const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap',
+                maxZoom: 19
+            }).addTo(map);
+
+            const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; Esri',
+                maxZoom: 19
+            });
+
+            const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenTopoMap',
+                maxZoom: 17
+            });
+
+            L.control.layers({
+                "Mapa Estándar": osmLayer,
+                "Satélite (Esri)": satelliteLayer,
+                "Topográfico": topoLayer
+            }, null, { position: 'topleft' }).addTo(map);
+
+            // Modo añadir POI
+            map.on('click', function(e) {
+                if (isPoiMode && activeRouteIds.length === 1) {
+                    tempPoiCoords = e.latlng;
+                    const modal = document.getElementById('modalPOI');
+                    document.getElementById('inputPOIName').value = '';
+                    modal.showModal();
+                    document.getElementById('inputPOIName').focus();
+                }
+            });
+        }
+        initMap();
+
+        // --- LÓGICA DE MARCADOR VINCULADO AL CHART ---
+        function clearChartMarker() {
+            if (chartHoverMarker) {
+                map.removeLayer(chartHoverMarker);
+                chartHoverMarker = null;
+            }
+        }
+
+        document.getElementById('elevationChart').addEventListener('mouseout', clearChartMarker);
+
+        // --- INICIALIZAR GRÁFICA (Chart.js) ---
+        function initChart() {
+            const ctx = document.getElementById('elevationChart').getContext('2d');
+            
+            Chart.defaults.color = '#e5e7eb'; 
+            Chart.defaults.font.family = 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+
+            elevationChartObj = new Chart(ctx, {
+                type: 'line',
+                data: { datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { bottom: 5, top: 10 } },
+                    interaction: { mode: 'nearest', axis: 'x', intersect: false },
+                    onHover: (e, elements) => {
+                        if (elements && elements.length > 0 && activeRouteIds.length === 1) {
+                            
+                            const hoveredElement = elements[0];
+                            const datasetIndex = hoveredElement.datasetIndex;
+                            const pointIndex = hoveredElement.index;
+                            
+                            const routeId = activeRouteIds[datasetIndex];
+                            const route = loadedRoutes.find(r => r.id === routeId);
+
+                            if (route && route.stats.latlngs[pointIndex]) {
+                                const pt = route.stats.latlngs[pointIndex];
+                                const dotHtml = `<div style="background-color:${route.color}; width:12px; height:12px; border-radius:50%; border:2px solid white; margin-left:-6px; margin-top:-6px;"></div>`;
+                                
+                                if (!chartHoverMarker) {
+                                    const icon = L.divIcon({
+                                        className: 'chart-hover-marker',
+                                        html: dotHtml,
+                                        iconSize: [0, 0] 
+                                    });
+                                    chartHoverMarker = L.marker(pt, { icon: icon, zIndexOffset: 1000 }).addTo(map);
+                                } else {
+                                    chartHoverMarker.setIcon(L.divIcon({
+                                        className: 'chart-hover-marker',
+                                        html: dotHtml,
+                                        iconSize: [0, 0]
+                                    }));
+                                    chartHoverMarker.setLatLng(pt);
+                                }
+                            }
+                        } else {
+                            clearChartMarker();
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                            titleColor: '#e5e7eb',
+                            bodyColor: '#fdba74', /* Orange-300 */
+                            borderColor: 'rgba(249, 115, 22, 0.5)', /* Orange-500 alpha */
+                            borderWidth: 1,
+                            callbacks: {
+                                title: function(context) { return 'Punto KM: ' + Number(context[0].parsed.x).toFixed(2) + ' km'; },
+                                label: function(context) { return context.dataset.label + ': ' + Math.round(context.parsed.y) + ' m'; }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            type: 'linear',
+                            display: true,
+                            grid: { display: false, drawBorder: false },
+                            ticks: { 
+                                maxTicksLimit: 10, 
+                                font: { size: 10, weight: 'bold' },
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                maxRotation: 0, 
+                                callback: function(value) { return value.toFixed(1) + 'km'; }
+                            }
+                        },
+                        y: { 
+                            display: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.15)' },
+                            ticks: { 
+                                font: { size: 10, weight: 'bold' },
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                callback: function(val) { return val + 'm'; } 
+                            },
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+        initChart();
+
+        // --- LÓGICA DE PARSEO GPX ---
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            return R * c;
+        }
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (!files.length) return;
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    processGPX(event.target.result, file.name);
+                };
+                reader.readAsText(file);
+            });
+            this.value = ''; 
+        });
+
+        // Acepta overrideColor y overrideId para preservar estados al invertir la ruta
+        function processGPX(xmlString, fileName, overrideColor = null, overrideId = null) {
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+
+                let nameNode = xmlDoc.querySelector("trk > name");
+                if (!nameNode) nameNode = xmlDoc.querySelector("metadata > name");
+                const routeName = nameNode ? nameNode.textContent : fileName.replace('.gpx', '');
+
+                const gpxNode = xmlDoc.querySelector("gpx");
+                const creator = gpxNode ? gpxNode.getAttribute("creator") : "Desconocido";
+
+                let trkpts = Array.from(xmlDoc.querySelectorAll("trkpt"));
+                if(trkpts.length === 0) trkpts = Array.from(xmlDoc.querySelectorAll("rtept"));
+                
+                if(trkpts.length === 0) {
+                    console.warn(`El archivo ${fileName} no contiene trazado válido.`);
+                    return;
+                }
+
+                let latlngs = [];
+                let chartData = []; 
+                
+                let totalDist = 0, totalAscent = 0, totalDescent = 0;
+                let startTime = null, endTime = null, movingTimeMs = 0;
+                let prevLat = null, prevLon = null, prevEle = null, prevTime = null;
+
+                trkpts.forEach((pt, index) => {
+                    const lat = parseFloat(pt.getAttribute("lat"));
+                    const lon = parseFloat(pt.getAttribute("lon"));
+                    if(isNaN(lat) || isNaN(lon)) return; 
+
+                    const eleNode = pt.querySelector("ele");
+                    const ele = eleNode ? parseFloat(eleNode.textContent) : (prevEle !== null ? prevEle : 0);
+                    
+                    const timeNode = pt.querySelector("time");
+                    const time = timeNode ? new Date(timeNode.textContent) : null;
+
+                    latlngs.push([lat, lon]);
+
+                    if (index === 0) {
+                        if (time) startTime = time;
+                    } else {
+                        const distSegment = getDistanceFromLatLonInKm(prevLat, prevLon, lat, lon);
+                        totalDist += distSegment;
+
+                        if (prevEle !== null && ele !== null) {
+                            const diff = ele - prevEle;
+                            if (diff > 0) totalAscent += diff;
+                            else if (diff < 0) totalDescent += Math.abs(diff);
+                        }
+
+                        if (time && prevTime) {
+                            const timeDiff = time - prevTime;
+                            if (timeDiff > 0 && timeDiff < 3600000) {
+                                const speedKmH = (distSegment / (timeDiff / 3600000));
+                                if (speedKmH > 2) movingTimeMs += timeDiff;
+                            }
+                        }
+                    }
+
+                    if (time) endTime = time;
+                    prevLat = lat; prevLon = lon; prevEle = ele; prevTime = time;
+
+                    chartData.push({ x: totalDist, y: ele });
+                });
+
+                if(latlngs.length === 0) return;
+
+                const wpts = xmlDoc.querySelectorAll("wpt");
+
+                let totalTimeStr = "Desconocido";
+                let movingTimeStr = "Desconocido";
+                if (startTime && endTime) totalTimeStr = msToTime(endTime - startTime);
+                if (movingTimeMs > 0) movingTimeStr = msToTime(movingTimeMs);
+
+                let routeColor = overrideColor;
+                if (!routeColor) {
+                    routeColor = colors[colorIndex % colors.length];
+                    colorIndex++;
+                }
+
+                const layerGroup = L.featureGroup().addTo(map);
+                
+                const polyline = L.polyline(latlngs, {
+                    color: routeColor, weight: 5, opacity: 0.9, lineCap: 'round', lineJoin: 'round'
+                }).addTo(layerGroup);
+
+                L.circleMarker(latlngs[0], { radius: 5, color: '#10b981', fillColor: '#10b981', fillOpacity: 1 }).bindTooltip("Inicio").addTo(layerGroup);
+                L.circleMarker(latlngs[latlngs.length-1], { radius: 5, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 1 }).bindTooltip("Fin").addTo(layerGroup);
+
+                wpts.forEach(wpt => {
+                    const wlat = wpt.getAttribute("lat");
+                    const wlon = wpt.getAttribute("lon");
+                    const wnameNode = wpt.querySelector("name");
+                    const wname = wnameNode ? wnameNode.textContent : "POI";
+                    createPoiMarker(wlat, wlon, wname, layerGroup);
+                });
+
+                const routeId = overrideId || ('route_' + Date.now() + Math.random().toString(36).substr(2, 9));
+                const routeObj = {
+                    id: routeId, name: routeName, color: routeColor, layerGroup: layerGroup, polyline: polyline, xmlDoc: xmlDoc,
+                    stats: { 
+                        distance: totalDist.toFixed(2), ascent: Math.round(totalAscent), descent: Math.round(totalDescent), 
+                        totalTime: totalTimeStr, movingTime: movingTimeStr, creator: creator, 
+                        chartData: chartData, latlngs: latlngs 
+                    }
+                };
+
+                loadedRoutes.push(routeObj);
+                
+                toggleRouteSelection(routeId, true);
+                
+                polyline.on('click', () => {
+                    isolateRoute(routeId);
+                });
+                
+            } catch (err) {
+                console.error("Error al procesar GPX:", err);
+            }
+        }
+
+        function msToTime(duration) {
+            let seconds = Math.floor((duration / 1000) % 60),
+                minutes = Math.floor((duration / (1000 * 60)) % 60),
+                hours = Math.floor((duration / (1000 * 60 * 60)));
+            hours = (hours < 10) ? "0" + hours : hours;
+            minutes = (minutes < 10) ? "0" + minutes : minutes;
+            seconds = (seconds < 10) ? "0" + seconds : seconds;
+            return hours + ":" + minutes + ":" + seconds;
+        }
+
+        function createPoiMarker(lat, lng, name, layerGrp) {
+            const icon = L.divIcon({
+                className: 'custom-poi-icon',
+                html: `<div style="background-color:#eab308; border-radius:50%; width:12px; height:12px; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.5);"></div>`,
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            });
+            L.marker([lat, lng], { icon: icon }).bindTooltip(name, { className: 'poi-tooltip', direction: 'top', offset: [0, -8] }).addTo(layerGrp);
+        }
+
+        // --- ACTUALIZAR INTERFAZ Y DESPLEGABLE ---
+        function updateRoutesListUI() {
+            const listContainer = document.getElementById('routesList');
+            const emptyMsg = document.getElementById('emptyRoutesMsg');
+            const badge = document.getElementById('routeCountBadge');
+            const btnFitAll = document.getElementById('btnFitAll');
+            const btnClearAll = document.getElementById('btnClearAll');
+            const toolsPanel = document.getElementById('toolsPanel');
+            
+            if (loadedRoutes.length > 0) {
+                badge.textContent = loadedRoutes.length;
+                badge.classList.remove('hidden');
+                emptyMsg.classList.add('hidden');
+                btnFitAll.classList.remove('opacity-50', 'pointer-events-none');
+                btnClearAll.classList.remove('opacity-50', 'pointer-events-none');
+            } else {
+                badge.classList.add('hidden');
+                emptyMsg.classList.remove('hidden');
+                btnFitAll.classList.add('opacity-50', 'pointer-events-none');
+                btnClearAll.classList.add('opacity-50', 'pointer-events-none');
+                document.getElementById('dropdownBtnText').innerHTML = '<span class="font-normal">Ninguna ruta cargada</span>';
+                hideChart();
+                activeRouteIds = [];
+            }
+
+            if (activeRouteIds.length === 1) {
+                toolsPanel.classList.remove('opacity-50', 'pointer-events-none');
+                toolsPanel.title = "Herramientas listas para editar la ruta seleccionada";
+            } else if (activeRouteIds.length > 1) {
+                toolsPanel.classList.add('opacity-50', 'pointer-events-none');
+                toolsPanel.title = "Selecciona SOLO UNA ruta para activar estas herramientas (desmarca las demás)";
+            } else {
+                toolsPanel.classList.add('opacity-50', 'pointer-events-none');
+                toolsPanel.title = "Selecciona una ruta para activar estas herramientas";
+            }
+
+            Array.from(listContainer.children).forEach(child => {
+                if (child.id !== 'emptyRoutesMsg') child.remove();
+            });
+
+            loadedRoutes.forEach(route => {
+                const isActive = activeRouteIds.includes(route.id);
+                const item = document.createElement('div');
+                item.className = `route-item p-3 rounded-lg border border-gray-700/50 bg-gray-800/80 flex flex-col gap-2 cursor-pointer transition-colors ${isActive ? 'active shadow-inner' : 'hover:bg-gray-700'}`;
+                
+                item.onclick = (e) => {
+                    if(e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && !e.target.closest('button') && !e.target.closest('label')) {
+                        toggleRouteSelection(route.id);
+                    }
+                };
+
+                const headerRow = document.createElement('div');
+                headerRow.className = 'flex items-center gap-3';
+
+                const checkWrapper = document.createElement('label');
+                checkWrapper.className = 'flex items-center cursor-pointer relative';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'peer sr-only';
+                checkbox.checked = isActive;
+                checkbox.onchange = (e) => {
+                    e.stopPropagation();
+                    toggleRouteSelection(route.id, e.target.checked);
+                };
+                
+                const customCheck = document.createElement('div');
+                customCheck.className = 'w-4 h-4 rounded border border-gray-500 flex items-center justify-center peer-checked:bg-orange-500 peer-checked:border-orange-500 transition-colors shadow-sm';
+                customCheck.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-white opacity-0 peer-checked:opacity-100 transition-opacity"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                
+                checkWrapper.appendChild(checkbox);
+                checkWrapper.appendChild(customCheck);
+
+                const colorWrapper = document.createElement('div');
+                colorWrapper.className = 'relative flex-none w-5 h-5 rounded-md overflow-hidden shadow-sm border border-gray-500 cursor-pointer ml-1';
+                const colorInput = document.createElement('input');
+                colorInput.type = 'color'; colorInput.value = route.color; colorInput.className = 'absolute -top-2 -left-2 w-10 h-10 cursor-pointer opacity-0';
+                const colorDisplay = document.createElement('div');
+                colorDisplay.className = 'w-full h-full pointer-events-none'; colorDisplay.style.backgroundColor = route.color;
+                colorInput.oninput = (e) => changeRouteColor(route.id, e.target.value, colorDisplay);
+                colorWrapper.appendChild(colorInput); colorWrapper.appendChild(colorDisplay);
+
+                const nameText = document.createElement('span');
+                nameText.className = `text-sm font-semibold truncate flex-1 ${isActive ? 'text-orange-300' : 'text-gray-300'}`;
+                nameText.textContent = route.name;
+                nameText.title = route.name;
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'flex items-center gap-1 ml-auto';
+
+                const btnVis = document.createElement('button');
+                btnVis.className = 'text-gray-400 hover:text-white p-1 rounded-md transition-colors';
+                const isVisible = map.hasLayer(route.layerGroup);
+                btnVis.innerHTML = isVisible 
+                    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>'
+                    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-rose-400"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>';
+                btnVis.onclick = (e) => { e.stopPropagation(); toggleRouteVisibility(route.id); };
+
+                const btnDel = document.createElement('button');
+                btnDel.className = 'text-gray-500 hover:text-rose-400 p-1 rounded-md transition-colors hover:bg-rose-900/30';
+                btnDel.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+                btnDel.onclick = (e) => { e.stopPropagation(); deleteRoute(route.id); };
+
+                actionsDiv.appendChild(btnVis); actionsDiv.appendChild(btnDel);
+                
+                headerRow.appendChild(checkWrapper);
+                headerRow.appendChild(colorWrapper); 
+                headerRow.appendChild(nameText); 
+                headerRow.appendChild(actionsDiv);
+                
+                const statsRow = document.createElement('div');
+                statsRow.className = 'flex items-center gap-4 text-[11px] text-gray-400 font-medium pl-10 pr-2';
+                statsRow.innerHTML = `<span class="flex items-center gap-1.5"><i data-lucide="ruler" class="w-3.5 h-3.5"></i> ${route.stats.distance}km</span>
+                                      <span class="flex items-center gap-1.5 text-emerald-400/80"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +${route.stats.ascent}m</span>`;
+
+                item.appendChild(headerRow); item.appendChild(statsRow);
+                listContainer.appendChild(item);
+            });
+
+            lucide.createIcons({ root: listContainer });
+            updateDropdownBtnUI();
+        }
+
+        function updateDropdownBtnUI() {
+            const btnText = document.getElementById('dropdownBtnText');
+            if (activeRouteIds.length === 1) {
+                const activeRoute = loadedRoutes.find(r => r.id === activeRouteIds[0]);
+                btnText.innerHTML = `<span class="font-bold text-gray-200 flex items-center gap-1.5"><div style="width: 8px; height: 8px; border-radius: 50%; background-color: ${activeRoute.color};"></div> ${activeRoute.name}</span>`;
+            } else if (activeRouteIds.length > 1) {
+                btnText.innerHTML = `<span class="font-bold text-gray-200"><i data-lucide="bar-chart-2" class="w-4 h-4 inline mr-1 text-gray-400"></i> Comparando ${activeRouteIds.length} Rutas</span>`;
+            } else {
+                btnText.innerHTML = `<span class="font-normal text-gray-400">${loadedRoutes.length} Rutas Cargadas (0 Sel.)</span>`;
+            }
+            lucide.createIcons({ root: btnText });
+        }
+
+        // --- ACCIONES DE RUTAS (MÚLTIPLE) ---
+        function toggleRouteSelection(id, forceState = null) {
+            const index = activeRouteIds.indexOf(id);
+            let willBeActive = forceState !== null ? forceState : (index === -1);
+
+            if (willBeActive && index === -1) {
+                activeRouteIds.push(id); 
+            } else if (!willBeActive && index > -1) {
+                activeRouteIds.splice(index, 1); 
+            }
+
+            applySelectionVisuals();
+            
+            if (activeRouteIds.length > 0) {
+                const selectedGroups = activeRouteIds.map(aId => loadedRoutes.find(r => r.id === aId).layerGroup);
+                const group = new L.featureGroup(selectedGroups);
+                map.fitBounds(group.getBounds(), { 
+                    paddingTopLeft: [30, 30],
+                    paddingBottomRight: [30, chartHeightOffset + 20] 
+                });
+            }
+
+            updateChart();
+            updateRoutesListUI(); 
+        }
+
+        function isolateRoute(id) {
+            activeRouteIds = [id]; 
+            
+            applySelectionVisuals();
+            
+            const route = loadedRoutes.find(r => r.id === id);
+            map.fitBounds(route.layerGroup.getBounds(), { paddingTopLeft: [30, 30], paddingBottomRight: [30, chartHeightOffset + 20] });
+            
+            updateChart();
+            updateRoutesListUI();
+        }
+
+        function applySelectionVisuals() {
+            loadedRoutes.forEach(r => {
+                const isSelected = activeRouteIds.includes(r.id);
+                if (isSelected && !map.hasLayer(r.layerGroup)) {
+                    map.addLayer(r.layerGroup);
+                }
+                
+                if (map.hasLayer(r.layerGroup)) {
+                    r.polyline.setStyle({ 
+                        opacity: isSelected ? 1 : 0.4, 
+                        weight: isSelected ? 6 : 4 
+                    });
+                    if(isSelected) r.polyline.bringToFront();
+                }
+            });
+        }
+
+        function changeRouteColor(id, newColor, displayEl) {
+            const route = loadedRoutes.find(r => r.id === id);
+            if (route) {
+                route.color = newColor;
+                route.polyline.setStyle({ color: newColor });
+                displayEl.style.backgroundColor = newColor;
+                if (activeRouteIds.includes(id)) {
+                    updateChart();
+                    updateDropdownBtnUI();
+                }
+            }
+        }
+
+        function toggleRouteVisibility(id) {
+            const route = loadedRoutes.find(r => r.id === id);
+            if (route) {
+                if (map.hasLayer(route.layerGroup)) {
+                    map.removeLayer(route.layerGroup);
+                    const selIndex = activeRouteIds.indexOf(id);
+                    if(selIndex > -1) toggleRouteSelection(id, false);
+                } else {
+                    map.addLayer(route.layerGroup);
+                }
+                updateRoutesListUI(); 
+            }
+        }
+
+        function deleteRoute(id) {
+            const routeIndex = loadedRoutes.findIndex(r => r.id === id);
+            if (routeIndex > -1) {
+                const route = loadedRoutes[routeIndex];
+                map.removeLayer(route.layerGroup);
+                loadedRoutes.splice(routeIndex, 1);
+                
+                const selIndex = activeRouteIds.indexOf(id);
+                if (selIndex > -1) activeRouteIds.splice(selIndex, 1);
+                
+                if (loadedRoutes.length === 0) {
+                    hideChart();
+                } else {
+                    updateChart();
+                }
+                updateRoutesListUI();
+            }
+        }
+
+        document.getElementById('btnFitAll').addEventListener('click', () => {
+            if (loadedRoutes.length === 0) return;
+            const group = new L.featureGroup(loadedRoutes.map(r => r.layerGroup));
+            
+            const isChartOpen = !document.getElementById('chart-container').classList.contains('hidden-chart');
+            const paddingBottom = isChartOpen ? (chartHeightOffset + 20) : 40;
+
+            map.fitBounds(group.getBounds(), { 
+                paddingTopLeft: [40, 40],
+                paddingBottomRight: [40, paddingBottom]
+            });
+            
+            document.getElementById('routesDropdownMenu').classList.add('hidden');
+            document.getElementById('dropdownIcon').classList.remove('rotate-180');
+        });
+
+        // BORRADO USANDO MODAL PERSONALIZADO
+        document.getElementById('btnClearAll').addEventListener('click', () => {
+            document.getElementById('modalConfirmClear').showModal();
+        });
+
+        document.getElementById('btnConfirmClearAction').addEventListener('click', () => {
+            loadedRoutes.forEach(route => map.removeLayer(route.layerGroup));
+            loadedRoutes = [];
+            activeRouteIds = [];
+            updateRoutesListUI();
+            hideChart();
+            document.getElementById('modalConfirmClear').close();
+            
+            document.getElementById('routesDropdownMenu').classList.add('hidden');
+            document.getElementById('dropdownIcon').classList.remove('rotate-180');
+        });
+
+
+        // --- ACTUALIZAR GRÁFICA PARA MÚLTIPLES RUTAS ---
+        function updateChart() {
+            if (activeRouteIds.length === 0) { 
+                hideChart(); 
+                return; 
+            }
+            
+            const chartCont = document.getElementById('chart-container');
+            chartCont.classList.remove('hidden-chart');
+
+            if (activeRouteIds.length === 1) {
+                const route = loadedRoutes.find(r => r.id === activeRouteIds[0]);
+                document.getElementById('chartTitle').innerHTML = `<i data-lucide="mountain" class="w-4 h-4" style="color:${route.color}"></i> ${route.name}`;
+                document.getElementById('chartDist').textContent = `${route.stats.distance} km`;
+                document.getElementById('chartAscent').textContent = `+${route.stats.ascent} m`;
+            } else {
+                document.getElementById('chartTitle').innerHTML = `<i data-lucide="bar-chart-2" class="w-4 h-4 text-orange-400"></i> Comparando ${activeRouteIds.length} Rutas`;
+                document.getElementById('chartDist').textContent = '';
+                document.getElementById('chartAscent').textContent = '';
+            }
+            lucide.createIcons({ root: document.getElementById('chartTitle') });
+
+            elevationChartObj.data.datasets = activeRouteIds.map(id => {
+                const route = loadedRoutes.find(r => r.id === id);
+                const ctx = document.getElementById('elevationChart').getContext('2d');
+                const gradient = ctx.createLinearGradient(0, 0, 0, 150);
+                let r=0, g=0, b=0;
+                if(route.color.startsWith('#')) {
+                    const hex = route.color.replace('#','');
+                    r = parseInt(hex.substring(0,2), 16) || 0;
+                    g = parseInt(hex.substring(2,4), 16) || 0;
+                    b = parseInt(hex.substring(4,6), 16) || 0;
+                }
+                
+                const fillOpacity = activeRouteIds.length > 1 ? 0.2 : 0.6;
+                gradient.addColorStop(0, `rgba(${r},${g},${b},${fillOpacity})`);
+                gradient.addColorStop(1, `rgba(${r},${g},${b},0.05)`);
+
+                return {
+                    label: route.name,
+                    data: route.stats.chartData,
+                    borderColor: route.color,
+                    borderWidth: activeRouteIds.length > 1 ? 2 : 3,
+                    backgroundColor: gradient,
+                    fill: true,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    tension: 0.1
+                };
+            });
+
+            elevationChartObj.update();
+        }
+
+        function hideChart() { 
+            document.getElementById('chart-container').classList.add('hidden-chart'); 
+            clearChartMarker(); 
+        }
+        document.getElementById('btnCloseChart').addEventListener('click', () => {
+            activeRouteIds = [];
+            applySelectionVisuals();
+            updateRoutesListUI();
+        });
+
+
+        // --- HERRAMIENTAS MODALES ---
+        function getTargetRouteForTools() {
+            if (activeRouteIds.length !== 1) return null; 
+            return loadedRoutes.find(r => r.id === activeRouteIds[0]);
+        }
+
+        document.getElementById('btnProperties').addEventListener('click', () => {
+            const route = getTargetRouteForTools();
+            if (!route) return;
+
+            document.getElementById('propName').textContent = route.name;
+            document.getElementById('propCreator').textContent = route.stats.creator;
+            document.getElementById('propDistance').innerHTML = `${route.stats.distance} <span class="text-xs text-gray-500">km</span>`;
+            document.getElementById('propAscent').innerHTML = `+${route.stats.ascent} <span class="text-xs text-gray-500">m</span>`;
+            document.getElementById('propMovingTime').textContent = route.stats.movingTime;
+            document.getElementById('propTotalTime').textContent = route.stats.totalTime;
+
+            let youtubeLink = null;
+            route.xmlDoc.querySelectorAll("link").forEach(n => {
+                const href = n.getAttribute("href");
+                if (href && (href.includes("youtube.com") || href.includes("youtu.be"))) youtubeLink = href;
+            });
+
+            const ytCont = document.getElementById('propYoutubeContainer');
+            if (youtubeLink) {
+                ytCont.classList.remove('hidden');
+                document.getElementById('propYoutubeLink').href = youtubeLink;
+                document.getElementById('propYoutubeLink').textContent = youtubeLink;
+            } else ytCont.classList.add('hidden');
+
+            document.getElementById('modalProperties').showModal();
+        });
+
+        document.getElementById('btnYoutube').addEventListener('click', () => {
+            const route = getTargetRouteForTools();
+            if (!route) return;
+            document.getElementById('inputYoutubeUrl').value = '';
+            document.getElementById('modalYoutube').showModal();
+        });
+
+        document.getElementById('btnSaveYoutube').addEventListener('click', () => {
+            const route = getTargetRouteForTools();
+            if (!route) return;
+            const url = document.getElementById('inputYoutubeUrl').value.trim();
+            
+            if (url) {
+                const doc = route.xmlDoc;
+                let parentNode = doc.querySelector("metadata") || doc.querySelector("trk");
+                if (parentNode) {
+                    const linkEl = doc.createElementNS(doc.documentElement.namespaceURI, "link");
+                    linkEl.setAttribute("href", url);
+                    const textEl = doc.createElementNS(doc.documentElement.namespaceURI, "text");
+                    textEl.textContent = "YouTube Video";
+                    linkEl.appendChild(textEl);
+                    parentNode.insertBefore(linkEl, parentNode.firstChild);
+                    
+                    document.getElementById('modalYoutube').close();
+                    showCustomAlert("Enlace Guardado", `¡Enlace añadido con éxito al GPX de la ruta: ${route.name}!`);
+                }
+            }
+        });
+
+        document.getElementById('btnPOI').addEventListener('click', () => {
+            const route = getTargetRouteForTools();
+            if (!route) return;
+            
+            isPoiMode = !isPoiMode;
+            const btn = document.getElementById('btnPOI');
+            
+            if (isPoiMode) {
+                // Estilo botón activo
+                btn.classList.add('bg-gray-900', 'border-yellow-900/50');
+                btn.classList.remove('bg-gray-900/50', 'border-gray-800');
+                btn.querySelector('i').classList.add('text-yellow-400');
+                btn.querySelector('i').classList.remove('text-gray-500');
+                document.getElementById('map').classList.add('cursor-add-poi');
+            } else resetPoiMode();
+        });
+
+        function resetPoiMode() {
+            isPoiMode = false; tempPoiCoords = null;
+            const btn = document.getElementById('btnPOI');
+            
+            // Revertir estilo botón
+            btn.classList.remove('bg-gray-900', 'border-yellow-900/50');
+            btn.classList.add('bg-gray-900/50', 'border-gray-800');
+            btn.querySelector('i').classList.remove('text-yellow-400');
+            btn.querySelector('i').classList.add('text-gray-500');
+            
+            document.getElementById('map').classList.remove('cursor-add-poi');
+        }
+
+        document.getElementById('btnSavePOI').addEventListener('click', () => {
+            const route = getTargetRouteForTools();
+            if (!route || !tempPoiCoords) return;
+            const name = document.getElementById('inputPOIName').value.trim() || "Punto Interés";
+
+            createPoiMarker(tempPoiCoords.lat, tempPoiCoords.lng, name, route.layerGroup);
+
+            const doc = route.xmlDoc;
+            const gpxNode = doc.querySelector("gpx");
+            const wptEl = doc.createElementNS(doc.documentElement.namespaceURI, "wpt");
+            wptEl.setAttribute("lat", tempPoiCoords.lat.toFixed(6));
+            wptEl.setAttribute("lon", tempPoiCoords.lng.toFixed(6));
+            
+            const nameEl = doc.createElementNS(doc.documentElement.namespaceURI, "name"); nameEl.textContent = name;
+            const symEl = doc.createElementNS(doc.documentElement.namespaceURI, "sym"); symEl.textContent = "Waypoint";
+
+            wptEl.appendChild(nameEl); wptEl.appendChild(symEl);
+
+            const trkNode = doc.querySelector("trk");
+            if (trkNode) gpxNode.insertBefore(wptEl, trkNode); else gpxNode.appendChild(wptEl);
+
+            document.getElementById('modalPOI').close();
+            resetPoiMode();
+        });
+
+        // NUEVO: INVERTIR RUTA
+        document.getElementById('btnInvert').addEventListener('click', () => {
+            const route = getTargetRouteForTools();
+            if (!route) return;
+
+            const doc = route.xmlDoc;
+            let pts = Array.from(doc.querySelectorAll("trkpt"));
+            if(pts.length === 0) pts = Array.from(doc.querySelectorAll("rtept"));
+
+            if(pts.length === 0) return;
+
+            // 1. Extraemos las coordenadas y elevación de todos los puntos en el orden actual
+            const geoData = pts.map(pt => {
+                const eleNode = pt.querySelector("ele");
+                return {
+                    lat: pt.getAttribute("lat"),
+                    lon: pt.getAttribute("lon"),
+                    ele: eleNode ? eleNode.textContent : null
+                };
+            });
+
+            // 2. Invertimos ese array (ahora el último punto está el primero)
+            geoData.reverse();
+
+            // 3. Reescribimos los atributos sobre los nodos originales.
+            // Magia: las etiquetas <time>, <hr>, etc. se quedan en su nodo, por lo que el tiempo de la actividad NO viaja hacia atrás (lo cual corrompería Strava).
+            pts.forEach((pt, i) => {
+                pt.setAttribute("lat", geoData[i].lat);
+                pt.setAttribute("lon", geoData[i].lon);
+                
+                const eleNode = pt.querySelector("ele");
+                if (eleNode && geoData[i].ele !== null) {
+                    eleNode.textContent = geoData[i].ele;
+                } else if (eleNode && geoData[i].ele === null) {
+                    pt.removeChild(eleNode);
+                } else if (!eleNode && geoData[i].ele !== null) {
+                    const newEle = doc.createElementNS(doc.documentElement.namespaceURI, "ele");
+                    newEle.textContent = geoData[i].ele;
+                    pt.appendChild(newEle);
+                }
+            });
+
+            // 4. Reprocesamos limpiamente para redibujar en el mapa
+            const serializer = new XMLSerializer();
+            const newXml = serializer.serializeToString(doc);
+            
+            const oldColor = route.color;
+            const oldName = route.name;
+            const oldId = route.id;
+
+            deleteRoute(oldId); // Borra la antigua de memoria
+            processGPX(newXml, oldName, oldColor, oldId); // Procesa la nueva respetando Color e ID
+            
+            showCustomAlert("Ruta Invertida", `Se ha invertido el sentido de la ruta: ${oldName}`);
+        });
+
+        document.getElementById('btnDownload').addEventListener('click', () => {
+            const route = getTargetRouteForTools();
+            if (!route) return;
+            
+            const serializer = new XMLSerializer();
+            let xmlString = serializer.serializeToString(route.xmlDoc);
+            
+            const blob = new Blob([xmlString], { type: "application/gpx+xml" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement("a");
+            a.href = url; a.download = (route.name || "ruta_editada") + ".gpx";
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+    </script>
+</body>
+</html>

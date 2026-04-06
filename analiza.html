@@ -106,11 +106,45 @@
                     <span class="hidden sm:inline">Blog</span>
                 </a>
 
-                <!-- Botón Original (Panel) -->
-                <a href="index.html" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-teal-400 hover:bg-gray-900 hover:border-teal-900/50 transition-all group">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-500 group-hover:text-teal-500"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-                    <span class="hidden sm:inline">Miguel Navas MTB</span>
-                </a>
+                <!-- Desplegable Suite MNMTB -->
+                <div class="relative" id="suiteDropdownContainer">
+                    <button id="btnToggleSuite" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-700 transition-all group shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-500 group-hover:text-gray-300"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                        <span class="hidden md:inline">Miguel Navas MTB</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 ml-0.5 text-gray-500 group-hover:text-gray-300 transition-transform duration-200" id="suiteDropdownIcon"></i>
+                    </button>
+
+                    <!-- Menú Desplegable -->
+                    <div id="suiteDropdownMenu" class="absolute top-[120%] right-0 w-64 glass-panel rounded-xl hidden overflow-hidden shadow-2xl z-[1000] border border-gray-700">
+                        <div class="flex flex-col">
+                            <div class="px-4 py-2 border-b border-gray-800 bg-gray-900/50">
+                                <span class="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Herramientas</span>
+                            </div>
+							<a href="analiza.html" class="flex items-center gap-3 px-4 py-3 bg-teal-900/20 text-sm font-bold text-teal-400 border-l-2 border-teal-500 cursor-default pointer-events-none">
+                                <i data-lucide="activity" class="w-4 h-4 text-teal-500"></i> GPX Sync & Merge
+                            </a>
+                            <a href="crearuta.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-yellow-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="map" class="w-4 h-4 text-gray-500 group-hover:text-yellow-400 transition-colors"></i> Creador de Rutas
+                            </a>
+                          
+                            <a href="clima.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-sky-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="cloud-sun" class="w-4 h-4 text-gray-500 group-hover:text-sky-400 transition-colors"></i> Previsión Clima en Ruta
+                            </a>
+                            <a href="conversor.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-indigo-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="file-symlink" class="w-4 h-4 text-gray-500 group-hover:text-indigo-400 transition-colors"></i> GPX/TCX Converter
+                            </a>
+                            <a href="visor.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-orange-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="layers" class="w-4 h-4 text-gray-500 group-hover:text-orange-400 transition-colors"></i> Visor y Comparador GPX
+                            </a>
+
+                            <div class="bg-gray-950/80 p-2 border-t border-gray-800 mt-1">
+                                <a href="index.html" class="flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs font-bold text-gray-300 hover:text-white transition-colors border border-gray-700">
+                                    <i data-lucide="home" class="w-3.5 h-3.5"></i> Miguel Navas MTB
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </div>
         </div>
@@ -697,7 +731,16 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            
+            // --- LÓGICA DEL DESPLEGABLE DE CABECERA (SUITE) ---
+        const btnToggleSuite = document.getElementById('btnToggleSuite');
+        const suiteDropdownMenu = document.getElementById('suiteDropdownMenu');
+        const suiteDropdownIcon = document.getElementById('suiteDropdownIcon');
+
+        btnToggleSuite.addEventListener('click', (e) => {
+            e.stopPropagation();
+            suiteDropdownMenu.classList.toggle('hidden');
+            suiteDropdownIcon.classList.toggle('rotate-180');
+        });
             // 1. Elementos del DOM
             const btnShare = document.getElementById('btn-share-track');
             const mapContainer = document.getElementById('map');
