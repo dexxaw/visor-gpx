@@ -57,6 +57,12 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 20px -5px rgba(249, 115, 22, 0.2);
         }
 
+        /* Modificador de hover específico para la tarjeta de Mantenimiento */
+        .hover-violet:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 20px -5px rgba(139, 92, 246, 0.2);
+        }
+
         .gradient-mask {
             mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);
             -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);
@@ -116,6 +122,10 @@
                             </a>
                             <a href="visor.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-orange-400 transition-colors group border-t border-gray-800/50">
                                 <i data-lucide="layers" class="w-4 h-4 text-gray-500 group-hover:text-orange-400 transition-colors"></i> Visor y Comparador GPX
+                            </a>
+							
+							<a href="mantenimiento.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-violet-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="wrench" class="w-4 h-4 text-gray-500 group-hover:text-violet-400 transition-colors"></i> Mantenimiento
                             </a>
 
                             
@@ -245,7 +255,7 @@
                          class="w-full h-full object-cover object-top opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700">
                     
                     <!-- Badge superpuesto en la imagen -->
-                    <div class="absolute top-4 left-4 z-20 bg-indigo-500/90 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
+                    <div class="absolute top-4 left-4 z-20 bg-indigo-500/90 text-gray-950 text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
                         <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Conversión
                     </div>
                 </div>
@@ -275,7 +285,7 @@
                          class="w-full h-full object-cover object-top opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700">
                     
                     <!-- Badge superpuesto en la imagen -->
-                    <div class="absolute top-4 left-4 z-20 bg-orange-500/90 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
+                    <div class="absolute top-4 left-4 z-20 bg-orange-500/90 text-gray-950 text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
                         <i data-lucide="layers" class="w-3.5 h-3.5"></i> Visualización
                     </div>
                 </div>
@@ -290,6 +300,36 @@
                         Carga múltiples archivos GPX simultáneamente para comparar rutas, analizar perfiles de elevación superpuestos, invertir tracks y añadir Puntos de Interés (POIs).
                     </p>
                     <div class="flex items-center text-orange-500 font-semibold text-sm group-hover:translate-x-2 transition-transform">
+                        Abrir herramienta <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                    </div>
+                </div>
+            </a>
+
+            <!-- TARJETA 6: Mantenimiento -->
+            <a href="mantenimiento.html" class="glass-panel hover-violet group rounded-2xl overflow-hidden flex flex-col relative">
+                <!-- Imagen con el fundido a negro (Gradient) -->
+                <div class="w-full relative h-64 sm:h-72 overflow-hidden bg-gray-900">
+                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10"></div>
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi7TF3wu4Ga5fdET_83MkRA91VEJJ26e88ec9YKtMIQ-fWjt2Y1t3oHeYr7GvP53lhoeOEjxs_gctuB41doVvXShLTUFBHyQxUvxSW889pz_J02H5xCOHmBCaoRAQOy3kYUECICu7uAWW5a3EEXrmKeAQISV3th89IRDb9CCAXBUW4vajNAO_BD10N2APgC/w640-h604/mantenimiento.png" 
+                         alt="Previsualización Mantenimiento" 
+                         class="w-full h-full object-cover object-top opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700">
+                    
+                    <!-- Badge superpuesto en la imagen -->
+                    <div class="absolute top-4 left-4 z-20 bg-violet-500/90 text-gray-950 text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
+                        <i data-lucide="wrench" class="w-3.5 h-3.5"></i> Mantenimiento
+                    </div>
+                </div>
+                
+                <!-- Contenido -->
+                <div class="p-8 flex flex-col flex-1 relative z-20 -mt-12">
+                    <div class="bg-gray-800 p-3 rounded-xl inline-block w-fit mb-4 border border-gray-700 shadow-lg group-hover:border-violet-500/50 transition-colors">
+                        <i data-lucide="settings" class="w-6 h-6 text-violet-400"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-3 group-hover:text-violet-400 transition-colors">Gestión de Mantenimiento</h2>
+                    <p class="text-gray-400 text-sm mb-6 flex-1 leading-relaxed">
+                        Lleva el control exhaustivo del desgaste de tu bicicleta. Registra el uso de cadena, pastillas, neumáticos y suspensiones para anticiparte a las averías y realizar el mantenimiento a tiempo.
+                    </p>
+                    <div class="flex items-center text-violet-500 font-semibold text-sm group-hover:translate-x-2 transition-transform">
                         Abrir herramienta <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
                     </div>
                 </div>

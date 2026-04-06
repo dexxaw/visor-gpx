@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantenimiento y Taller - MNMTB</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Trama sutil de motivos de ciclismo adaptada a Violeta para el Taller */
+        .bg-cycling-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='350' height='350' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238b5cf6' stroke-width='2' stroke-opacity='0.07' stroke-linecap='round' stroke-linejoin='round'%3E%3C!-- Bicicleta --%3E%3Ccircle cx='80' cy='100' r='25'/%3E%3Ccircle cx='160' cy='100' r='25'/%3E%3Cpath d='M80 100 L110 60 L150 60 L120 100 Z'/%3E%3Cpath d='M110 60 L100 40 L115 40'/%3E%3Cpath d='M150 60 L160 80'/%3E%3C!-- Montaña --%3E%3Cpath d='M200 150 L250 80 L300 150 Z'/%3E%3Cpath d='M250 80 L270 110 L260 120 L280 150'/%3E%3C!-- Piñón/Engranaje --%3E%3Ccircle cx='300' cy='250' r='20' stroke-dasharray='5,5'/%3E%3Ccircle cx='300' cy='250' r='10'/%3E%3C!-- Cadena --%3E%3Cpath d='M50 250 Q100 280 150 250 T250 250' stroke-dasharray='4,4'/%3E%3C!-- Huella Neumático --%3E%3Cpath d='M50 350 L80 320 M60 360 L90 330 M70 370 L100 340'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+        
+        /* Ocultar input number arrows */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans selection:bg-violet-500/30">
+
+    <!-- Fondo fijo -->
+    <div class="fixed inset-0 bg-cycling-pattern pointer-events-none z-[0]"></div>
+
+    <!-- Navbar -->
+    <nav class="bg-gray-950 text-white shadow-xl border-b border-violet-900/50 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEid2mu7MXMvUKVAbomNMCE_uucVy0aXnj6DxdyXqDsSf1my1fMokenKr-9HL5_Ng4q60a56tLXAstp-aifRLH801ZSYAoSD1MDS4m9d5D6xOSBM5JYQaOzoutk-LbwSYn04TCM3AUrcbRFHiZNT_HhUe2PXGxmMH7mDtUE-DvlfYNZexoiWHmvvE_KrErIT/s320/logo.png" alt="Logo MNMTB" class="w-10 h-10 object-contain bg-gray-900 rounded-full p-0.5 shadow-sm border border-gray-800">
+                <h1 class="text-xl font-bold tracking-tight text-violet-400 hidden lg:block">Mantenimiento</h1>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                
+                <!-- Botón YouTube -->
+                <a href="https://www.youtube.com/@MiguelNavasMTB?sub_confirmation=1" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-gray-900 hover:border-red-900/50 transition-all group">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-500 group-hover:text-red-500"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2.41 2.41 0 0 1 2.2-1.94 15.76 15.76 0 0 1 14.6 0 2.41 2.41 0 0 1 2.2 1.94 24.12 24.12 0 0 1 0 10 2.41 2.41 0 0 1-2.2 1.94 15.76 15.76 0 0 1-14.6 0 2.41 2.41 0 0 1-2.2-1.94Z"/><path d="m10 15 5-3-5-3v6Z"/></svg>
+                    <span class="hidden sm:inline">YouTube</span>
+                </a>
+
+                <!-- Botón Blogger -->
+                <a href="https://miguelnavasmtb.blogspot.com/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-orange-500 hover:bg-gray-900 hover:border-orange-900/50 transition-all group">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-500 group-hover:text-orange-500"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+                    <span class="hidden sm:inline">Blog</span>
+                </a>
+
+                <!-- Desplegable Suite MNMTB -->
+                <div class="relative" id="suiteDropdownContainer">
+                    <button id="btnToggleSuite" class="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 border border-gray-800 rounded-lg text-xs font-bold text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-700 transition-all group shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-500 group-hover:text-gray-300"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                        <span class="hidden md:inline">Miguel Navas MTB</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 ml-0.5 text-gray-500 group-hover:text-gray-300 transition-transform duration-200" id="suiteDropdownIcon"></i>
+                    </button>
+
+                    <!-- Menú Desplegable -->
+					<div id="suiteDropdownMenu" class="absolute top-[120%] right-0 w-64 bg-gray-950 rounded-xl hidden overflow-hidden shadow-2xl z-[1000] border border-gray-700">                        <div class="flex flex-col">
+                            <div class="px-4 py-2 border-b border-gray-800 bg-gray-900/50">
+                                <span class="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Herramientas</span>
+                            </div>
+							<a href="analiza.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-teal-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="activity" class="w-4 h-4 text-gray-500 group-hover:text-teal-400 transition-colors"></i> GPX Sync & Merge
+                            </a>
+                            <a href="crearuta.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-yellow-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="map" class="w-4 h-4 text-gray-500 group-hover:text-yellow-400 transition-colors"></i> Creador de Rutas
+                            </a>
+                          
+                            <a href="clima.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-sky-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="cloud-sun" class="w-4 h-4 text-gray-500 group-hover:text-sky-400 transition-colors"></i> Previsión Clima en Ruta
+                            </a>
+                            <a href="conversor.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-indigo-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="file-symlink" class="w-4 h-4 text-gray-500 group-hover:text-indigo-400 transition-colors"></i> GPX/TCX Converter
+                            </a>
+                            <a href="visor.html" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/80 text-sm font-medium text-gray-300 hover:text-orange-400 transition-colors group border-t border-gray-800/50">
+                                <i data-lucide="layers" class="w-4 h-4 text-gray-500 group-hover:text-orange-400 transition-colors"></i> Visor y Comparador GPX
+                            </a>
+							
+							<a href="mantenimiento.html" class="flex items-center gap-3 px-4 py-3 bg-violet-900/20 text-sm font-bold text-violet-400 border-l-2 border-violet-500 cursor-default pointer-events-none">
+                                <i data-lucide="wrench" class="w-4 h-4 text-violet-500"></i> Mantenimiento
+                            </a>
+
+                            <div class="bg-gray-950/80 p-2 border-t border-gray-800 mt-1">
+                                <a href="index.html" class="flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs font-bold text-gray-300 hover:text-white transition-colors border border-gray-700">
+                                    <i data-lucide="home" class="w-3.5 h-3.5"></i> Miguel Navas MTB
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+				</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8 relative z-10">
+
+        <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-white mb-2 tracking-tight">Libro de Mantenimiento</h1>
+                <p class="text-gray-400">Controla el desgaste, averías e historial de tus bicicletas.</p>
+            </div>
+            <div class="flex gap-2">
+                <input type="file" id="fileImport" class="hidden" accept=".json,.bike">
+                <button onclick="document.getElementById('fileImport').click()" class="px-4 py-2 bg-gray-800 border border-gray-700 hover:bg-gray-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
+                    <i data-lucide="upload" class="w-4 h-4"></i> Cargar Perfil
+                </button>
+                <button onclick="exportarPerfil()" class="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-500/20 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
+                    <i data-lucide="save" class="w-4 h-4"></i> Guardar Archivo
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Columna Izquierda: Perfil de Bici e Historial -->
+            <div class="space-y-6 lg:col-span-1 flex flex-col">
+                
+                <!-- Tarjeta de Perfil -->
+                <div class="bg-gray-800 border border-gray-700 rounded-2xl p-5 shadow-xl relative overflow-hidden shrink-0">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-violet-500/10 rounded-bl-full z-0"></div>
+                    <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2 relative z-10">
+                        <i data-lucide="bike" class="w-5 h-5 text-violet-400"></i> Mi Máquina
+                    </h2>
+                    
+                    <div class="space-y-4 relative z-10">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1">Nombre (Ej. Orbea Oiz)</label>
+                            <input type="text" id="bikeName" placeholder="Nombre de tu bici" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none transition-colors" value="Mi Bicicleta">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1">Tipo de Bicicleta</label>
+                            <select id="bikeType" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none transition-colors appearance-none cursor-pointer">
+                                <option value="MTB">MTB (Doble / Rígida)</option>
+                                <option value="EMTB">E-MTB / E-Bike</option>
+                                <option value="GRAVEL">Gravel</option>
+                                <option value="ROAD">Carretera</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Kilómetros Totales</label>
+                                <div class="relative">
+                                    <input type="number" id="bikeKm" placeholder="0" class="w-full bg-gray-900 border border-gray-700 rounded-lg pl-3 pr-8 py-2 text-sm text-white focus:border-violet-500 focus:outline-none">
+                                    <span class="absolute right-3 top-2 text-xs text-gray-500 font-medium">km</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Horas de Uso</label>
+                                <div class="relative">
+                                    <input type="number" id="bikeHours" placeholder="0" class="w-full bg-gray-900 border border-gray-700 rounded-lg pl-3 pr-8 py-2 text-sm text-white focus:border-violet-500 focus:outline-none">
+                                    <span class="absolute right-3 top-2 text-xs text-gray-500 font-medium">h</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historial Completo -->
+                <div class="bg-gray-800 border border-gray-700 rounded-2xl p-5 shadow-xl flex flex-col flex-1 min-h-[400px]">
+                    <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <i data-lucide="history" class="w-5 h-5 text-violet-400"></i> Historial Completo
+                    </h2>
+                    
+                    <div id="historyContainer" class="flex-1 overflow-y-auto pr-2 space-y-3">
+                        <!-- Items de historial se generan aquí -->
+                        <div class="text-center text-sm text-gray-500 py-8">No hay registros aún.<br>Realiza una tarea para empezar.</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Columna Derecha: Tareas y Averías -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Tareas de Mantenimiento -->
+                <div class="bg-gray-800 border border-gray-700 rounded-2xl p-1 shadow-xl">
+                    <div class="p-4 border-b border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i data-lucide="clipboard-check" class="w-5 h-5 text-violet-400"></i> Tareas Rutinarias Recomendadas
+                        </h2>
+                        
+                        <!-- Leyenda de dificultad -->
+                        <div class="flex gap-3 text-xs font-medium bg-gray-900 rounded-lg p-2 border border-gray-700">
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> Usuario</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> Avanzado</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500"></span> Taller</span>
+                        </div>
+                    </div>
+
+                    <div id="tasksContainer" class="p-2 space-y-2 max-h-[500px] overflow-y-auto">
+                        <!-- Tareas inyectadas por JS -->
+                    </div>
+                </div>
+
+                <!-- Averías y Observaciones -->
+                <div class="bg-gray-800 border border-gray-700 rounded-2xl p-1 shadow-xl">
+                    <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-orange-500/5 rounded-t-2xl">
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-400"></i> Averías y Observaciones
+                        </h2>
+                        <button onclick="openModal('new_incident')" class="px-3 py-1.5 bg-gray-900 hover:bg-orange-500 hover:text-white border border-gray-700 hover:border-orange-500 text-gray-300 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Registrar Avería
+                        </button>
+                    </div>
+
+                    <div id="incidentsContainer" class="p-2 space-y-2 max-h-[300px] overflow-y-auto">
+                        <!-- Averías inyectadas por JS -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 bg-gray-950/50 mt-12 py-8 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+            <p>&copy; 2026 MNMTB. Taller y Mantenimiento en casa.</p>
+            <div class="flex items-center gap-2">
+                <span>Hecho con</span> <i data-lucide="heart" class="w-4 h-4 text-violet-500 fill-current"></i> <span>y grasa de litio</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL PRINCIPAL: Registrar/Editar Acción o Avería -->
+    <div id="actionModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[60] p-4 opacity-0 transition-opacity duration-200">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 max-w-md w-full shadow-2xl relative transform scale-95 transition-transform duration-200" id="actionModalContent">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-bold text-white mb-4" id="modalMainTitle">Registrar Acción</h3>
+            
+            <div class="space-y-4">
+                
+                <!-- Modo Mantenimiento (Solo texto) -->
+                <div id="modalStaticTaskWrapper" class="hidden">
+                    <p class="text-sm font-semibold text-violet-400 bg-violet-500/10 border border-violet-500/20 rounded-lg p-3" id="modalStaticTaskName"></p>
+                </div>
+
+                <!-- Modo Avería (Input de texto) -->
+                <div id="modalInputTaskWrapper" class="hidden">
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Descripción de la avería o pieza a cambiar</label>
+                    <input type="text" id="modalInputTask" placeholder="Ej. Holgura en basculante, radio roto..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 focus:outline-none transition-colors">
+                </div>
+
+                <!-- Estado (Solo para averías / incidencias) -->
+                <div id="modalStatusWrapper" class="hidden">
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Estado de la avería</label>
+                    <select id="modalStatus" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 focus:outline-none transition-colors appearance-none cursor-pointer">
+                        <option value="pending">Pendiente de Reparar</option>
+                        <option value="resolved">Resuelto / Reparado</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-1">Fecha</label>
+                        <input type="date" id="modalDate" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-1">Coste (€)</label>
+                        <input type="number" id="modalCost" placeholder="0.00" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Notas / Observaciones</label>
+                    <textarea id="modalNotes" rows="3" placeholder="Detalles de la reparación, componentes usados..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none resize-none"></textarea>
+                </div>
+
+                <button id="btnSaveAction" class="w-full py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg font-medium shadow-md transition-colors mt-2">
+                    Guardar Registro
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALES DE ALERTA Y CONFIRMACIÓN PERSONALIZADOS -->
+    <div id="customAlert" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] p-4 opacity-0 transition-opacity">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative text-center">
+            <div class="mx-auto w-12 h-12 bg-violet-500/10 rounded-full flex items-center justify-center mb-4">
+                <i data-lucide="info" class="w-6 h-6 text-violet-400"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2" id="customAlertTitle">Aviso</h3>
+            <p class="text-sm text-gray-400 mb-6" id="customAlertMsg"></p>
+            <button onclick="closeCustomAlert()" class="w-full py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg font-medium transition-colors">Aceptar</button>
+        </div>
+    </div>
+
+    <div id="customConfirm" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] p-4 opacity-0 transition-opacity">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative text-center">
+            <div class="mx-auto w-12 h-12 bg-rose-500/10 rounded-full flex items-center justify-center mb-4">
+                <i data-lucide="alert-triangle" class="w-6 h-6 text-rose-400"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2" id="customConfirmTitle">Confirmar</h3>
+            <p class="text-sm text-gray-400 mb-6" id="customConfirmMsg"></p>
+            <div class="flex gap-3">
+                <button onclick="closeCustomConfirm(false)" class="flex-1 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors">Cancelar</button>
+                <button onclick="closeCustomConfirm(true)" class="flex-1 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-medium transition-colors">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar iconos
+        lucide.createIcons();
+
+        // --- LÓGICA DEL DESPLEGABLE DE CABECERA (SUITE) ---
+        const btnToggleSuite = document.getElementById('btnToggleSuite');
+        const suiteDropdownMenu = document.getElementById('suiteDropdownMenu');
+        const suiteDropdownIcon = document.getElementById('suiteDropdownIcon');
+
+        btnToggleSuite.addEventListener('click', (e) => {
+            e.stopPropagation();
+            suiteDropdownMenu.classList.toggle('hidden');
+            suiteDropdownIcon.classList.toggle('rotate-180');
+        });
+        document.addEventListener('click', () => {
+            suiteDropdownMenu.classList.add('hidden');
+            suiteDropdownIcon.classList.remove('rotate-180');
+        });
+
+        // --- FUNCIONES DE ALERTAS PERSONALIZADAS ---
+        function showCustomAlert(title, msg) {
+            document.getElementById('customAlertTitle').textContent = title;
+            document.getElementById('customAlertMsg').textContent = msg;
+            const el = document.getElementById('customAlert');
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+            // Trigger animation
+            setTimeout(() => el.classList.remove('opacity-0'), 10);
+        }
+
+        function closeCustomAlert() {
+            const el = document.getElementById('customAlert');
+            el.classList.add('opacity-0');
+            setTimeout(() => {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            }, 200);
+        }
+
+        let confirmCallback = null;
+        function showCustomConfirm(title, msg, callback) {
+            document.getElementById('customConfirmTitle').textContent = title;
+            document.getElementById('customConfirmMsg').textContent = msg;
+            confirmCallback = callback;
+            const el = document.getElementById('customConfirm');
+            el.classList.remove('hidden');
+            el.classList.add('flex');
+            setTimeout(() => el.classList.remove('opacity-0'), 10);
+        }
+
+        function closeCustomConfirm(result) {
+            const el = document.getElementById('customConfirm');
+            el.classList.add('opacity-0');
+            setTimeout(() => {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+                if(confirmCallback) confirmCallback(result);
+            }, 200);
+        }
+
+
+        // --- DATOS GLOBALES ---
+        let currentBikeData = {
+            name: "Mi Bicicleta",
+            type: "MTB",
+            km: 0,
+            hours: 0,
+            history: [] // { id, type: 'maintenance'|'incident', taskId, taskName, date, cost, notes, status: 'completed'|'pending'|'resolved' }
+        };
+
+        // Estado del Modal
+        let modalState = {
+            mode: '', // 'new_maintenance', 'new_incident', 'edit'
+            itemId: null, 
+            taskId: null
+        };
+
+        // Base de datos de tareas extraídas
+        const maintenanceTasks = [
+            // GENERAL
+            { id: "gen_clean", name: "Limpieza y desengrase general", interval: "Cada 1-3 salidas", diff: 1, types: ["MTB", "EMTB", "GRAVEL", "ROAD"], ref: "" },
+            { id: "gen_press", name: "Revisión presión neumáticos", interval: "Antes de salida", diff: 1, types: ["MTB", "EMTB", "GRAVEL", "ROAD"], ref: "" },
+            { id: "gen_tubeless", name: "Rellenar líquido Tubeless", interval: "Cada 3-6 meses", diff: 2, types: ["MTB", "EMTB", "GRAVEL", "ROAD"], ref: "" },
+            { id: "gen_bolts", name: "Apriete de tornillería (Torquimétrica)", interval: "Mensual", diff: 2, types: ["MTB", "EMTB", "GRAVEL", "ROAD"], ref: "" },
+            
+            // TRANSMISIÓN
+            { id: "drv_chain_lube", name: "Lubricación de cadena", interval: "Cada salida", diff: 1, types: ["MTB", "EMTB", "GRAVEL", "ROAD"], ref: "" },
+            { id: "drv_chain_check", name: "Medición desgaste cadena", interval: "Cada 500 km", diff: 1, types: ["MTB", "EMTB", "GRAVEL", "ROAD"], ref: "" },
+            { id: "drv_chain_swap", name: "Cambio de cadena", interval: "1500-3000 km", diff: 2, types: ["MTB", "EMTB", "GRAVEL", "ROAD"], ref: "https://bike.shimano.com" },
+            { id: "drv_cassette", name: "Cambio Casete y Plato", interval: "2-3 cambios cadena", diff: 2, types: ["MTB", "EMTB", "GRAVEL", "ROAD"], ref: "https://bike.shimano.com" },
+            { id: "drv_axs_charge", name: "Carga Batería (AXS/Di2)", interval: "Según LED", diff: 1, types: ["MTB", "GRAVEL", "ROAD"], ref: "https://www.sram.com/en/service" },
+            { id: "drv_cable", name: "Sustitución cable/funda cambio", interval: "Anual", diff: 2, types: ["MTB", "GRAVEL", "ROAD"], ref: "" },
+            
+            // FRENOS
+            { id: "brk_pad_check", name: "Inspección de pastillas de freno", interval: "Mensual", diff: 1, types: ["MTB", "EMTB", "GRAVEL", "ROAD"], ref: "https://www.sram.com/en/service/manuals--documents/brakes" },
+            { id: "brk_pad_swap", name: "Cambio de pastillas", interval: "Grosor < 1.5mm", diff: 2, types: ["MTB", "EMTB", "GRAVEL", "ROAD"], ref: "https://www.sram.com/en/service" },
+            { id: "brk_bleed", name: "Purgado circuito hidráulico", interval: "Anual o tacto", diff: 3, types: ["MTB", "EMTB", "GRAVEL", "ROAD"], ref: "https://www.sram.com/en/service" },
+            { id: "brk_rotor", name: "Cambio discos de freno", interval: "Grosor < 1.5mm", diff: 2, types: ["MTB", "EMTB", "GRAVEL", "ROAD"], ref: "https://www.sram.com/en/service" },
+            
+            // SUSPENSIÓN
+            { id: "sus_fork_50", name: "Horquilla: Mantenimiento 50h", interval: "50 h de uso", diff: 2, types: ["MTB", "EMTB"], ref: "https://www.sram.com/en/service" },
+            { id: "sus_fork_200", name: "Horquilla: Mantenimiento 200h", interval: "200 h de uso", diff: 3, types: ["MTB", "EMTB"], ref: "https://www.sram.com/en/service" },
+            { id: "sus_shock_50", name: "Amortiguador: Mantenimiento 50h", interval: "50 h de uso", diff: 2, types: ["MTB", "EMTB"], ref: "https://www.sram.com/en/service" },
+            { id: "sus_shock_200", name: "Amortiguador: Mantenimiento 200h", interval: "200 h de uso", diff: 3, types: ["MTB", "EMTB"], ref: "https://www.sram.com/en/service" },
+            
+            // GRAVEL SPECIFIC
+            { id: "grv_rudy_50", name: "Rudy XPLR: Mantenimiento 50h", interval: "50 h de uso", diff: 2, types: ["GRAVEL"], ref: "https://www.sram.com/en/service" },
+            { id: "grv_rudy_200", name: "Rudy XPLR: Mantenimiento 200h", interval: "200 h de uso", diff: 3, types: ["GRAVEL"], ref: "https://www.sram.com/en/service" },
+
+            // TIJA TELESCÓPICA
+            { id: "tij_drop_50", name: "Tija Telescópica: Mantenimiento 50h", interval: "50 h de uso", diff: 2, types: ["MTB", "EMTB", "GRAVEL"], ref: "https://www.sram.com/en/service" },
+            { id: "tij_drop_200", name: "Tija Telescópica: Mantenimiento 200h", interval: "200 h de uso", diff: 3, types: ["MTB", "EMTB", "GRAVEL"], ref: "https://www.sram.com/en/service" },
+            
+            // E-BIKE
+            { id: "ebk_firmware", name: "Actualización de Firmware", interval: "Anual", diff: 3, types: ["EMTB"], ref: "https://bike.shimano.com" },
+            { id: "ebk_battery", name: "Salud Batería y Conexiones", interval: "Cada 6 meses", diff: 2, types: ["EMTB"], ref: "https://bike.shimano.com" },
+            { id: "ebk_motor", name: "Limpieza Cárter Motor", interval: "Anual", diff: 3, types: ["EMTB"], ref: "https://bike.shimano.com" }
+        ];
+
+        // Referencias UI
+        const inputName = document.getElementById('bikeName');
+        const selectType = document.getElementById('bikeType');
+        const inputKm = document.getElementById('bikeKm');
+        const inputHours = document.getElementById('bikeHours');
+        const tasksContainer = document.getElementById('tasksContainer');
+        const historyContainer = document.getElementById('historyContainer');
+        const incidentsContainer = document.getElementById('incidentsContainer');
+        const fileImport = document.getElementById('fileImport');
+        
+        // Modal Elementos
+        const actionModal = document.getElementById('actionModal');
+        const actionModalContent = document.getElementById('actionModalContent');
+        const modalMainTitle = document.getElementById('modalMainTitle');
+        const modalStaticTaskWrapper = document.getElementById('modalStaticTaskWrapper');
+        const modalStaticTaskName = document.getElementById('modalStaticTaskName');
+        const modalInputTaskWrapper = document.getElementById('modalInputTaskWrapper');
+        const modalInputTask = document.getElementById('modalInputTask');
+        const modalStatusWrapper = document.getElementById('modalStatusWrapper');
+        const modalStatus = document.getElementById('modalStatus');
+        const modalDate = document.getElementById('modalDate');
+        const modalCost = document.getElementById('modalCost');
+        const modalNotes = document.getElementById('modalNotes');
+        const btnSaveAction = document.getElementById('btnSaveAction');
+
+
+        // --- FUNCIONES DE RENDERIZADO ---
+
+        function renderTasks() {
+            tasksContainer.innerHTML = '';
+            const type = selectType.value;
+            const filteredTasks = maintenanceTasks.filter(t => t.types.includes(type));
+            
+            filteredTasks.forEach(task => {
+                let dotColor = 'bg-green-500';
+                if(task.diff === 2) dotColor = 'bg-yellow-500';
+                if(task.diff === 3) dotColor = 'bg-rose-500';
+
+                const isWorkshop = task.diff === 3;
+
+                const taskHtml = `
+                    <div class="group bg-gray-900 border border-gray-800 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-gray-700/50 transition-colors">
+                        <div class="flex items-start gap-3 flex-1">
+                            <div class="mt-1.5 min-w-[8px]"><div class="w-2 h-2 rounded-full ${dotColor}"></div></div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-gray-200">${task.name}</h4>
+                                <div class="flex flex-wrap items-center gap-2 mt-1">
+                                    <span class="text-xs text-gray-400 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${task.interval}</span>
+                                    ${isWorkshop ? `<span class="text-[10px] uppercase font-bold text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">Taller</span>` : ''}
+                                    ${task.ref ? `<a href="${task.ref}" target="_blank" class="text-[10px] flex items-center gap-1 text-violet-400 hover:text-violet-300 ml-2"><i data-lucide="external-link" class="w-3 h-3"></i> Manual</a>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="openModal('new_maintenance', '${task.id}')" class="w-full sm:w-auto px-3 py-1.5 bg-gray-800 hover:bg-violet-600 hover:text-white border border-gray-700 hover:border-violet-500 text-gray-300 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 shrink-0">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Realizado
+                        </button>
+                    </div>
+                `;
+                tasksContainer.insertAdjacentHTML('beforeend', taskHtml);
+            });
+            lucide.createIcons();
+        }
+
+        function renderIncidents() {
+            incidentsContainer.innerHTML = '';
+            const pendingIncidents = currentBikeData.history.filter(h => h.type === 'incident' && h.status === 'pending');
+            
+            if (pendingIncidents.length === 0) {
+                incidentsContainer.innerHTML = '<div class="text-center text-sm text-gray-500 py-6">No hay averías pendientes. ¡A rodar!</div>';
+                return;
+            }
+
+            pendingIncidents.forEach(item => {
+                const [year, month, day] = item.date.split('-');
+                const html = `
+                    <div class="bg-gray-900 border border-orange-500/30 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative">
+                        <div class="flex-1 pr-6">
+                            <h4 class="text-sm font-semibold text-orange-400 mb-1 flex items-center gap-2">
+                                <i data-lucide="tool" class="w-4 h-4"></i> ${item.taskName}
+                            </h4>
+                            <div class="text-xs text-gray-400">Reportado: ${day}/${month}/${year}</div>
+                            ${item.notes ? `<p class="text-xs text-gray-500 mt-1 italic">${item.notes}</p>` : ''}
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <button onclick="markIncidentResolved('${item.id}')" class="flex-1 sm:flex-none px-3 py-1.5 bg-gray-800 hover:bg-emerald-600 hover:text-white border border-gray-700 hover:border-emerald-500 text-gray-300 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5">
+                                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Resolver
+                            </button>
+                            <button onclick="openModal('edit', null, '${item.id}')" class="p-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-400 hover:text-white rounded-lg transition-colors" title="Editar">
+                                <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                incidentsContainer.insertAdjacentHTML('beforeend', html);
+            });
+            lucide.createIcons();
+        }
+
+        function renderHistory() {
+            historyContainer.innerHTML = '';
+            
+            if (currentBikeData.history.length === 0) {
+                historyContainer.innerHTML = '<div class="text-center text-sm text-gray-500 py-8 flex flex-col items-center gap-2"><i data-lucide="book-open" class="w-8 h-8 text-gray-600 mb-2"></i> No hay registros aún.<br>Realiza una tarea o reporta una avería.</div>';
+                lucide.createIcons();
+                return;
+            }
+
+            const sortedHistory = [...currentBikeData.history].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            sortedHistory.forEach(item => {
+                const [year, month, day] = item.date.split('-');
+                const formattedDate = `${day}/${month}/${year}`;
+                
+                // Estilos por tipo
+                const isIncident = item.type === 'incident';
+                const isPending = item.status === 'pending';
+                
+                let titleColor = isIncident ? (isPending ? 'text-orange-400' : 'text-gray-200') : 'text-gray-200';
+                let iconHtml = isIncident 
+                    ? `<i data-lucide="${isPending ? 'tool' : 'check-circle'}" class="w-4 h-4 ${isPending ? 'text-orange-500' : 'text-emerald-500'}"></i>`
+                    : `<i data-lucide="check" class="w-4 h-4 text-violet-500"></i>`;
+                
+                let badgeHtml = '';
+                if(isIncident) {
+                    if(isPending) badgeHtml = `<span class="text-[10px] font-bold text-orange-400 bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20">Pendiente</span>`;
+                    else badgeHtml = `<span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">Reparado</span>`;
+                }
+
+                const itemHtml = `
+                    <div class="bg-gray-900 border ${isPending ? 'border-orange-500/30' : 'border-gray-800'} rounded-xl p-3 relative group transition-colors">
+                        
+                        <!-- Controles hover -->
+                        <div class="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="openModal('edit', null, '${item.id}')" class="p-1 text-gray-500 hover:text-violet-400 transition-colors" title="Editar">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteHistoryItem('${item.id}')" class="p-1 text-gray-500 hover:text-rose-500 transition-colors" title="Eliminar registro">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2 mb-1 pr-16">
+                            ${iconHtml}
+                            <span class="text-xs font-bold text-gray-400">${formattedDate}</span>
+                            ${badgeHtml}
+                            ${item.cost ? `<span class="text-xs font-medium text-emerald-400 border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 rounded ml-auto">${item.cost}€</span>` : ''}
+                        </div>
+                        <h4 class="text-sm font-semibold ${titleColor} mb-1 pr-12">${item.taskName}</h4>
+                        ${item.notes ? `<p class="text-xs text-gray-400 border-l-2 border-gray-700 pl-2 mt-1 whitespace-pre-wrap">${item.notes}</p>` : ''}
+                    </div>
+                `;
+                historyContainer.insertAdjacentHTML('beforeend', itemHtml);
+            });
+            lucide.createIcons();
+        }
+
+        // --- LÓGICA DE DATOS ---
+
+        function updateInputsFromData() {
+            inputName.value = currentBikeData.name;
+            selectType.value = currentBikeData.type;
+            inputKm.value = currentBikeData.km;
+            inputHours.value = currentBikeData.hours;
+            
+            // Adaptar datos antiguos si es necesario
+            currentBikeData.history = currentBikeData.history.map(h => ({
+                ...h,
+                type: h.type || 'maintenance',
+                status: h.status || 'completed'
+            }));
+
+            renderTasks();
+            renderIncidents();
+            renderHistory();
+        }
+
+        function updateDataFromInputs() {
+            currentBikeData.name = inputName.value;
+            currentBikeData.type = selectType.value;
+            currentBikeData.km = parseInt(inputKm.value) || 0;
+            currentBikeData.hours = parseInt(inputHours.value) || 0;
+        }
+
+        // --- MODAL LÓGICA ---
+
+        function openModal(mode, taskId = null, itemId = null) {
+            modalState.mode = mode;
+            modalState.taskId = taskId;
+            modalState.itemId = itemId;
+
+            // Reset campos
+            modalInputTask.value = "";
+            modalDate.value = new Date().toISOString().split('T')[0];
+            modalCost.value = "";
+            modalNotes.value = "";
+            modalStatus.value = "pending";
+
+            // Ocultar partes específicas
+            modalStaticTaskWrapper.classList.add('hidden');
+            modalInputTaskWrapper.classList.add('hidden');
+            modalStatusWrapper.classList.add('hidden');
+
+            // Configurar según el modo
+            if (mode === 'new_maintenance') {
+                modalMainTitle.textContent = "Registrar Mantenimiento";
+                const task = maintenanceTasks.find(t => t.id === taskId);
+                modalStaticTaskName.textContent = task.name;
+                modalStaticTaskWrapper.classList.remove('hidden');
+            } 
+            else if (mode === 'new_incident') {
+                modalMainTitle.textContent = "Registrar Avería";
+                modalInputTaskWrapper.classList.remove('hidden');
+                // Al crear nueva avería no forzamos mostrar estado, asumimos pendiente
+            }
+            else if (mode === 'edit') {
+                modalMainTitle.textContent = "Editar Registro";
+                const item = currentBikeData.history.find(h => h.id === itemId);
+                
+                modalDate.value = item.date;
+                modalCost.value = item.cost || "";
+                modalNotes.value = item.notes || "";
+
+                if (item.type === 'maintenance') {
+                    modalStaticTaskName.textContent = item.taskName;
+                    modalStaticTaskWrapper.classList.remove('hidden');
+                } else {
+                    modalInputTask.value = item.taskName;
+                    modalInputTaskWrapper.classList.remove('hidden');
+                    modalStatus.value = item.status;
+                    modalStatusWrapper.classList.remove('hidden');
+                }
+            }
+
+            // Mostrar modal
+            actionModal.classList.remove('hidden');
+            actionModal.classList.add('flex');
+            setTimeout(() => {
+                actionModal.classList.remove('opacity-0');
+                actionModalContent.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            actionModal.classList.add('opacity-0');
+            actionModalContent.classList.add('scale-95');
+            setTimeout(() => {
+                actionModal.classList.add('hidden');
+                actionModal.classList.remove('flex');
+            }, 200);
+        }
+
+        btnSaveAction.addEventListener('click', () => {
+            const dateVal = modalDate.value || new Date().toISOString().split('T')[0];
+            const costVal = parseFloat(modalCost.value) || null;
+            const notesVal = modalNotes.value.trim();
+
+            if (modalState.mode === 'new_maintenance') {
+                const task = maintenanceTasks.find(t => t.id === modalState.taskId);
+                currentBikeData.history.push({
+                    id: Date.now().toString(),
+                    type: 'maintenance',
+                    taskId: task.id,
+                    taskName: task.name,
+                    date: dateVal,
+                    cost: costVal,
+                    notes: notesVal,
+                    status: 'completed'
+                });
+            } 
+            else if (modalState.mode === 'new_incident') {
+                const title = modalInputTask.value.trim();
+                if(!title) {
+                    showCustomAlert("Faltan datos", "Por favor, introduce una descripción de la avería.");
+                    return;
+                }
+                currentBikeData.history.push({
+                    id: Date.now().toString(),
+                    type: 'incident',
+                    taskId: null,
+                    taskName: title,
+                    date: dateVal,
+                    cost: costVal,
+                    notes: notesVal,
+                    status: 'pending' // Por defecto
+                });
+            }
+            else if (modalState.mode === 'edit') {
+                const itemIndex = currentBikeData.history.findIndex(h => h.id === modalState.itemId);
+                if(itemIndex > -1) {
+                    let item = currentBikeData.history[itemIndex];
+                    item.date = dateVal;
+                    item.cost = costVal;
+                    item.notes = notesVal;
+                    
+                    if(item.type === 'incident') {
+                        const title = modalInputTask.value.trim();
+                        if(!title) {
+                            showCustomAlert("Faltan datos", "Por favor, introduce una descripción.");
+                            return;
+                        }
+                        item.taskName = title;
+                        item.status = modalStatus.value;
+                    }
+                }
+            }
+
+            updateDataFromInputs();
+            renderIncidents();
+            renderHistory();
+            closeModal();
+        });
+
+        function deleteHistoryItem(id) {
+            showCustomConfirm(
+                "Borrar Registro", 
+                "¿Estás seguro de que quieres eliminar este registro del historial de la bicicleta?", 
+                (confirmed) => {
+                    if(confirmed) {
+                        currentBikeData.history = currentBikeData.history.filter(h => h.id !== id);
+                        renderIncidents();
+                        renderHistory();
+                    }
+                }
+            );
+        }
+
+        // Acceso rápido para marcar como resuelto
+        function markIncidentResolved(id) {
+            const item = currentBikeData.history.find(h => h.id === id);
+            if(item) {
+                // Abrimos el modo de edición directamente enfocando en rellenar notas/coste y estado cambiado
+                openModal('edit', null, id);
+                modalStatus.value = 'resolved';
+            }
+        }
+
+        // --- IMPORTAR / EXPORTAR ---
+
+        function exportarPerfil() {
+            updateDataFromInputs();
+            const dataStr = JSON.stringify(currentBikeData, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const safeName = currentBikeData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'bici';
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${safeName}_mantenimiento.bike`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showCustomAlert("Perfil Guardado", "El archivo de mantenimiento ha sido descargado en tu equipo.");
+        }
+
+        fileImport.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const parsed = JSON.parse(event.target.result);
+                    if (parsed.name !== undefined && Array.isArray(parsed.history)) {
+                        currentBikeData = parsed;
+                        updateInputsFromData();
+                        showCustomAlert("Perfil Cargado", `Perfil "${currentBikeData.name}" restaurado correctamente.`);
+                    } else {
+                        showCustomAlert("Error de Archivo", "El archivo no tiene el formato correcto de bicicleta.");
+                    }
+                } catch (err) {
+                    showCustomAlert("Error de Lectura", "Error al leer el archivo. Asegúrate de que es un archivo .bike válido.");
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = ''; // Reset input
+        });
+
+        // --- LISTENERS ---
+        selectType.addEventListener('change', () => {
+            updateDataFromInputs();
+            renderTasks();
+        });
+
+        // Iniciar
+        renderTasks();
+        renderIncidents();
+        renderHistory();
+
+    </script>
+</body>
+</html>
