@@ -305,6 +305,8 @@
                                     <div class="py-1.5 text-[10px] font-bold text-gray-400 peer-checked:text-gray-900 peer-checked:bg-yellow-500 rounded-md transition-all shadow-sm">POI</div>
                                 </label>
                             </div>
+                            <!-- Helper text -->
+                            <p class="text-[9px] text-gray-400 mt-1 leading-tight"><span class="text-teal-400 font-bold">En track:</span> Clic Corto = Añadir P., Clic Largo = Editar</p>
                         </div>
 
                         <div>
@@ -352,6 +354,14 @@
                                 <span class="text-[9px] uppercase font-bold text-gray-300">Línea Recta</span>
                             </button>
                         </div>
+
+                        <!-- NUEVO BOTÓN: Volver al inicio -->
+                        <div class="mt-3 border-t border-gray-700/50 pt-3">
+                            <button id="btnRetrace" disabled class="w-full py-2 bg-indigo-900/30 text-indigo-400 border border-indigo-700/50 rounded-lg text-xs font-bold hover:bg-indigo-900/60 hover:text-indigo-300 transition-colors flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i data-lucide="corner-up-left" class="w-4 h-4"></i> Volver por el mismo camino
+                            </button>
+                            <p class="text-[9px] text-gray-400 mt-1.5 text-center leading-tight">Calcula el retorno al inicio desde tu último punto, desandando tus pasos.</p>
+                        </div>
                     </div>
                     
                     <!-- BLOQUE: Paseo Virtual -->
@@ -371,6 +381,8 @@
                                 <option value="5" selected>5x</option>
                                 <option value="15">15x</option>
                                 <option value="30">30x</option>
+								<option value="60">60x</option>
+								<option value="120">120x</option>
                             </select>
                             <button id="btnAutoCenter" disabled class="p-2 bg-teal-600 text-white rounded-md hover:bg-teal-500 transition disabled:opacity-50 disabled:cursor-not-allowed" title="Mantener ciclista centrado">
                                 <i data-lucide="crosshair" class="w-4 h-4"></i>
